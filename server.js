@@ -13,7 +13,7 @@ const app = express();
 app.use(express.json());
 app.use(cookieParser());
 app.use(cors({
-  origin: 'https://your-frontend-url.vercel.app',
+  origin: 'https://mern-auth-frontendemigreif.vercel.app/',
   credentials: true
 }));
 
