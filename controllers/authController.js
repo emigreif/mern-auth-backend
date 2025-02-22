@@ -2,19 +2,59 @@ import User from '../models/User.js';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 
-export const register = async (req, res) => {
-  const { name, email, password } = req.body;
-  try {
-    const userExists = await User.findOne({ email });
-    if (userExists) return res.status(400).json({ message: 'User already exists' });
 
+export const registerUser = async (req, res) => {
+  try {
+    const {
+      email,
+      password,
+      repeatPassword,
+      firstName,
+      lastName,
+      razonSocial,
+      cuit,
+      plan,
+      cantidadUsuarios,
+      direccion,
+      localidad,
+      codigoPostal
+    } = req.body;
+
+    // Verificar contraseñas
+    if (password !== repeatPassword) {
+      return res.status(400).json({ message: 'Las contraseñas no coinciden' });
+    }
+
+    // Chequear si ya existe un usuario con el mismo email
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
+      return res.status(400).json({ message: 'El usuario ya existe' });
+    }
+
+    // Cifrar la contraseña con bcrypt
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
-    const user = await User.create({ name, email, password: hashedPassword });
-    res.status(201).json({ message: 'User created successfully' });
+    // Crear nuevo usuario
+    const newUser = new User({
+      email,
+      password: hashedPassword,
+      firstName,
+      lastName,
+      razonSocial,
+      cuit,
+      plan,
+      cantidadUsuarios,
+      direccion,
+      localidad,
+      codigoPostal
+    });
+
+    await newUser.save();
+    return res.status(201).json({ message: 'Usuario registrado con éxito' });
   } catch (error) {
-    res.status(500).json({ message: 'Server error' });
+    console.error(error);
+    return res.status(500).json({ message: 'Error registrando usuario' });
   }
 };
 
