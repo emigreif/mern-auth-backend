@@ -3,7 +3,7 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 
 
-export const registerUser = async (req, res) => {
+export const register = async (req, res) => {
   try {
     const {
       email,
