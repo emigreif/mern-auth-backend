@@ -12,10 +12,13 @@ connectDB();
 const app = express();
 
 app.use(express.json());
+import cors from 'cors';
+
 app.use(cors({
-    origin: 'http://localhost:5173', // Asegúrate de que sea el puerto de tu frontend (Vite usa 5173)
-    credentials: true, // Permitir cookies y tokens en las peticiones
-  }));app.use(cookieParser());
+  origin: ["https://mern-auth-frontendemigreif.vercel.app"], // Agrega la URL de tu frontend en Vercel
+  credentials: true
+}));
+
 
 app.use('/api/auth', authRoutes);
 app.use('/api/user', userRoutes);
