@@ -12,7 +12,6 @@ connectDB();
 const app = express();
 
 app.use(express.json());
-import cors from 'cors';
 
 app.use(cors({
   origin: ["https://mern-auth-frontendemigreif.vercel.app"], // Agrega la URL de tu frontend en Vercel
