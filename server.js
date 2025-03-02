@@ -33,6 +33,7 @@ app.use((req, res, next) => {
 // Rutas
 app.use('/api/auth', authRoutes);
 app.use('/api/user', userRoutes);
+app.use("/api/compras", require("./routes/compras"));
 
 // Iniciar el servidor
 const PORT = process.env.PORT || 5000;
