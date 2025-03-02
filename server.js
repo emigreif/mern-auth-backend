@@ -16,7 +16,7 @@ app.use(express.json());
 
 // Habilitar CORS correctamente
 app.use(cors({
-  origin: ["mern-auth-frontendemigreif.vercel.app"],  // Asegura que es la URL correcta
+  origin: ["https://mern-auth-frontendemigreif.vercel.app"],  /// Asegura que es la URL correcta
   credentials: true
 }));
 
