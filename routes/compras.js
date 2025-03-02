@@ -1,6 +1,5 @@
-import express from 'express';
-
-import Compra from "../models/Compra";
+import express from "express";
+import Compra from "../models/Compra.js"; // Cambia a import
 
 const router = express.Router();
 

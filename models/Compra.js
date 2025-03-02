@@ -1,4 +1,5 @@
-const mongoose = require("mongoose");
+
+import mongoose from "mongoose";
 
 const CompraSchema = new mongoose.Schema({
   proveedor: { type: String, required: true },
@@ -15,4 +16,5 @@ const CompraSchema = new mongoose.Schema({
   fechaCompra: { type: Date, default: Date.now },
 });
 
-module.exports = mongoose.model("Compra", CompraSchema);
+const Compra = mongoose.model("Compra", CompraSchema);
+export default Compra;
