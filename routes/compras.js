@@ -1,6 +1,8 @@
-const express = require("express");
+import express from 'express';
+
+import Compra from "../models/Compra";
+
 const router = express.Router();
-const Compra = require("../models/Compra");
 
 // Obtener todas las compras
 router.get("/", async (req, res) => {
@@ -43,4 +45,4 @@ router.delete("/:id", async (req, res) => {
   }
 });
 
-module.exports = router;
+export default router;

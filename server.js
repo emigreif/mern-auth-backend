@@ -4,6 +4,7 @@ import cors from 'cors';
 import connectDB from './config/db.js';
 import authRoutes from './routes/authRoutes.js';
 import userRoutes from './routes/userRoutes.js';
+import compra from './routes/compras.js';
 import cookieParser from 'cookie-parser';
 
 dotenv.config();
@@ -33,7 +34,7 @@ app.use((req, res, next) => {
 // Rutas
 app.use('/api/auth', authRoutes);
 app.use('/api/user', userRoutes);
-app.use("/api/compras", require("./routes/compras"));
+app.use("/api/compras", compra);
 
 // Iniciar el servidor
 const PORT = process.env.PORT || 5000;
