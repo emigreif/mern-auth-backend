@@ -15,8 +15,7 @@ const ObraSchema = new mongoose.Schema({
     },
     fechaEntrega: { type: Date, required: true },
     saldo: { type: String, enum: ['Con saldo a cobrar', 'Pagada'], default: 'Con saldo a cobrar' }
+, user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
 }, { timestamps: true });
-
-
 
 export default mongoose.model('Obra', ObraSchema);

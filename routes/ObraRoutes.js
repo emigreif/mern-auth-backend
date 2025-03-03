@@ -1,11 +1,10 @@
-// backend/routes/ObraRoutes.js
 import express from 'express';
 import Obra from '../models/Obra.js';
 import { protect } from '../middleware/authMiddleware.js';
 
 const router = express.Router();
 
-// Obtener todas las Obras del usuario logueado
+// Obtener todas las Obras del usuario
 router.get('/', protect, async (req, res) => {
   try {
     const obras = await Obra.find({ user: req.user.id });
@@ -15,7 +14,7 @@ router.get('/', protect, async (req, res) => {
   }
 });
 
-// Obtener una Obra por id (verifica que pertenezca al usuario)
+// Obtener una Obra por id
 router.get('/:id', protect, async (req, res) => {
   try {
     const obra = await Obra.findOne({ _id: req.params.id, user: req.user.id });
@@ -26,7 +25,7 @@ router.get('/:id', protect, async (req, res) => {
   }
 });
 
-// Crear una nueva Obra asignándole el usuario logueado
+// Crear una nueva Obra
 router.post('/', protect, async (req, res) => {
   try {
     const obra = new Obra({ ...req.body, user: req.user.id });
@@ -37,7 +36,7 @@ router.post('/', protect, async (req, res) => {
   }
 });
 
-// Actualizar una Obra (asegurarse que sea del usuario)
+// Actualizar una Obra
 router.put('/:id', protect, async (req, res) => {
   try {
     const updatedObra = await Obra.findOneAndUpdate(
@@ -52,11 +51,11 @@ router.put('/:id', protect, async (req, res) => {
   }
 });
 
-// Eliminar una Obra (solo si pertenece al usuario)
+// Eliminar una Obra
 router.delete('/:id', protect, async (req, res) => {
   try {
-    const deleted = await Obra.findOneAndDelete({ _id: req.params.id, user: req.user.id });
-    if (!deleted) return res.status(404).json({ message: 'Obra no encontrada' });
+    const deletedObra = await Obra.findOneAndDelete({ _id: req.params.id, user: req.user.id });
+    if (!deletedObra) return res.status(404).json({ message: 'Obra no encontrada' });
     res.json({ message: 'Obra eliminada correctamente' });
   } catch (error) {
     res.status(500).json({ message: 'Error al eliminar Obra', error });

@@ -1,11 +1,10 @@
-// backend/routes/contabilidadRoutes.js
 import express from 'express';
 import { crearMovimiento, listarMovimientos } from '../controllers/contabilidadController.js';
+import { protect } from '../middleware/authMiddleware.js';
+
 const router = express.Router();
 
-router.post('/', crearMovimiento);
-router.get('/', listarMovimientos);
-// router.get('/balance', balanceGeneral); // Podrías crear una función adicional
-// ...
+router.post('/', protect, crearMovimiento);
+router.get('/', protect, listarMovimientos);
 
 export default router;

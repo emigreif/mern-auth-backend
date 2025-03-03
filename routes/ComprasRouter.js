@@ -1,22 +1,24 @@
 import express from "express";
-import Compra from "../models/Compra.js"; 
+import Compra from "../models/Compra.js";
+import { protect } from '../middleware/authMiddleware.js';
 
 const router = express.Router();
 
-// Obtener todas las compras
-router.get("/", async (req, res) => {
+// Obtener todas las compras del usuario
+router.get("/", protect, async (req, res) => {
   try {
-    const compras = await Compra.find();
+    const compras = await Compra.find({ user: req.user.id });
     res.json(compras);
   } catch (error) {
     res.status(500).json({ message: "Error al obtener compras", error });
   }
 });
 
-// Guardar nuevas compras
-router.post("/", async (req, res) => {
+// Guardar nuevas compras (asignando user)
+router.post("/", protect, async (req, res) => {
   try {
-    const nuevasCompras = req.body;
+    // Suponiendo que req.body es un array de compras
+    const nuevasCompras = req.body.map(compra => ({ ...compra, user: req.user.id }));
     const comprasGuardadas = await Compra.insertMany(nuevasCompras);
     res.status(201).json(comprasGuardadas);
   } catch (error) {
@@ -25,9 +27,14 @@ router.post("/", async (req, res) => {
 });
 
 // Actualizar una compra
-router.put("/:id", async (req, res) => {
+router.put("/:id", protect, async (req, res) => {
   try {
-    const compraActualizada = await Compra.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    const compraActualizada = await Compra.findOneAndUpdate(
+      { _id: req.params.id, user: req.user.id },
+      req.body,
+      { new: true }
+    );
+    if (!compraActualizada) return res.status(404).json({ message: "Compra no encontrada" });
     res.json(compraActualizada);
   } catch (error) {
     res.status(500).json({ message: "Error al actualizar la compra", error });
@@ -35,9 +42,10 @@ router.put("/:id", async (req, res) => {
 });
 
 // Eliminar una compra
-router.delete("/:id", async (req, res) => {
+router.delete("/:id", protect, async (req, res) => {
   try {
-    await Compra.findByIdAndDelete(req.params.id);
+    const compraEliminada = await Compra.findOneAndDelete({ _id: req.params.id, user: req.user.id });
+    if (!compraEliminada) return res.status(404).json({ message: "Compra no encontrada" });
     res.json({ message: "Compra eliminada correctamente" });
   } catch (error) {
     res.status(500).json({ message: "Error al eliminar la compra", error });

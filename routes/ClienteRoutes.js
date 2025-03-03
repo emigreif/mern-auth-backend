@@ -1,73 +1,68 @@
-
+// backend/routes/ClienteRoutes.js
 import express from 'express';
 import Cliente from '../models/Cliente.js';
+import { protect } from '../middleware/authMiddleware.js';
 
 const router = express.Router();    
 
-// Obtener todos los Clientes
-
-router.get('/', async (req, res) => {
+// Obtener todos los Clientes del usuario logueado
+router.get('/', protect, async (req, res) => {
   try {
-    const Clientes = await Cliente.find();
-    res.json(Clientes);
+    // Filtrar por user: req.user.id
+    const clientes = await Cliente.find({ user: req.user.id });
+    res.json(clientes);
   } catch (error) {
     res.status(500).json({ message: 'Error al obtener Clientes', error });
   }
 });
 
-// Obtener un Cliente por ID
-
-router.get('/:id', getCliente, async (req, res) => {
-  res.json(res.Cliente);
+// Obtener un Cliente por ID, asegurando que sea del usuario
+router.get('/:id', protect, async (req, res) => {
+  try {
+    const cliente = await Cliente.findOne({ _id: req.params.id, user: req.user.id });
+    if (!cliente) return res.status(404).json({ message: 'Cliente no encontrado' });
+    res.json(cliente);
+  } catch (error) {
+    res.status(500).json({ message: 'Error al obtener el Cliente', error });
+  }
 });
 
-// Crear un nuevo Cliente
-
-router.post('/', async (req, res) => {
-  const Cliente = new n(req.body);
+// Crear un nuevo Cliente, asignándole el user
+router.post('/', protect, async (req, res) => {
   try {
-    const nuevoCliente = await Cliente.save();
+    // user: req.user.id
+    const cliente = new Cliente({ ...req.body, user: req.user.id });
+    const nuevoCliente = await cliente.save();
     res.status(201).json(nuevoCliente);
   } catch (error) {
     res.status(400).json({ message: 'Error al crear el Cliente', error });
   }
 });
 
-// Actualizar un Cliente
-
-router.put('/:id', getCliente, async (req, res) => {
-  if (req.body.nombre) res.Cliente.nombre = req.body.nombre;
-  if (req.body.apellido) res.Cliente.apellido = req.body.apellido;
-  if (req.body.telefono) res.Cliente.telefono = req.body.telefono;
-
+// Actualizar un Cliente (solo si pertenece al user)
+router.put('/:id', protect, async (req, res) => {
   try {
-    const ClienteActualizado = await res.Cliente.save();
-    res.json(ClienteActualizado);
+    const clienteActualizado = await Cliente.findOneAndUpdate(
+      { _id: req.params.id, user: req.user.id },
+      req.body,
+      { new: true }
+    );
+    if (!clienteActualizado) return res.status(404).json({ message: 'Cliente no encontrado' });
+    res.json(clienteActualizado);
   } catch (error) {
     res.status(400).json({ message: 'Error al actualizar el Cliente', error });
   }
 });
 
-// Eliminar un Cliente
-
-router.delete('/:id', getCliente, async (req, res) => {
+// Eliminar un Cliente (solo si pertenece al user)
+router.delete('/:id', protect, async (req, res) => {
   try {
-    await res.Cliente.remove();
+    const clienteEliminado = await Cliente.findOneAndDelete({ _id: req.params.id, user: req.user.id });
+    if (!clienteEliminado) return res.status(404).json({ message: 'Cliente no encontrado' });
     res.json({ message: 'Cliente eliminado correctamente' });
   } catch (error) {
     res.status(500).json({ message: 'Error al eliminar el Cliente', error });
   }
 });
 
-async function getCliente(req, res, next) {
-    try {
-    const Cliente = await n.findById(req.params.id);
-    if (!Cliente) return res.status(404).json({ message: 'Cliente no encontrado' });
-    res.Cliente = Cliente;
-    next();
-  } catch (error) {
-    res.status(500).json({ message: 'Error al obtener el Cliente', error });
-  }};
-
-  export default router;
-  
+export default router;

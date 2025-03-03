@@ -1,8 +1,8 @@
-// backend/controllers/contabilidadController.js
 import MovimientoContable from '../models/MovimientoContable.js';
 
 export const crearMovimiento = async (req, res) => {
   try {
+    // Asignar el user
     const mov = new MovimientoContable({ ...req.body, user: req.user.id });
     const guardado = await mov.save();
     return res.status(201).json(guardado);
@@ -14,6 +14,7 @@ export const crearMovimiento = async (req, res) => {
 
 export const listarMovimientos = async (req, res) => {
   try {
+    // Filtrar por user
     const movs = await MovimientoContable.find({ user: req.user.id })
       .populate('idObra')
       .populate('idProveedor')

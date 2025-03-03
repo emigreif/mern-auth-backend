@@ -1,13 +1,13 @@
 import express from 'express';
 import Proveedor from '../models/Proveedor.js';
+import { protect } from '../middleware/authMiddleware.js';
 
 const router = express.Router();   
 
-// Obtener todos los proveedores
-
-router.get('/', async (req, res) => {
+// Obtener todos los proveedores del usuario
+router.get('/', protect, async (req, res) => {
   try {
-    const proveedores = await Proveedor.find();
+    const proveedores = await Proveedor.find({ user: req.user.id });
     res.json(proveedores);
   } catch (error) {
     res.status(500).json({ message: 'Error al obtener proveedores', error });
@@ -15,16 +15,20 @@ router.get('/', async (req, res) => {
 });
 
 // Obtener un proveedor por ID
-
-router.get('/:id', getProveedor, (req, res) => {
-  res.json(res.proveedor);
+router.get('/:id', protect, async (req, res) => {
+  try {
+    const proveedor = await Proveedor.findOne({ _id: req.params.id, user: req.user.id });
+    if (!proveedor) return res.status(404).json({ message: 'proveedor no encontrado' });
+    res.json(proveedor);
+  } catch (error) {
+    res.status(500).json({ message: 'Error al obtener el proveedor', error });
+  }
 });
 
 // Crear un nuevo proveedor
-
-router.post('/', async (req, res) => {
-  const proveedor = new Proveedor(req.body);
+router.post('/', protect, async (req, res) => {
   try {
+    const proveedor = new Proveedor({ ...req.body, user: req.user.id });
     const nuevoProveedor = await proveedor.save();
     res.status(201).json(nuevoProveedor);
   } catch (error) {
@@ -33,14 +37,14 @@ router.post('/', async (req, res) => {
 });
 
 // Actualizar un proveedor
-
-router.put('/:id', getProveedor, async (req, res) => {
-  if (req.body.nombre) res.proveedor.nombre = req.body.nombre;
-  if (req.body.direccion) res.proveedor.direccion = req.body.direccion;
-  if (req.body.telefono) res.proveedor.telefono = req.body.telefono;
-
+router.put('/:id', protect, async (req, res) => {
   try {
-    const proveedorActualizado = await res.proveedor.save();
+    const proveedorActualizado = await Proveedor.findOneAndUpdate(
+      { _id: req.params.id, user: req.user.id },
+      req.body,
+      { new: true }
+    );
+    if (!proveedorActualizado) return res.status(404).json({ message: 'Proveedor no encontrado' });
     res.json(proveedorActualizado);
   } catch (error) {
     res.status(400).json({ message: 'Error al actualizar el proveedor', error });
@@ -48,24 +52,14 @@ router.put('/:id', getProveedor, async (req, res) => {
 });
 
 // Eliminar un proveedor
-
-router.delete('/:id', getProveedor, async (req, res) => {
+router.delete('/:id', protect, async (req, res) => {
   try {
-    await res.proveedor.remove();
+    const eliminado = await Proveedor.findOneAndDelete({ _id: req.params.id, user: req.user.id });
+    if (!eliminado) return res.status(404).json({ message: 'Proveedor no encontrado' });
     res.json({ message: 'Proveedor eliminado correctamente' });
   } catch (error) {
     res.status(500).json({ message: 'Error al eliminar el proveedor', error });
   }
 });
-async function getProveedor(req, res, next) {
-    try {
-    const proveedor = Proveedor.findById(req.params.id);
-    if (!proveedor) return res.status(404).json({ message: 'proveedor no encontrado' });
-    res.proveedor = proveedor;
-    next();
-  } catch (error) {
-    res.status(500).json({ message: 'Error al obtener el proveedor', error });
-  }};
-
 
 export default router;

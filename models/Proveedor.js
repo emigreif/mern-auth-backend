@@ -8,6 +8,7 @@ const proveedorSchema = new mongoose.Schema({
     whatsapp: { type: String, trim: true },
     balance: { type: String, trim: true },
     rubro: [{ type: String, enum: ['Vidrio', 'Perfiles', 'Accesorios', 'Compras Generales'] }]
+,user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
 }, { timestamps: true });
 
 export default mongoose.model('Proveedor', proveedorSchema);

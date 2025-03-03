@@ -21,7 +21,7 @@ const presupuestoSchema = new mongoose.Schema({
   indiceAjuste: { type: String, default: '' }, // CAC / dólar, etc.
   cotizacion: { type: Number, default: 1 },
   
-  // ...
+  user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
 }, { timestamps: true });
 
 export default mongoose.model('Presupuesto', presupuestoSchema);

@@ -14,7 +14,7 @@ const CompraSchema = new mongoose.Schema({
   ],
   tipoCompra: { type: String, enum: ["stock", "obra", "no-productiva"], required: true },
   fechaCompra: { type: Date, default: Date.now },
-});
+  user: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
+}, { timestamps: true });
 
-const Compra = mongoose.model("Compra", CompraSchema);
-export default Compra;
+export default mongoose.model("Compra", CompraSchema);

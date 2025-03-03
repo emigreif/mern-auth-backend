@@ -1,7 +1,5 @@
-// backend/controllers/presupuestoController.js
 import Presupuesto from '../models/Presupuesto.js';
 
-// Crear presupuesto
 export const crearPresupuesto = async (req, res) => {
   try {
     const nuevo = new Presupuesto({ ...req.body, user: req.user.id });
@@ -13,9 +11,9 @@ export const crearPresupuesto = async (req, res) => {
   }
 };
 
-// Listar presupuestos del usuario
 export const listarPresupuestos = async (req, res) => {
   try {
+    // Filtrar por user
     const presupuestos = await Presupuesto.find({ user: req.user.id }).populate('idObra');
     return res.json(presupuestos);
   } catch (error) {
@@ -24,7 +22,6 @@ export const listarPresupuestos = async (req, res) => {
   }
 };
 
-// Obtener uno por ID (y verificar usuario)
 export const obtenerPresupuesto = async (req, res) => {
   try {
     const { id } = req.params;
@@ -39,11 +36,14 @@ export const obtenerPresupuesto = async (req, res) => {
   }
 };
 
-// Actualizar presupuesto
 export const actualizarPresupuesto = async (req, res) => {
   try {
     const { id } = req.params;
-    const updated = await Presupuesto.findOneAndUpdate({ _id: id, user: req.user.id }, req.body, { new: true });
+    const updated = await Presupuesto.findOneAndUpdate(
+      { _id: id, user: req.user.id },
+      req.body,
+      { new: true }
+    );
     if (!updated) {
       return res.status(404).json({ message: "Presupuesto no encontrado" });
     }
@@ -54,7 +54,6 @@ export const actualizarPresupuesto = async (req, res) => {
   }
 };
 
-// Eliminar presupuesto
 export const eliminarPresupuesto = async (req, res) => {
   try {
     const { id } = req.params;
