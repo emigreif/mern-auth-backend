@@ -7,9 +7,11 @@ import userRoutes from './routes/userRoutes.js';
 import comprasRouter from "./routes/ComprasRouter.js";
 import ObraRoutes from './routes/ObraRoutes.js';
 import clienteRoutes from './routes/ClienteRoutes.js';
+import panolRoutes from './routes/PanolRoutes.js';
 import proveedorRoutes from './routes/ProveedorRoutes.js';
 import presupuestoRoutes from './routes/PresupuestoRoutes.js';
 import contabilidadRoutes from './routes/contabilidadRoutes.js';
+import configRoutes from './routes/configRoutes.js';
 import cookieParser from 'cookie-parser';
 
 dotenv.config();
@@ -30,9 +32,11 @@ app.use((req, res, next) => {
 app.use('/api/auth', authRoutes);
 app.use('/api/user', userRoutes);
 app.use("/api/compras", comprasRouter);
+app.use('/api/configuracion', configRoutes);
 app.use('/api/contabilidad', contabilidadRoutes);
 app.use('/api/obras', ObraRoutes);
 app.use('/api/clientes', clienteRoutes);
+app.use('/api/panol', panolRoutes);
 app.use('/api/proveedores', proveedorRoutes);
 app.use('/api/presupuestos', presupuestoRoutes);
 
