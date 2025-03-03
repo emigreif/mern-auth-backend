@@ -8,7 +8,7 @@ import comprasRouter from "./routes/ComprasRouter.js";
 import ObraRoutes from './routes/ObraRoutes.js';
 import clienteRoutes from './routes/ClienteRoutes.js';
 import proveedorRoutes from './routes/ProveedorRoutes.js';
-import presupuestoRoutes from './routes/presupuestoRoutes.js';
+import presupuestoRoutes from './routes/PresupuestoRoutes.js';
 import contabilidadRoutes from './routes/contabilidadRoutes.js';
 import cookieParser from 'cookie-parser';
 
