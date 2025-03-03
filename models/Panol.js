@@ -1,4 +1,4 @@
- const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
     const herramientaSchema = new mongoose.Schema({
         descripcion: { type: String,required: true, trim: true },
@@ -31,4 +31,4 @@
         perfiles: [perfilSchema],
         accesorios: [accesorioSchema] }, { timestamps: true });
 
-    module.exports = mongoose.model('Panol', panolSchema);
+    export default mongoose.model('Panol', panolSchema);

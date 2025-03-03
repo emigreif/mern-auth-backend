@@ -8,7 +8,7 @@ const router = express.Router();
 
 router.get('/', async (req, res) => {
   try {
-    const clientes = await cliemte.find();
+    const clientes = await cliente.find();
     res.json(clientes);
   } catch (error) {
     res.status(500).json({ message: 'Error al obtener clientes', error });
@@ -24,7 +24,7 @@ router.get('/:id', getCliente, async (req, res) => {
 // Crear un nuevo cliente
 
 router.post('/', async (req, res) => {
-  const cliente = new cliemte(req.body);
+  const cliente = new n(req.body);
   try {
     const nuevoCliente = await cliente.save();
     res.status(201).json(nuevoCliente);
@@ -61,7 +61,7 @@ router.delete('/:id', getCliente, async (req, res) => {
 
 async function getCliente(req, res, next) {
     try {
-    const cliente = await cliemte.findById(req.params.id);
+    const cliente = await n.findById(req.params.id);
     if (!cliente) return res.status(404).json({ message: 'Cliente no encontrado' });
     res.cliente = cliente;
     next();
