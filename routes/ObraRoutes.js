@@ -4,75 +4,75 @@ import Obra from '../models/Obra.js';
 
 const router = express.Router();
 
-// Obtener todas las obras
+// Obtener todas las Obras
 
 router.get('/', async (req, res) => {
   try {
-    const obras = await Obra.find();
-    res.json(obras);
+    const Obras = await Obra.find();
+    res.json(Obras);
   } catch (error) {
-    res.status(500).json({ message: 'Error al obtener obras', error });
+    res.status(500).json({ message: 'Error al obtener Obras', error });
   }
 });
 
-// Obtener una obra por id
+// Obtener una Obra por id
 
 router.get('/:id', getObra, (req, res) => {
-  res.json(res.obra);
+  res.json(res.Obra);
 });
 
-// Crear una nueva obra
+// Crear una nueva Obra
 
 router.post('/', async (req, res) => {
-  const obra = new Obra(req.body);
+  const Obra = new Obra(req.body);
 
   try {
-    const newObra = await obra.save();
+    const newObra = await Obra.save();
     res.status(201).json(newObra);
   } catch (error) {
-    res.status(400).json({ message: 'Error al crear obra', error });
+    res.status(400).json({ message: 'Error al crear Obra', error });
   }
 });
 
-// Actualizar una obra
+// Actualizar una Obra
 
 router.put('/:id', getObra, async (req, res) => {
-  if (req.body.nombre) res.obra.nombre = req.body.nombre;
-  if (req.body.descripcion) res.obra.descripcion = req.body.descripcion;
-  if (req.body.anio) res.obra.anio = req.body.anio;
+  if (req.body.nombre) res.Obra.nombre = req.body.nombre;
+  if (req.body.descripcion) res.Obra.descripcion = req.body.descripcion;
+  if (req.body.anio) res.Obra.anio = req.body.anio;
 
   try {
-    const updatedObra = await res.obra.save();
+    const updatedObra = await res.Obra.save();
     res.json(updatedObra);
   } catch (error) {
-    res.status(400).json({ message: 'Error al actualizar obra', error });
+    res.status(400).json({ message: 'Error al actualizar Obra', error });
   }
 });
 
-// Eliminar una obra
+// Eliminar una Obra
 
 router.delete('/:id', getObra, async (req, res) => {
   try {
-    await res.obra.remove();
+    await res.Obra.remove();
     res.json({ message: 'Obra eliminada correctamente' });
   } catch (error) {
-    res.status(500).json({ message: 'Error al eliminar obra', error });
+    res.status(500).json({ message: 'Error al eliminar Obra', error });
   }
 });
 
-// Middleware para obtener una obra por id
+// Middleware para obtener una Obra por id
 
 async function getObra(req, res, next) {
-  let obra;
+  let Obra;
 
   try {
-    obra = await Obra.findById(req.params.id);
-    if (!obra) return res.status(404).json({ message: 'Obra no encontrada' });
+    Obra = await Obra.findById(req.params.id);
+    if (!Obra) return res.status(404).json({ message: 'Obra no encontrada' });
   } catch (error) {
-    return res.status(500).json({ message: 'Error al obtener obra', error });
+    return res.status(500).json({ message: 'Error al obtener Obra', error });
   }
 
-  res.obra = obra;
+  res.Obra = Obra;
   next();
 }
 

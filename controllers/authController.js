@@ -4,8 +4,6 @@ import jwt from 'jsonwebtoken';
 
 export const register = async (req, res) => {
   try {
-    console.log("📩 Datos recibidos en el backend:", req.body); // <-- Verifica qué datos llegan
-
     const {
       email,
       password,
@@ -34,7 +32,6 @@ export const register = async (req, res) => {
     // 3️⃣ Chequear si ya existe un usuario con el mismo email
     const existingUser = await User.findOne({ email });
     if (existingUser) {
-      console.log("⚠️ Usuario ya existe:", email);
       return res.status(400).json({ message: "El usuario ya existe" });
     }
 
@@ -58,45 +55,53 @@ export const register = async (req, res) => {
     });
 
     await newUser.save();
-    console.log("✅ Usuario creado con éxito:", newUser);
+
     return res.status(201).json({ message: "Usuario registrado con éxito" });
 
   } catch (error) {
-    console.error("❌ Error en registro:", error);  // Agrega detalles del error en consola
-    return res.status(500).json({ 
-      message: 'Error registrando usuario', 
-      error: error.message || error 
+    return res.status(500).json({
+      message: 'Error registrando usuario',
+      error: error.message || error
     });
   }
 };
 
-// ==============================
-// ✅ FUNCIÓN LOGIN CORREGIDA
-// ==============================
+
 export const login = async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    // 1️⃣ Buscar usuario por email
     const user = await User.findOne({ email });
     if (!user) {
       return res.status(400).json({ message: "Credenciales inválidas" });
     }
 
-    // 2️⃣ Comparar contraseña ingresada con la almacenada
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
       return res.status(400).json({ message: "Credenciales inválidas" });
     }
-
-    // 3️⃣ Generar JWT con el ID del usuario
     const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: "1h" });
 
-    // 4️⃣ Respuesta con el token y usuario
     return res.json({ token, user });
 
   } catch (error) {
-    console.error("❌ Error en login:", error);
     return res.status(500).json({ message: "Error en el servidor", error: error.message });
+  }
+};
+
+export const logout = (req, res) => {
+  try {
+    // Si guardas JWT en una cookie:
+    // - Limpia la cookie con un maxAge = 0 o usando res.clearCookie
+    res.clearCookie('token', { httpOnly: true, secure: true, sameSite: 'None' });
+    
+    // Si guardas el token en localStorage del frontend, 
+    // aquí realmente no hay mucho que hacer del lado del servidor 
+    // más que notificar que se está "deslogueando".
+    
+    return res.status(200).json({ message: 'Logout exitoso' });
+  } catch (error) {
+    console.error('Error al hacer logout', error);
+    return res.status(500).json({ message: 'Error en el servidor' });
   }
 };
