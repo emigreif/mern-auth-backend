@@ -4,7 +4,7 @@ import Presupuesto from '../models/Presupuesto.js';
 // Crear presupuesto
 export const crearPresupuesto = async (req, res) => {
   try {
-    const nuevo = new Presupuesto(req.body);
+    const nuevo = new Presupuesto({ ...req.body, user: req.user.id });
     const guardado = await nuevo.save();
     return res.status(201).json(guardado);
   } catch (error) {
@@ -13,10 +13,10 @@ export const crearPresupuesto = async (req, res) => {
   }
 };
 
-// Listar todos
+// Listar presupuestos del usuario
 export const listarPresupuestos = async (req, res) => {
   try {
-    const presupuestos = await Presupuesto.find().populate('idObra');
+    const presupuestos = await Presupuesto.find({ user: req.user.id }).populate('idObra');
     return res.json(presupuestos);
   } catch (error) {
     console.error("Error al listar presupuestos:", error);
@@ -24,11 +24,11 @@ export const listarPresupuestos = async (req, res) => {
   }
 };
 
-// Obtener uno por ID
+// Obtener uno por ID (y verificar usuario)
 export const obtenerPresupuesto = async (req, res) => {
   try {
     const { id } = req.params;
-    const presupuesto = await Presupuesto.findById(id).populate('idObra');
+    const presupuesto = await Presupuesto.findOne({ _id: id, user: req.user.id }).populate('idObra');
     if (!presupuesto) {
       return res.status(404).json({ message: "Presupuesto no encontrado" });
     }
@@ -39,13 +39,11 @@ export const obtenerPresupuesto = async (req, res) => {
   }
 };
 
-// Actualizar
+// Actualizar presupuesto
 export const actualizarPresupuesto = async (req, res) => {
   try {
     const { id } = req.params;
-    const updated = await Presupuesto.findByIdAndUpdate(id, req.body, {
-      new: true
-    });
+    const updated = await Presupuesto.findOneAndUpdate({ _id: id, user: req.user.id }, req.body, { new: true });
     if (!updated) {
       return res.status(404).json({ message: "Presupuesto no encontrado" });
     }
@@ -56,11 +54,11 @@ export const actualizarPresupuesto = async (req, res) => {
   }
 };
 
-// Eliminar
+// Eliminar presupuesto
 export const eliminarPresupuesto = async (req, res) => {
   try {
     const { id } = req.params;
-    const eliminado = await Presupuesto.findByIdAndDelete(id);
+    const eliminado = await Presupuesto.findOneAndDelete({ _id: id, user: req.user.id });
     if (!eliminado) {
       return res.status(404).json({ message: "Presupuesto no encontrado" });
     }

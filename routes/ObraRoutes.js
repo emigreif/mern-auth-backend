@@ -1,79 +1,66 @@
-
+// backend/routes/ObraRoutes.js
 import express from 'express';
 import Obra from '../models/Obra.js';
+import { protect } from '../middleware/authMiddleware.js';
 
 const router = express.Router();
 
-// Obtener todas las Obras
-
-router.get('/', async (req, res) => {
+// Obtener todas las Obras del usuario logueado
+router.get('/', protect, async (req, res) => {
   try {
-    const Obras = await Obra.find();
-    res.json(Obras);
+    const obras = await Obra.find({ user: req.user.id });
+    res.json(obras);
   } catch (error) {
     res.status(500).json({ message: 'Error al obtener Obras', error });
   }
 });
 
-// Obtener una Obra por id
-
-router.get('/:id', getObra, (req, res) => {
-  res.json(res.Obra);
+// Obtener una Obra por id (verifica que pertenezca al usuario)
+router.get('/:id', protect, async (req, res) => {
+  try {
+    const obra = await Obra.findOne({ _id: req.params.id, user: req.user.id });
+    if (!obra) return res.status(404).json({ message: 'Obra no encontrada' });
+    res.json(obra);
+  } catch (error) {
+    res.status(500).json({ message: 'Error al obtener Obra', error });
+  }
 });
 
-// Crear una nueva Obra
-
-router.post('/', async (req, res) => {
-  const Obra = new Obra(req.body);
-
+// Crear una nueva Obra asignándole el usuario logueado
+router.post('/', protect, async (req, res) => {
   try {
-    const newObra = await Obra.save();
+    const obra = new Obra({ ...req.body, user: req.user.id });
+    const newObra = await obra.save();
     res.status(201).json(newObra);
   } catch (error) {
     res.status(400).json({ message: 'Error al crear Obra', error });
   }
 });
 
-// Actualizar una Obra
-
-router.put('/:id', getObra, async (req, res) => {
-  if (req.body.nombre) res.Obra.nombre = req.body.nombre;
-  if (req.body.descripcion) res.Obra.descripcion = req.body.descripcion;
-  if (req.body.anio) res.Obra.anio = req.body.anio;
-
+// Actualizar una Obra (asegurarse que sea del usuario)
+router.put('/:id', protect, async (req, res) => {
   try {
-    const updatedObra = await res.Obra.save();
+    const updatedObra = await Obra.findOneAndUpdate(
+      { _id: req.params.id, user: req.user.id },
+      req.body,
+      { new: true }
+    );
+    if (!updatedObra) return res.status(404).json({ message: 'Obra no encontrada' });
     res.json(updatedObra);
   } catch (error) {
     res.status(400).json({ message: 'Error al actualizar Obra', error });
   }
 });
 
-// Eliminar una Obra
-
-router.delete('/:id', getObra, async (req, res) => {
+// Eliminar una Obra (solo si pertenece al usuario)
+router.delete('/:id', protect, async (req, res) => {
   try {
-    await res.Obra.remove();
+    const deleted = await Obra.findOneAndDelete({ _id: req.params.id, user: req.user.id });
+    if (!deleted) return res.status(404).json({ message: 'Obra no encontrada' });
     res.json({ message: 'Obra eliminada correctamente' });
   } catch (error) {
     res.status(500).json({ message: 'Error al eliminar Obra', error });
   }
 });
-
-// Middleware para obtener una Obra por id
-
-async function getObra(req, res, next) {
-  let Obra;
-
-  try {
-    Obra = await Obra.findById(req.params.id);
-    if (!Obra) return res.status(404).json({ message: 'Obra no encontrada' });
-  } catch (error) {
-    return res.status(500).json({ message: 'Error al obtener Obra', error });
-  }
-
-  res.Obra = Obra;
-  next();
-}
 
 export default router;
