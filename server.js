@@ -4,7 +4,10 @@ import cors from 'cors';
 import connectDB from './config/db.js';
 import authRoutes from './routes/authRoutes.js';
 import userRoutes from './routes/userRoutes.js';
-import comprasRouter from "./routes/compras.js"
+import comprasRouter from "./routes/compras.js";
+import obraRoutes from './routes/ObraRoutes.js';
+import clienteRoutes from './routes/ClienteRoutes.js';
+import proveedorRoutes from './routes/ProveedorRoutes.js';
 import cookieParser from 'cookie-parser';
 
 dotenv.config();
@@ -35,6 +38,9 @@ app.use((req, res, next) => {
 app.use('/api/auth', authRoutes);
 app.use('/api/user', userRoutes);
 app.use("/api/compras", comprasRouter);
+app.use('/api/obras', obraRoutes);
+app.use('/api/clientes', clienteRoutes);
+app.use('/api/proveedores', proveedorRoutes);
 
 // Iniciar el servidor
 const PORT = process.env.PORT || 5000;

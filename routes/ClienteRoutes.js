@@ -1,72 +1,72 @@
 
 import express from 'express';
-import cliente from '../models/Cliente.js';
+import Cliente from '../models/Cliente.js';
 
 const router = express.Router();    
 
-// Obtener todos los clientes
+// Obtener todos los Clientes
 
 router.get('/', async (req, res) => {
   try {
-    const clientes = await cliente.find();
-    res.json(clientes);
+    const Clientes = await Cliente.find();
+    res.json(Clientes);
   } catch (error) {
-    res.status(500).json({ message: 'Error al obtener clientes', error });
+    res.status(500).json({ message: 'Error al obtener Clientes', error });
   }
 });
 
-// Obtener un cliente por ID
+// Obtener un Cliente por ID
 
 router.get('/:id', getCliente, async (req, res) => {
-  res.json(res.cliente);
+  res.json(res.Cliente);
 });
 
-// Crear un nuevo cliente
+// Crear un nuevo Cliente
 
 router.post('/', async (req, res) => {
-  const cliente = new n(req.body);
+  const Cliente = new n(req.body);
   try {
-    const nuevoCliente = await cliente.save();
+    const nuevoCliente = await Cliente.save();
     res.status(201).json(nuevoCliente);
   } catch (error) {
-    res.status(400).json({ message: 'Error al crear el cliente', error });
+    res.status(400).json({ message: 'Error al crear el Cliente', error });
   }
 });
 
-// Actualizar un cliente
+// Actualizar un Cliente
 
 router.put('/:id', getCliente, async (req, res) => {
-  if (req.body.nombre) res.cliente.nombre = req.body.nombre;
-  if (req.body.apellido) res.cliente.apellido = req.body.apellido;
-  if (req.body.telefono) res.cliente.telefono = req.body.telefono;
+  if (req.body.nombre) res.Cliente.nombre = req.body.nombre;
+  if (req.body.apellido) res.Cliente.apellido = req.body.apellido;
+  if (req.body.telefono) res.Cliente.telefono = req.body.telefono;
 
   try {
-    const clienteActualizado = await res.cliente.save();
-    res.json(clienteActualizado);
+    const ClienteActualizado = await res.Cliente.save();
+    res.json(ClienteActualizado);
   } catch (error) {
-    res.status(400).json({ message: 'Error al actualizar el cliente', error });
+    res.status(400).json({ message: 'Error al actualizar el Cliente', error });
   }
 });
 
-// Eliminar un cliente
+// Eliminar un Cliente
 
 router.delete('/:id', getCliente, async (req, res) => {
   try {
-    await res.cliente.remove();
+    await res.Cliente.remove();
     res.json({ message: 'Cliente eliminado correctamente' });
   } catch (error) {
-    res.status(500).json({ message: 'Error al eliminar el cliente', error });
+    res.status(500).json({ message: 'Error al eliminar el Cliente', error });
   }
 });
 
 async function getCliente(req, res, next) {
     try {
-    const cliente = await n.findById(req.params.id);
-    if (!cliente) return res.status(404).json({ message: 'Cliente no encontrado' });
-    res.cliente = cliente;
+    const Cliente = await n.findById(req.params.id);
+    if (!Cliente) return res.status(404).json({ message: 'Cliente no encontrado' });
+    res.Cliente = Cliente;
     next();
   } catch (error) {
-    res.status(500).json({ message: 'Error al obtener el cliente', error });
+    res.status(500).json({ message: 'Error al obtener el Cliente', error });
   }};
 
   export default router;

@@ -1,6 +1,6 @@
 
 import express from 'express';
-import Obra from '../models/obra';
+import Obra from '../models/Obra.js';
 
 const router = express.Router();
 

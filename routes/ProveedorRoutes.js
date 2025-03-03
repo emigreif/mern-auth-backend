@@ -1,5 +1,5 @@
 import express from 'express';
-import Proveedores from './proveedores.js';
+import Proveedor from '../models/Proveedor.js';
 
 const router = express.Router();   
 
@@ -7,7 +7,7 @@ const router = express.Router();
 
 router.get('/', async (req, res) => {
   try {
-    const proveedores = await Proveedores.find();
+    const proveedores = await Proveedor.find();
     res.json(proveedores);
   } catch (error) {
     res.status(500).json({ message: 'Error al obtener proveedores', error });
@@ -23,7 +23,7 @@ router.get('/:id', getProveedor, (req, res) => {
 // Crear un nuevo proveedor
 
 router.post('/', async (req, res) => {
-  const proveedor = new Proveedores(req.body);
+  const proveedor = new Proveedor(req.body);
   try {
     const nuevoProveedor = await proveedor.save();
     res.status(201).json(nuevoProveedor);
@@ -59,7 +59,7 @@ router.delete('/:id', getProveedor, async (req, res) => {
 });
 async function getProveedor(req, res, next) {
     try {
-    const proveedor = await cliemte.findById(req.params.id);
+    const proveedor = Proveedor.findById(req.params.id);
     if (!proveedor) return res.status(404).json({ message: 'proveedor no encontrado' });
     res.proveedor = proveedor;
     next();
