@@ -1,0 +1,29 @@
+# Node modules
+node_modules/
+
+# Archivos de entorno sensibles
+.env
+.env.*  # Si manejas .env.development .env.production, etc.
+
+# Logs
+*.log
+npm-debug.log*
+
+# Archivos de bloqueos de versiones
+package-lock.json
+yarn.lock
+
+# Carpetas de build (si compilas algo con Babel o TypeScript)
+dist/
+build/
+
+# Directorios de cobertura de tests
+coverage/
+
+# Config propia
+.vscode/
+.idea/
+
+# Otros (cache, DS_Store, etc.)
+.DS_Store
+.cache/
