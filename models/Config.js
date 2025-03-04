@@ -15,7 +15,7 @@ const configSchema = new mongoose.Schema({
   // Agrega otros campos de configuración que necesites, por ejemplo:
   indicesSaldo: { type: Number, default: 1.05 },
   costoHora: { type: Number, default: 2000 },
-  // ...
+  user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true }
 }, { timestamps: true });
 
 export default mongoose.model('Config', configSchema);

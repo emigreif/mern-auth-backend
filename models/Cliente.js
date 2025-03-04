@@ -1,6 +1,7 @@
 import mongoose from 'mongoose';
 
 const clienteSchema = new mongoose.Schema({
+  tipoCliente: { type: String, enum: ['particular', 'empresa'], required: true },
   nombre: { type: String, required: true, trim: true },
   apellido: { type: String, required: true, trim: true },
   empresa: { type: String, trim: true },
@@ -9,14 +10,10 @@ const clienteSchema = new mongoose.Schema({
   direccion: {
     calle: { type: String, required: true, trim: true },
     ciudad: { type: String, required: true, trim: true },
-    localidad: { type: String, required: true, trim: true },
-    pais: { type: String, required: true, trim: true }
   },
-  tipoCliente: { type: String, enum: ['particular', 'empresa'], required: true },
   obras: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Obra' }],
   notas: { type: String, trim: true },
 
-  // Campo que asocia este registro al usuario que lo creó
   user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true }
 }, { timestamps: true });
 

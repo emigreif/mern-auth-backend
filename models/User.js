@@ -11,9 +11,8 @@ const UserSchema = new mongoose.Schema({
   cantidadUsuarios: { type: Number, default: 1 },
   direccion: { type: String, default: '' },
   localidad: { type: String, default: '' },
-  codigoPostal: { type: String, default: '' }
-}, 
-{ timestamps: true });
-
+  codigoPostal: { type: String, default: '' },
+  user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true }
+}, { timestamps: true });
 
 export default mongoose.model('User', UserSchema);

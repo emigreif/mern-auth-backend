@@ -16,6 +16,7 @@ const movimientoSchema = new mongoose.Schema({
   idProveedor: { type: mongoose.Schema.Types.ObjectId, ref: 'Proveedor' },
   idCliente: { type: mongoose.Schema.Types.ObjectId, ref: 'Cliente' },
   user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true }
 }, { timestamps: true });
 
 export default mongoose.model('MovimientoContable', movimientoSchema);
