@@ -1,6 +1,6 @@
 import express from "express";
 import { protect } from "../middleware/authMiddleware.js";
-import { CompraAluminio, CompraVidrios, CompraAccesorios } from "../models/CompraModels.js";
+import { CompraAluminio, CompraVidrios, CompraAccesorios } from "../models/Compra.js";
 
 const router = express.Router();
 
