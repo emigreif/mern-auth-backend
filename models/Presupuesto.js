@@ -2,16 +2,21 @@
 import mongoose from 'mongoose';
 
 const presupuestoSchema = new mongoose.Schema({
+  idObra: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Obra',
+    required: false
+  },
   nombreObra: { type: String, required: true, trim: true },
+  cliente: { type: String, required: true, trim: true },
+  estado: { type: String, enum: ['pendiente', 'aprobado', 'perdido'], default: 'pendiente' },
+  // Si el presupuesto se pierde, se indicará contra qué empresa se perdió
+  empresaPerdida: { type: String, default: '' },
   totalPresupuestado: { type: Number, default: 0 },
   totalConFactura: { type: Number, default: 0 },
   totalSinFactura: { type: Number, default: 0 },
   indiceCAC: { type: String, default: '' },
-  estado: { type: String, enum: ['pendiente', 'aprobado', 'perdido'], default: 'pendiente' },
   direccion: { type: String, required: true, trim: true },
-  cliente: { type: String, required: true, trim: true },
-  // Solo se completa si el estado es 'perdido'
-  empresaPerdida: { type: String, default: '' },
   fechaEntrega: { type: Date },
   descripcion: { type: String, trim: true },
   user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true }
