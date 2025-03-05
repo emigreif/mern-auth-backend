@@ -1,3 +1,4 @@
+// backend/routes/presupuestoRoutes.js
 import express from 'express';
 import {
   crearPresupuesto,
@@ -12,7 +13,6 @@ const router = express.Router();
 
 router.get('/', protect, listarPresupuestos);
 router.post('/', protect, crearPresupuesto);
-
 router.get('/:id', protect, obtenerPresupuesto);
 router.put('/:id', protect, actualizarPresupuesto);
 router.delete('/:id', protect, eliminarPresupuesto);
