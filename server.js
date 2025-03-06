@@ -4,6 +4,7 @@ import cors from 'cors';
 import connectDB from './config/db.js';
 import asocioanRoutes from './routes/asociacionRoutes.js';
 import authRoutes from './routes/authRoutes.js';
+import calendarioRoutes from "./routes/calendarioRoutes.js"
 import clienteRoutes from './routes/ClienteRoutes.js';
 import comprasRouter from "./routes/ComprasRouter.js";
 import configRoutes from './routes/configRoutes.js';
@@ -35,6 +36,7 @@ app.use((req, res, next) => {
 
 app.use('/api/auth', authRoutes);
 app.use('/api/user', userRoutes);
+app.use('/api/calendario', calendarioRoutes);
 app.use("/api/compras", comprasRouter);
 app.use('/api/configuracion', configRoutes);
 app.use('/api/contabilidad', contabilidadRoutes);
