@@ -13,8 +13,8 @@ import ObraRoutes from './routes/ObraRoutes.js';
 import panolRoutes from './routes/PanolRoutes.js';
 import presupuestoRoutes from './routes/PresupuestoRoutes.js';
 import proveedorRoutes from './routes/ProveedorRoutes.js';
-import tipologiasRoutes from './routes/TipologiaRoutes.js';
-import ubicacionRoutes from './routes/UbicacionRoutes.js';
+import tipologiasRoutes from './routes/tipologiasRoutes.js';
+import ubicacionRoutes from './routes/ubicacionRoutes.js';
 import userRoutes from './routes/userRoutes.js';
 import cookieParser from 'cookie-parser';
 
