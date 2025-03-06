@@ -6,7 +6,7 @@ import authRoutes from './routes/authRoutes.js';
 import userRoutes from './routes/userRoutes.js';
 import comprasRouter from "./routes/ComprasRouter.js";
 import ObraRoutes from './routes/ObraRoutes.js';
-import medicionRoutes from './routes/MedicionRoutes.js';
+import medicionRoutes from './routes/medicionRoutes.js';
 import asocioanRoutes from './routes/AsociacionRoutes.js';
 import tipologiasRoutes from './routes/TipologiaRoutes.js';
 import ubicacionRoutes from './routes/UbicacionRoutes.js';
