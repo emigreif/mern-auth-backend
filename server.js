@@ -37,11 +37,11 @@ app.use((req, res, next) => {
 app.use('/api/auth', authRoutes);
 app.use('/api/user', userRoutes);
 app.use('/api/calendario', calendarioRoutes);
+app.use('/api/clientes', clienteRoutes);
 app.use("/api/compras", comprasRouter);
 app.use('/api/configuracion', configRoutes);
 app.use('/api/contabilidad', contabilidadRoutes);
 app.use('/api/obras', ObraRoutes);
-app.use('/api/clientes', clienteRoutes);
 app.use('/api/panol', panolRoutes);
 app.use('/api/mediciones', medicionRoutes);
 app.use('/api/asociaciones', asocioanRoutes);
