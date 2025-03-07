@@ -15,7 +15,6 @@ const presupuestoSchema = new mongoose.Schema({
   totalPresupuestado: { type: Number, default: 0 },
   totalConFactura: { type: Number, default: 0 },
   totalSinFactura: { type: Number, default: 0 },
-  indiceCAC: { type: String, default: '' },
   direccion: { type: String, required: true, trim: true },
   fechaEntrega: { type: Date },
   descripcion: { type: String, trim: true },
