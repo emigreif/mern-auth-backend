@@ -1,5 +1,6 @@
 // backend/models/User.js
 import mongoose from 'mongoose';
+
 const UserSchema = new mongoose.Schema({
   email: { type: String, required: true, unique: true },
   password: { type: String, required: true },
@@ -12,7 +13,11 @@ const UserSchema = new mongoose.Schema({
   direccion: { type: String, default: '' },
   localidad: { type: String, default: '' },
   codigoPostal: { type: String, default: '' },
-  user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true }
-}, { timestamps: true });
+
+  // Campos para restablecimiento de contraseña
+  resetPasswordToken: { type: String },
+  resetPasswordExpires: { type: Date }
+}, 
+{ timestamps: true });
 
 export default mongoose.model('User', UserSchema);
