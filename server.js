@@ -6,6 +6,7 @@ import cookieParser from "cookie-parser";
 
 // ✅ Importamos las rutas
 import authRoutes from "./routes/authRoutes.js";
+import asociacionRoutes from "./routes/asociacionRoutes.js";
 import calendarioRoutes from "./routes/calendarioRoutes.js";
 import clienteRoutes from "./routes/clienteRoutes.js";
 import comprasRoutes from "./routes/comprasRoutes.js";
@@ -40,6 +41,7 @@ app.use((req, res, next) => {
 
 // ✅ Definir las rutas
 app.use("/api/auth", authRoutes);
+app.use("/api/asociacion", asociacionRoutes);
 app.use("/api/user", userRoutes);
 app.use("/api/calendario", calendarioRoutes);
 app.use("/api/clientes", clienteRoutes);
