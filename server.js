@@ -12,6 +12,7 @@ import clienteRoutes from "./routes/ClienteRoutes.js";
 import comprasRoutes from "./routes/ComprasRoutes.js";
 import configRoutes from "./routes/configRoutes.js";
 import contabilidadRoutes from "./routes/contabilidadRoutes.js";
+import { errorHandler } from "./middleware/errorHandler.js";
 import medicionRoutes from "./routes/medicionRoutes.js";
 import obraRoutes from "./routes/ObraRoutes.js";
 import panolRoutes from "./routes/PanolRoutes.js";
@@ -31,6 +32,7 @@ app.use(cors({
   credentials: true
 }));
 app.use(cookieParser());
+
 
 // ✅ Middleware de LOG para ver las solicitudes
 app.use((req, res, next) => {
@@ -55,7 +57,7 @@ app.use("/api/tipologias", tipologiaRoutes);
 app.use("/api/ubicaciones", ubicacionRoutes);
 app.use("/api/proveedores", proveedorRoutes);
 app.use("/api/presupuestos", presupuestoRoutes);
-
+app.use(errorHandler);
 // ✅ Puerto y arranque del servidor
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`✅ Server running on port ${PORT}`));
