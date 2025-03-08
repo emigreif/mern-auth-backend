@@ -8,7 +8,7 @@ import cookieParser from "cookie-parser";
 import authRoutes from "./routes/authRoutes.js";
 import asociacionRoutes from "./routes/asociacionRoutes.js";
 import calendarioRoutes from "./routes/calendarioRoutes.js";
-import clienteRoutes from "./routes/clienteRoutes.js";
+import clienteRoutes from "./routes/ClienteRoutes.js";
 import comprasRoutes from "./routes/comprasRoutes.js";
 import configRoutes from "./routes/configRoutes.js";
 import contabilidadRoutes from "./routes/contabilidadRoutes.js";
