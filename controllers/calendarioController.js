@@ -1,18 +1,18 @@
 import Obra from "../models/Obra.js";
 
-// 📌 Listar todos los calendarios con opción de filtrar por obra o actividad
+// 📌 Obtener todos los eventos del calendario con opción de filtrar por obra o actividad
 export const listarCalendarios = async (req, res) => {
   try {
     const { obraId, actividad } = req.query;
 
-    let query = {};
+    let query = { user: req.user.id };
 
-    // 📌 Filtrar por obra específica si obraId está presente
+    // 📌 Filtrar por una obra específica si obraId está presente
     if (obraId) {
       query._id = obraId;
     }
 
-    // 📌 Obtener todas las obras que cumplen con el filtro
+    // 📌 Obtener todas las obras del usuario con los filtros aplicados
     const obras = await Obra.find(query);
 
     if (!obras.length) {
@@ -23,22 +23,21 @@ export const listarCalendarios = async (req, res) => {
     let eventos = [];
 
     obras.forEach((obra) => {
-      if (!obra.calendario) return; // Si no tiene calendario, saltamos esta obra
+      if (!obra.fechaMedicion) return; // Si no tiene fechas definidas, se ignora
 
-      // Lista de actividades que se pueden filtrar
       const actividadesDisponibles = {
-        medicion: { title: "Medición", date: obra.calendario.medicion, color: "blue" },
-        compraVidrios: { title: "Compra Vidrios", date: obra.calendario.compraVidrios, color: "green" },
-        compraPerfiles: { title: "Compra Perfiles", date: obra.calendario.compraPerfiles, color: "green" },
-        compraAccesorios: { title: "Compra Accesorios", date: obra.calendario.compraAccesorios, color: "green" },
-        inicioProduccion: { title: "Inicio Producción", date: obra.calendario.inicioProduccion, color: "yellow" },
-        inicioCorte: { title: "Inicio Corte", date: obra.calendario.inicioCorte, color: "yellow" },
-        inicioArmado: { title: "Inicio Armado", date: obra.calendario.inicioArmado, color: "yellow" },
-        inicioEnvidriado: { title: "Inicio Envidriado", date: obra.calendario.inicioEnvidriado, color: "yellow" },
-        finProduccion: { title: "Fin Producción", date: obra.calendario.finProduccion, color: "orange" },
-        entrega: { title: "Entrega", date: obra.calendario.entrega, color: "red" },
-        montaje: { title: "Montaje", date: obra.calendario.montaje, color: "red" },
-        finalObra: { title: "Final de Obra", date: obra.calendario.finalObra, color: "gray" }
+        medicion: { title: "Medición", date: obra.fechaMedicion, color: "blue" },
+        compraVidrios: { title: "Compra Vidrios", date: obra.fechaCompraVidrios, color: "green" },
+        compraPerfiles: { title: "Compra Perfiles", date: obra.fechaCompraPerfiles, color: "green" },
+        compraAccesorios: { title: "Compra Accesorios", date: obra.fechaCompraAccesorios, color: "green" },
+        inicioProduccion: { title: "Inicio Producción", date: obra.fechaInicioProduccion, color: "yellow" },
+        inicioCorte: { title: "Inicio Corte", date: obra.fechaInicioCortePerfiles, color: "yellow" },
+        inicioArmado: { title: "Inicio Armado", date: obra.fechaInicioArmado, color: "yellow" },
+        inicioEnvidriado: { title: "Inicio Envidriado", date: obra.fechaEnvidriado, color: "yellow" },
+        finProduccion: { title: "Fin Producción", date: obra.fechaFinProduccion, color: "orange" },
+        entrega: { title: "Entrega", date: obra.fechaEntrega, color: "red" },
+        montaje: { title: "Montaje", date: obra.fechaInicioMontaje, color: "red" },
+        finalObra: { title: "Final de Obra", date: obra.fechaFinalObra, color: "gray" }
       };
 
       // 📌 Si hay un filtro de actividad, solo agregar esa actividad
@@ -65,5 +64,108 @@ export const listarCalendarios = async (req, res) => {
     res.json(eventos);
   } catch (error) {
     res.status(500).json({ message: "Error al listar los calendarios", error: error.message });
+  }
+};
+
+// 📌 Generar automáticamente las fechas del calendario en base a la obra
+export const generarCalendarioDesdeObra = async (req, res) => {
+  try {
+    const { obraId } = req.body;
+
+    const obra = await Obra.findOne({ _id: obraId, user: req.user.id });
+
+    if (!obra) {
+      return res.status(404).json({ message: "Obra no encontrada" });
+    }
+
+    if (!obra.fechaEntrega) {
+      return res.status(400).json({ message: "La obra no tiene una fecha de entrega definida." });
+    }
+
+    const fechaBase = new Date(obra.fechaEntrega);
+
+    obra.fechaMedicion = new Date(fechaBase.setDate(fechaBase.getDate() - 45));
+    obra.fechaCompraVidrios = new Date(fechaBase.setDate(fechaBase.getDate() + 5));
+    obra.fechaCompraPerfiles = new Date(fechaBase.setDate(fechaBase.getDate() + 5));
+    obra.fechaCompraAccesorios = new Date(fechaBase.setDate(fechaBase.getDate() + 5));
+    obra.fechaInicioProduccion = new Date(fechaBase.setDate(fechaBase.getDate() + 5));
+    obra.fechaInicioCortePerfiles = new Date(fechaBase.setDate(fechaBase.getDate() + 5));
+    obra.fechaInicioArmado = new Date(fechaBase.setDate(fechaBase.getDate() + 5));
+    obra.fechaEnvidriado = new Date(fechaBase.setDate(fechaBase.getDate() + 5));
+    obra.fechaFinProduccion = new Date(fechaBase.setDate(fechaBase.getDate() + 5));
+    obra.fechaInicioMontaje = new Date(fechaBase.setDate(fechaBase.getDate() + 5));
+    obra.fechaFinalObra = new Date(fechaBase.setDate(fechaBase.getDate() + 5));
+
+    await obra.save();
+
+    res.json({ message: "Calendario generado correctamente", obra });
+  } catch (error) {
+    res.status(500).json({ message: "Error al generar el calendario", error: error.message });
+  }
+};
+
+// 📌 Obtener un calendario específico de una obra
+export const obtenerCalendario = async (req, res) => {
+  try {
+    const { obraId } = req.params;
+    const obra = await Obra.findOne({ _id: obraId, user: req.user.id });
+
+    if (!obra) {
+      return res.status(404).json({ message: "Obra no encontrada" });
+    }
+
+    res.json(obra);
+  } catch (error) {
+    res.status(500).json({ message: "Error al obtener el calendario", error: error.message });
+  }
+};
+
+// 📌 Actualizar manualmente un calendario
+export const actualizarCalendario = async (req, res) => {
+  try {
+    const { obraId } = req.params;
+    const obraActualizada = await Obra.findOneAndUpdate(
+      { _id: obraId, user: req.user.id },
+      req.body,
+      { new: true }
+    );
+
+    if (!obraActualizada) {
+      return res.status(404).json({ message: "Calendario no encontrado" });
+    }
+
+    res.json({ message: "Calendario actualizado correctamente", obra: obraActualizada });
+  } catch (error) {
+    res.status(500).json({ message: "Error al actualizar el calendario", error: error.message });
+  }
+};
+
+// 📌 Eliminar un calendario (borrar fechas de una obra)
+export const eliminarCalendario = async (req, res) => {
+  try {
+    const { obraId } = req.params;
+    const obra = await Obra.findOne({ _id: obraId, user: req.user.id });
+
+    if (!obra) {
+      return res.status(404).json({ message: "Obra no encontrada" });
+    }
+
+    obra.fechaMedicion = null;
+    obra.fechaCompraVidrios = null;
+    obra.fechaCompraPerfiles = null;
+    obra.fechaCompraAccesorios = null;
+    obra.fechaInicioProduccion = null;
+    obra.fechaInicioCortePerfiles = null;
+    obra.fechaInicioArmado = null;
+    obra.fechaEnvidriado = null;
+    obra.fechaFinProduccion = null;
+    obra.fechaInicioMontaje = null;
+    obra.fechaFinalObra = null;
+
+    await obra.save();
+
+    res.json({ message: "Calendario eliminado correctamente", obra });
+  } catch (error) {
+    res.status(500).json({ message: "Error al eliminar el calendario", error: error.message });
   }
 };
