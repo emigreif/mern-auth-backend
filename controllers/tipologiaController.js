@@ -1,11 +1,9 @@
 import Tipologia from "../models/Tipologia.js";
-import multer from "multer";
-import xlsx from "xlsx";
+import mongoose from "mongoose";
 
-// Configurar `multer` para manejar la subida de archivos
-const upload = multer({ dest: "uploads/" });
-
-// 🔹 Obtener todas las tipologías
+/**
+ * 🔹 Obtener todas las tipologías del usuario autenticado
+ */
 export const listarTipologias = async (req, res) => {
   try {
     const tipologias = await Tipologia.find({ user: req.user.id });
@@ -15,83 +13,9 @@ export const listarTipologias = async (req, res) => {
   }
 };
 
-// 🔹 Crear una nueva tipología manualmente
-export const crearTipologia = async (req, res) => {
-  try {
-    const { nombre, descripcion, ancho, alto } = req.body;
-
-    if (!nombre || !ancho || !alto) {
-      return res.status(400).json({ message: "Nombre, ancho y alto son obligatorios" });
-    }
-
-    if (isNaN(ancho) || isNaN(alto) || ancho <= 0 || alto <= 0) {
-      return res.status(400).json({ message: "Ancho y alto deben ser números positivos" });
-    }
-
-    const nuevaTipologia = new Tipologia({
-      nombre,
-      descripcion,
-      ancho,
-      alto,
-      user: req.user.id,
-    });
-
-    const tipologiaGuardada = await nuevaTipologia.save();
-    res.status(201).json(tipologiaGuardada);
-  } catch (error) {
-    res.status(400).json({ message: "Error al crear tipología", error: error.message });
-  }
-};
-
-// 🔹 Importar tipologías desde Excel
-export const importarTipologias = async (req, res) => {
-  try {
-    if (!req.file) {
-      return res.status(400).json({ message: "Debe subir un archivo Excel" });
-    }
-
-    const workbook = xlsx.readFile(req.file.path);
-    const sheetName = workbook.SheetNames[0];
-    const data = xlsx.utils.sheet_to_json(workbook.Sheets[sheetName]);
-
-    if (!data || data.length === 0) {
-      return res.status(400).json({ message: "El archivo está vacío o tiene datos inválidos" });
-    }
-
-    const tipologiasCreadas = [];
-
-    for (let row of data) {
-      if (!row.Nombre || !row.Ancho || !row.Alto) continue; // Si faltan datos esenciales, ignorar fila
-
-      const ancho = parseFloat(row.Ancho);
-      const alto = parseFloat(row.Alto);
-
-      if (isNaN(ancho) || isNaN(alto) || ancho <= 0 || alto <= 0) {
-        continue; // Ignorar filas con valores inválidos
-      }
-
-      const nuevaTipologia = new Tipologia({
-        nombre: row.Nombre,
-        descripcion: row.Descripcion || "",
-        ancho,
-        alto,
-        user: req.user.id,
-      });
-
-      const tipologiaGuardada = await nuevaTipologia.save();
-      tipologiasCreadas.push(tipologiaGuardada);
-    }
-
-    res.status(201).json({
-      message: `Se importaron ${tipologiasCreadas.length} tipologías correctamente`,
-      tipologias: tipologiasCreadas,
-    });
-  } catch (error) {
-    res.status(500).json({ message: "Error al importar tipologías", error: error.message });
-  }
-};
-
-// 🔹 Obtener una tipología por ID
+/**
+ * 🔹 Obtener una tipología por ID
+ */
 export const obtenerTipologia = async (req, res) => {
   try {
     const tipologia = await Tipologia.findOne({ _id: req.params.id, user: req.user.id });
@@ -102,22 +26,42 @@ export const obtenerTipologia = async (req, res) => {
   }
 };
 
-// 🔹 Actualizar una tipología
+/**
+ * 🔹 Crear una nueva tipología manualmente
+ */
+export const crearTipologia = async (req, res) => {
+  try {
+    const { nombre, descripcion, ancho, alto } = req.body;
+
+    if (!nombre || !descripcion || !ancho || !alto) {
+      return res.status(400).json({ message: "Todos los campos son obligatorios" });
+    }
+
+    const nuevaTipologia = new Tipologia({
+      nombre,
+      descripcion,
+      ancho,
+      alto,
+      user: req.user.id
+    });
+
+    const tipologiaGuardada = await nuevaTipologia.save();
+    res.status(201).json(tipologiaGuardada);
+  } catch (error) {
+    res.status(400).json({ message: "Error al crear tipología", error: error.message });
+  }
+};
+
+/**
+ * 🔹 Actualizar una tipología (incluye modificación de medidas)
+ */
 export const actualizarTipologia = async (req, res) => {
   try {
-    const { nombre, ancho, alto } = req.body;
-
-    if (!nombre || !ancho || !alto) {
-      return res.status(400).json({ message: "Nombre, ancho y alto son obligatorios" });
-    }
-
-    if (isNaN(ancho) || isNaN(alto) || ancho <= 0 || alto <= 0) {
-      return res.status(400).json({ message: "Ancho y alto deben ser números positivos" });
-    }
+    const { nombre, descripcion, ancho, alto } = req.body;
 
     const tipologiaActualizada = await Tipologia.findOneAndUpdate(
       { _id: req.params.id, user: req.user.id },
-      req.body,
+      { nombre, descripcion, ancho, alto },
       { new: true }
     );
 
@@ -129,7 +73,9 @@ export const actualizarTipologia = async (req, res) => {
   }
 };
 
-// 🔹 Eliminar una tipología
+/**
+ * 🔹 Eliminar una tipología
+ */
 export const eliminarTipologia = async (req, res) => {
   try {
     const tipologiaEliminada = await Tipologia.findOneAndDelete({ _id: req.params.id, user: req.user.id });
@@ -139,5 +85,52 @@ export const eliminarTipologia = async (req, res) => {
     res.json({ message: "Tipología eliminada correctamente" });
   } catch (error) {
     res.status(500).json({ message: "Error al eliminar tipología", error: error.message });
+  }
+};
+
+/**
+ * 🔹 Agrupar varias tipologías en una nueva combinada
+ */
+export const agruparTipologias = async (req, res) => {
+  try {
+    const { tipologiaIds, nombre, ancho, alto } = req.body;
+
+    if (!tipologiaIds || !Array.isArray(tipologiaIds) || tipologiaIds.length < 2) {
+      return res.status(400).json({ message: "Debes seleccionar al menos dos tipologías para agrupar." });
+    }
+
+    if (!nombre) {
+      return res.status(400).json({ message: "El nombre de la nueva tipología es obligatorio." });
+    }
+
+    // Buscar las tipologías originales
+    const tipologias = await Tipologia.find({ _id: { $in: tipologiaIds }, user: req.user.id });
+
+    if (tipologias.length !== tipologiaIds.length) {
+      return res.status(404).json({ message: "Algunas tipologías no fueron encontradas." });
+    }
+
+    // Crear nueva tipología agrupada
+    const nuevaTipologia = new Tipologia({
+      nombre,
+      descripcion: tipologias.map(t => t.descripcion).join(" + "),
+      ancho: ancho || tipologias.reduce((sum, t) => sum + t.ancho, 0), // Si no se especifica, se calcula
+      alto: alto || Math.max(...tipologias.map(t => t.alto)), // Si no se especifica, se calcula
+      agrupada: true,
+      origenes: tipologiaIds,
+      user: req.user.id
+    });
+
+    const tipologiaGuardada = await nuevaTipologia.save();
+
+    // Eliminar tipologías originales
+    await Tipologia.deleteMany({ _id: { $in: tipologiaIds }, user: req.user.id });
+
+    res.status(201).json({
+      message: "Tipología agrupada correctamente.",
+      tipologia: tipologiaGuardada
+    });
+  } catch (error) {
+    res.status(500).json({ message: "Error al agrupar tipologías", error: error.message });
   }
 };

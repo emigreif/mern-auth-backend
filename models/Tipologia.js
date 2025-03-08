@@ -1,15 +1,16 @@
-// backend/models/Tipologia.js
-import mongoose from 'mongoose';
+import mongoose from "mongoose";
 
-const tipologiaSchema = new mongoose.Schema({
-  identificador: { type: String, required: true, unique: true, trim: true },
-  descripcion: { type: String, required: true, trim: true },
-  cantidad: { type: Number, default: 1 },
-  ancho: { type: Number, required: true },
-  alto: { type: Number, required: true },
-  // Relación a la obra para la que se carga esta tipología
-  obra: { type: mongoose.Schema.Types.ObjectId, ref: 'Obra', required: true },
-  user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true }
-}, { timestamps: true });
+const tipologiaSchema = new mongoose.Schema(
+  {
+    nombre: { type: String, required: true, trim: true },
+    descripcion: { type: String, required: true, trim: true },
+    ancho: { type: Number, required: true },
+    alto: { type: Number, required: true },
+    agrupada: { type: Boolean, default: false }, // Indica si es una tipología agrupada
+    origenes: [{ type: mongoose.Schema.Types.ObjectId, ref: "Tipologia" }], // Guarda las tipologías originales
+    user: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true }
+  },
+  { timestamps: true }
+);
 
-export default mongoose.model('Tipologia', tipologiaSchema);
+export default mongoose.model("Tipologia", tipologiaSchema);
