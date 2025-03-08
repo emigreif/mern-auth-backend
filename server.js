@@ -16,7 +16,7 @@ import medicionRoutes from "./routes/medicionRoutes.js";
 import obraRoutes from "./routes/ObraRoutes.js";
 import panolRoutes from "./routes/PanolRoutes.js";
 import presupuestoRoutes from "./routes/PresupuestoRoutes.js";
-import proveedorRoutes from "./routes/proveedorRoutes.js";
+import proveedorRoutes from "./routes/ProveedorRoutes.js";
 import tipologiaRoutes from "./routes/tipologiaRoutes.js";
 import ubicacionRoutes from "./routes/ubicacionRoutes.js";
 import userRoutes from "./routes/userRoutes.js";
