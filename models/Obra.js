@@ -2,12 +2,13 @@ import mongoose from "mongoose";
 
 const ObraSchema = new mongoose.Schema(
   {
+    codigoObra: { type: Number, unique: true }, // 🔹 Código secuencial único
     nombre: { type: String, required: true, trim: true },
     cliente: { type: mongoose.Schema.Types.ObjectId, ref: "Cliente", required: true },
     direccion: { type: String, required: true, trim: true },
     contacto: { type: String, required: true, trim: true },
     mapa: { type: String, trim: true },
-    fechaEntrega: { type: Date }, // Ahora es opcional
+    fechaEntrega: { type: Date }, // Opcional
     importeConFactura: { type: Number, default: 0 },
     importeSinFactura: { type: Number, default: 0 },
     importeTotal: { type: Number, default: 0 },
@@ -48,6 +49,7 @@ const ObraSchema = new mongoose.Schema(
     // Estado de la obra
     ordenProduccionAprobada: { type: Boolean, default: false },
     finalObra: { type: Boolean, default: false },
+    estadoGeneral: { type: String, enum: ["Presupuestada", "En Proceso", "Finalizada"], default: "Presupuestada" }, // 🔹 Estado general
     estado: {
       perfiles: { type: String, enum: ["pendiente", "proximo", "cumplido"], default: "pendiente" },
       vidrios: { type: String, enum: ["pendiente", "proximo", "cumplido"], default: "pendiente" },
@@ -58,26 +60,18 @@ const ObraSchema = new mongoose.Schema(
     },
 
     saldo: { type: String, enum: ["Con saldo a cobrar", "Pagada"], default: "Con saldo a cobrar" },
+    observaciones: { type: String, trim: true }, // 🔹 Campo para agregar notas
 
     user: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
   },
   { timestamps: true }
 );
 
-// 🔍 **Hook antes de guardar para calcular fechas**
-ObraSchema.pre("save", function (next) {
-  if (this.isModified("fechaEntrega") || this.isNew) {
-    const fechaEntrega = this.fechaEntrega;
-
-    if (fechaEntrega) {
-      const fechaBase = new Date(fechaEntrega);
-
-      this.fechaInicioCortePerfiles = new Date(fechaBase.setDate(fechaBase.getDate() - 30));
-      this.fechaInicioArmado = new Date(fechaBase.setDate(fechaBase.getDate() + 5));
-      this.fechaEnvidriado = new Date(fechaBase.setDate(fechaBase.getDate() + 5));
-      this.fechaInicioMontaje = this.fechaInicioMontaje || fechaEntrega;
-      this.fechaMedicion = new Date(fechaBase.setDate(fechaBase.getDate() - 25));
-    }
+// 🔹 **Asignar código automático de obra**
+ObraSchema.pre("save", async function (next) {
+  if (!this.codigoObra) {
+    const ultimaObra = await this.constructor.findOne().sort("-codigoObra");
+    this.codigoObra = ultimaObra ? ultimaObra.codigoObra + 1 : 1;
   }
   next();
 });

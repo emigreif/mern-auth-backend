@@ -12,6 +12,7 @@ import clienteRoutes from "./routes/ClienteRoutes.js";
 import comprasRoutes from "./routes/ComprasRoutes.js";
 import configRoutes from "./routes/configRoutes.js";
 import contabilidadRoutes from "./routes/contabilidadRoutes.js";
+import employeeRoutes from  "./routes/employeeRoutes.js";
 import { errorHandler } from "./middleware/errorHandler.js";
 import medicionRoutes from "./routes/medicionRoutes.js";
 import obraRoutes from "./routes/ObraRoutes.js";
@@ -60,6 +61,7 @@ app.use("/api/user", userRoutes);
 app.use("/api/calendario", calendarioRoutes);
 app.use("/api/clientes", clienteRoutes);
 app.use("/api/compras", comprasRoutes);
+ app.use("/api/employee", employeeRoutes);  // Añadimos la ruta para los empleados
 app.use("/api/configuracion", configRoutes);
 app.use("/api/contabilidad", contabilidadRoutes);
 app.use("/api/obras", obraRoutes);
