@@ -27,9 +27,21 @@ connectDB();
 
 const app = express();
 app.use(express.json());
+
+const allowedOrigins = [
+  "https://mern-auth-frontendemigreif.vercel.app", // ✅ URL del frontend en Vercel
+  "http://localhost:5173" // ✅ Permitir localhost para desarrollo
+];
+
 app.use(cors({
-  origin: ["https://mern-auth-frontendemigreif.vercel.app"],
-  credentials: true
+  origin: function (origin, callback) {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error("Not allowed by CORS"));
+    }
+  },
+  credentials: true, // Permitir cookies y autenticación con JWT
 }));
 app.use(cookieParser());
 
