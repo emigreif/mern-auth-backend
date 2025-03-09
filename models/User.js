@@ -13,6 +13,10 @@ const UserSchema = new mongoose.Schema({
   direccion: { type: String, default: '' },
   localidad: { type: String, default: '' },
   codigoPostal: { type: String, default: '' },
+  esAdmin: { type: Boolean, default: false }, // 🔹 Identifica si el usuario es Administrador
+  perfiles: [{ type: mongoose.Schema.Types.ObjectId, ref: "Perfil" }], // Lista de perfiles asignados
+  perfilActivo: { type: mongoose.Schema.Types.ObjectId, ref: "Perfil" }, // Perfil actualmente en uso
+
 
   // Campos para restablecimiento de contraseña
   resetPasswordToken: { type: String },
@@ -21,3 +25,4 @@ const UserSchema = new mongoose.Schema({
 { timestamps: true });
 
 export default mongoose.model('User', UserSchema);
+

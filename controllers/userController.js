@@ -20,7 +20,25 @@ export const getUserProfile = async (req, res) => {
     res.status(500).json({ message: 'Server error', error: error.message });
   }
 };
+export const seleccionarPerfil = async (req, res) => {
+  try {
+    const { userId, perfilId } = req.body;
 
+    const usuario = await User.findById(userId);
+    if (!usuario) return res.status(404).json({ message: "Usuario no encontrado" });
+
+    if (!usuario.perfiles.includes(perfilId)) {
+      return res.status(403).json({ message: "No tienes acceso a este perfil" });
+    }
+
+    usuario.perfilActivo = perfilId;
+    await usuario.save();
+
+    res.status(200).json({ message: "Perfil seleccionado correctamente", perfilActivo: usuario.perfilActivo });
+  } catch (error) {
+    res.status(500).json({ message: "Error al seleccionar perfil", error });
+  }
+};
 // Actualiza datos del perfil (nombre, email, etc.) y permite cambiar contraseña
 export const updateUserProfile = async (req, res) => {
   try {
