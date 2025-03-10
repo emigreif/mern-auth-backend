@@ -15,7 +15,6 @@ const movimientoSchema = new mongoose.Schema({
   idObra: { type: mongoose.Schema.Types.ObjectId, ref: 'Obra' },
   idProveedor: { type: mongoose.Schema.Types.ObjectId, ref: 'Proveedor' },
   idCliente: { type: mongoose.Schema.Types.ObjectId, ref: 'Cliente' },
-  user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
   user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true }
 }, { timestamps: true });
 
