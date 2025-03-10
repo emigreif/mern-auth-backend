@@ -1,31 +1,24 @@
 // backend/models/Compra.js
 import mongoose from "mongoose";
 
-// ================================
-// CONTADOR POR USUARIO Y AÑO
-// ================================
+// ===============================
+// CONTADOR GLOBAL/por USUARIO
+// (Si ya lo tenías implementado, mantenlo)
+// ===============================
 const CounterSchema = new mongoose.Schema({
-  user: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
   year: { type: Number, required: true },
   seq: { type: Number, default: 0 },
 });
-
-// Clave compuesta para evitar duplicados de (user + year)
-CounterSchema.index({ user: 1, year: 1 }, { unique: true });
-
 const Counter = mongoose.model("Counter", CounterSchema);
 
-async function getNextOrderNumber(userId) {
+async function getNextOrderNumber() {
   const year = new Date().getFullYear();
   const yearSuffix = year.toString().slice(-2);
-
-  // Buscar o crear un registro de Counter para este user + year
   const counter = await Counter.findOneAndUpdate(
-    { user: userId, year },
+    { year },
     { $inc: { seq: 1 } },
     { new: true, upsert: true }
   );
-
   const sequence = counter.seq.toString().padStart(4, "0");
   return `${yearSuffix}${sequence}`;
 }
@@ -39,7 +32,10 @@ const CompraAluminioSchema = new mongoose.Schema(
     obra: { type: mongoose.Schema.Types.ObjectId, ref: "Obra", required: true },
     direccionEntrega: { type: String, required: true },
     tratamiento: { type: String, required: true },
-    numeroPedido: { type: String }, // Se asignará en pre-save
+    numeroPedido: { type: String, unique: true }, // Se asigna en pre-save
+    referenciaInterna: { type: String, default: "" }, // Nuevo campo
+    tipoCompra: { type: String, default: "aluminio" }, // Para identificar el tipo
+
     pedido: [
       {
         codigo: { type: String, required: true },
@@ -69,7 +65,7 @@ const CompraAluminioSchema = new mongoose.Schema(
 CompraAluminioSchema.pre("save", async function (next) {
   if (this.isNew && !this.numeroPedido) {
     try {
-      this.numeroPedido = await getNextOrderNumber(this.user);
+      this.numeroPedido = await getNextOrderNumber();
       next();
     } catch (err) {
       next(err);
@@ -79,18 +75,18 @@ CompraAluminioSchema.pre("save", async function (next) {
   }
 });
 
-// Índice para búsquedas por usuario
-CompraAluminioSchema.index({ user: 1 });
-
-// =============================
+// =======================================
 // MODELO: Compra de Vidrios
-// =============================
+// =======================================
 const CompraVidriosSchema = new mongoose.Schema(
   {
     proveedor: { type: mongoose.Schema.Types.ObjectId, ref: "Proveedor", required: true },
     obra: { type: mongoose.Schema.Types.ObjectId, ref: "Obra", required: true },
     lugarEntrega: { type: String, required: true },
-    numeroPedido: { type: String },
+    numeroPedido: { type: String, unique: true },
+    referenciaInterna: { type: String, default: "" },
+    tipoCompra: { type: String, default: "vidrios" },
+
     vidrios: [
       {
         descripcion: { type: String, required: true },
@@ -122,7 +118,7 @@ const CompraVidriosSchema = new mongoose.Schema(
 CompraVidriosSchema.pre("save", async function (next) {
   if (this.isNew && !this.numeroPedido) {
     try {
-      this.numeroPedido = await getNextOrderNumber(this.user);
+      this.numeroPedido = await getNextOrderNumber();
       next();
     } catch (err) {
       next(err);
@@ -132,17 +128,18 @@ CompraVidriosSchema.pre("save", async function (next) {
   }
 });
 
-CompraVidriosSchema.index({ user: 1 });
-
-// =============================
+// =======================================
 // MODELO: Compra de Accesorios
-// =============================
+// =======================================
 const CompraAccesoriosSchema = new mongoose.Schema(
   {
     proveedor: { type: mongoose.Schema.Types.ObjectId, ref: "Proveedor", required: true },
     obra: { type: mongoose.Schema.Types.ObjectId, ref: "Obra", required: true },
     lugarEntrega: { type: String, required: true },
-    numeroPedido: { type: String },
+    numeroPedido: { type: String, unique: true },
+    referenciaInterna: { type: String, default: "" },
+    tipoCompra: { type: String, default: "accesorios" },
+
     accesorios: [
       {
         codigo: { type: String, required: true },
@@ -174,7 +171,7 @@ const CompraAccesoriosSchema = new mongoose.Schema(
 CompraAccesoriosSchema.pre("save", async function (next) {
   if (this.isNew && !this.numeroPedido) {
     try {
-      this.numeroPedido = await getNextOrderNumber(this.user);
+      this.numeroPedido = await getNextOrderNumber();
       next();
     } catch (err) {
       next(err);
@@ -184,9 +181,9 @@ CompraAccesoriosSchema.pre("save", async function (next) {
   }
 });
 
-CompraAccesoriosSchema.index({ user: 1 });
-
-// Exportar los 3 modelos
+// =======================================
+// Exportar todos los modelos
+// =======================================
 const CompraAluminio = mongoose.model("CompraAluminio", CompraAluminioSchema);
 const CompraVidrios = mongoose.model("CompraVidrios", CompraVidriosSchema);
 const CompraAccesorios = mongoose.model("CompraAccesorios", CompraAccesoriosSchema);

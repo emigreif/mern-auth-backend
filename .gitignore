@@ -2,17 +2,17 @@ node_modules/
 
 # Archivos de entorno sensibles
 .env
-.env.*  # Si manejas .env.development .env.production, etc.
+.env.*
 
 # Logs
 *.log
 npm-debug.log*
 
-# Archivos de bloqueos de versiones
+# Archivos de bloqueo de versiones
 package-lock.json
 yarn.lock
 
-# Carpetas de build (si compilas algo con Babel o TypeScript)
+# Carpetas de build
 dist/
 build/
 
@@ -23,6 +23,6 @@ coverage/
 .vscode/
 .idea/
 
-# Otros (cache, DS_Store, etc.)
+# Otros
 .DS_Store
 .cache/

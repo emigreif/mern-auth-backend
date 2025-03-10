@@ -12,18 +12,18 @@ import clienteRoutes from "./routes/ClienteRoutes.js";
 import comprasRoutes from "./routes/ComprasRoutes.js";
 import configRoutes from "./routes/configRoutes.js";
 import contabilidadRoutes from "./routes/contabilidadRoutes.js";
-import employeeRoutes from  "./routes/employeeRoutes.js";
-import { errorHandler } from "./middleware/errorHandler.js";
-
+import employeeRoutes from "./routes/employeeRoutes.js";
 import medicionRoutes from "./routes/medicionRoutes.js";
-import obraRoutes from "./routes/ObraRoutes.js";
-import panolRoutes from "./routes/PanolRoutes.js";
+import obraRoutes from "./routes/obraRoutes.js";
+import panolRoutes from "./routes/panolRoutes.js";
 import perfilRoutes from "./routes/perfilRoutes.js";
-import presupuestoRoutes from "./routes/PresupuestoRoutes.js";
-import proveedorRoutes from "./routes/ProveedorRoutes.js";
+import presupuestoRoutes from "./routes/presupuestoRoutes.js";
+import proveedorRoutes from "./routes/proveedorRoutes.js";
 import tipologiaRoutes from "./routes/tipologiaRoutes.js";
 import ubicacionRoutes from "./routes/ubicacionRoutes.js";
 import userRoutes from "./routes/userRoutes.js";
+
+import { errorHandler } from "./middleware/errorHandler.js";
 
 dotenv.config();
 connectDB();
@@ -31,25 +31,29 @@ connectDB();
 const app = express();
 app.use(express.json());
 
+// Lista blanca de orígenes
 const allowedOrigins = [
-  "https://mern-auth-frontendemigreif.vercel.app", // ✅ URL del frontend en Vercel
-  "http://localhost:5173" // ✅ Permitir localhost para desarrollo
+  "https://mern-auth-frontendemigreif.vercel.app",
+  "http://localhost:5173"
 ];
 
-app.use(cors({
-  origin: function (origin, callback) {
-    if (!origin || allowedOrigins.includes(origin)) {
-      callback(null, true);
-    } else {
-      callback(new Error("Not allowed by CORS"));
-    }
-  },
-  credentials: true, // Permitir cookies y autenticación con JWT
-}));
+app.use(
+  cors({
+    origin: function (origin, callback) {
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error("Not allowed by CORS"));
+      }
+    },
+    credentials: true,
+  })
+);
+
 app.use(cookieParser());
 
-
-// ✅ Middleware de LOG para ver las solicitudes
+// ❗ Uso de logs (opcional). 
+// Si no deseas exponer tokens en logs de producción, coméntalo o quítalo.
 app.use((req, res, next) => {
   console.log(`📌 [${req.method}] ${req.url}`);
   console.log("🔍 Headers:", req.headers);
@@ -63,7 +67,7 @@ app.use("/api/user", userRoutes);
 app.use("/api/calendario", calendarioRoutes);
 app.use("/api/clientes", clienteRoutes);
 app.use("/api/compras", comprasRoutes);
- app.use("/api/employee", employeeRoutes);  // Añadimos la ruta para los empleados
+app.use("/api/employee", employeeRoutes);
 app.use("/api/configuracion", configRoutes);
 app.use("/api/contabilidad", contabilidadRoutes);
 app.use("/api/obras", obraRoutes);
@@ -74,7 +78,16 @@ app.use("/api/ubicaciones", ubicacionRoutes);
 app.use("/api/perfiles", perfilRoutes);
 app.use("/api/proveedores", proveedorRoutes);
 app.use("/api/presupuestos", presupuestoRoutes);
+
+// Opcional: Middleware para endpoints no definidos
+
+app.use((req, res, next) => {
+  res.status(404).json({ message: "Endpoint no encontrado" });
+});
+
+
+// ✅ Manejo de errores global
 app.use(errorHandler);
-// ✅ Puerto y arranque del servidor
+
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`✅ Server running on port ${PORT}`));
