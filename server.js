@@ -15,7 +15,7 @@ import contabilidadRoutes from "./routes/contabilidadRoutes.js";
 import employeeRoutes from "./routes/employeeRoutes.js";
 import medicionRoutes from "./routes/medicionRoutes.js";
 import obraRoutes from "./routes/ObraRoutes.js";
-import panolRoutes from "./routes/panolRoutes.js";
+import panolRoutes from "./routes/PanolRoutes.js";
 import perfilRoutes from "./routes/perfilRoutes.js";
 import presupuestoRoutes from "./routes/presupuestoRoutes.js";
 import proveedorRoutes from "./routes/proveedorRoutes.js";
