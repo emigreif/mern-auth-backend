@@ -1,3 +1,4 @@
+// backend/routes/employeeRoutes.js
 import express from "express";
 import {
   getEmployees,
@@ -10,9 +11,12 @@ import { protect } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
+// Podrías usar router.route("/") y router.route("/:id") para ser uniforme, 
+// pero así también funciona.
+
 router.get("/", protect, getEmployees);
-router.get("/:id", protect, getEmployeeById);
 router.post("/", protect, createEmployee);
+router.get("/:id", protect, getEmployeeById);
 router.put("/:id", protect, updateEmployee);
 router.delete("/:id", protect, deleteEmployee);
 

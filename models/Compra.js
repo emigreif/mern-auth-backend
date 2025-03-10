@@ -1,22 +1,31 @@
+// backend/models/Compra.js
 import mongoose from "mongoose";
 
-// ===============================
-// CONTADOR GLOBAL PARA ORDENES
-// ===============================
+// ================================
+// CONTADOR POR USUARIO Y AÑO
+// ================================
 const CounterSchema = new mongoose.Schema({
-  year: { type: Number, required: true, unique: true },
+  user: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
+  year: { type: Number, required: true },
   seq: { type: Number, default: 0 },
 });
+
+// Clave compuesta para evitar duplicados de (user + year)
+CounterSchema.index({ user: 1, year: 1 }, { unique: true });
+
 const Counter = mongoose.model("Counter", CounterSchema);
 
-async function getNextOrderNumber() {
+async function getNextOrderNumber(userId) {
   const year = new Date().getFullYear();
   const yearSuffix = year.toString().slice(-2);
+
+  // Buscar o crear un registro de Counter para este user + year
   const counter = await Counter.findOneAndUpdate(
-    { year },
+    { user: userId, year },
     { $inc: { seq: 1 } },
     { new: true, upsert: true }
   );
+
   const sequence = counter.seq.toString().padStart(4, "0");
   return `${yearSuffix}${sequence}`;
 }
@@ -30,8 +39,7 @@ const CompraAluminioSchema = new mongoose.Schema(
     obra: { type: mongoose.Schema.Types.ObjectId, ref: "Obra", required: true },
     direccionEntrega: { type: String, required: true },
     tratamiento: { type: String, required: true },
-    numeroPedido: { type: String, unique: true },
-    // Array de productos tipo perfil
+    numeroPedido: { type: String }, // Se asignará en pre-save
     pedido: [
       {
         codigo: { type: String, required: true },
@@ -45,7 +53,7 @@ const CompraAluminioSchema = new mongoose.Schema(
             validator: function (value) {
               return value <= this.cantidad;
             },
-            message: "La cantidad ingresada no puede ser mayor que la cantidad solicitada",
+            message: "La cantidad ingresada no puede ser mayor que la solicitada",
           },
         },
       },
@@ -61,7 +69,7 @@ const CompraAluminioSchema = new mongoose.Schema(
 CompraAluminioSchema.pre("save", async function (next) {
   if (this.isNew && !this.numeroPedido) {
     try {
-      this.numeroPedido = await getNextOrderNumber();
+      this.numeroPedido = await getNextOrderNumber(this.user);
       next();
     } catch (err) {
       next(err);
@@ -71,7 +79,8 @@ CompraAluminioSchema.pre("save", async function (next) {
   }
 });
 
-const CompraAluminio = mongoose.model("CompraAluminio", CompraAluminioSchema);
+// Índice para búsquedas por usuario
+CompraAluminioSchema.index({ user: 1 });
 
 // =============================
 // MODELO: Compra de Vidrios
@@ -81,8 +90,7 @@ const CompraVidriosSchema = new mongoose.Schema(
     proveedor: { type: mongoose.Schema.Types.ObjectId, ref: "Proveedor", required: true },
     obra: { type: mongoose.Schema.Types.ObjectId, ref: "Obra", required: true },
     lugarEntrega: { type: String, required: true },
-    numeroPedido: { type: String, unique: true },
-    // Array de vidrios con sus propiedades específicas
+    numeroPedido: { type: String },
     vidrios: [
       {
         descripcion: { type: String, required: true },
@@ -94,7 +102,7 @@ const CompraVidriosSchema = new mongoose.Schema(
             validator: function (value) {
               return value <= this.cantidad;
             },
-            message: "La cantidad ingresada no puede ser mayor que la cantidad solicitada",
+            message: "La cantidad ingresada no puede ser mayor que la solicitada",
           },
         },
         ancho: { type: Number, required: true },
@@ -114,7 +122,7 @@ const CompraVidriosSchema = new mongoose.Schema(
 CompraVidriosSchema.pre("save", async function (next) {
   if (this.isNew && !this.numeroPedido) {
     try {
-      this.numeroPedido = await getNextOrderNumber();
+      this.numeroPedido = await getNextOrderNumber(this.user);
       next();
     } catch (err) {
       next(err);
@@ -124,15 +132,17 @@ CompraVidriosSchema.pre("save", async function (next) {
   }
 });
 
-const CompraVidrios = mongoose.model("CompraVidrios", CompraVidriosSchema);
+CompraVidriosSchema.index({ user: 1 });
 
+// =============================
+// MODELO: Compra de Accesorios
+// =============================
 const CompraAccesoriosSchema = new mongoose.Schema(
   {
     proveedor: { type: mongoose.Schema.Types.ObjectId, ref: "Proveedor", required: true },
     obra: { type: mongoose.Schema.Types.ObjectId, ref: "Obra", required: true },
     lugarEntrega: { type: String, required: true },
-    numeroPedido: { type: String, unique: true },
-    // Array de accesorios con sus propiedades específicas
+    numeroPedido: { type: String },
     accesorios: [
       {
         codigo: { type: String, required: true },
@@ -146,7 +156,7 @@ const CompraAccesoriosSchema = new mongoose.Schema(
             validator: function (value) {
               return value <= this.cantidad;
             },
-            message: "La cantidad ingresada no puede ser mayor que la cantidad solicitada",
+            message: "La cantidad ingresada no puede ser mayor que la solicitada",
           },
         },
         unidad: { type: String, required: true },
@@ -164,7 +174,7 @@ const CompraAccesoriosSchema = new mongoose.Schema(
 CompraAccesoriosSchema.pre("save", async function (next) {
   if (this.isNew && !this.numeroPedido) {
     try {
-      this.numeroPedido = await getNextOrderNumber();
+      this.numeroPedido = await getNextOrderNumber(this.user);
       next();
     } catch (err) {
       next(err);
@@ -174,9 +184,11 @@ CompraAccesoriosSchema.pre("save", async function (next) {
   }
 });
 
+CompraAccesoriosSchema.index({ user: 1 });
+
+// Exportar los 3 modelos
+const CompraAluminio = mongoose.model("CompraAluminio", CompraAluminioSchema);
+const CompraVidrios = mongoose.model("CompraVidrios", CompraVidriosSchema);
 const CompraAccesorios = mongoose.model("CompraAccesorios", CompraAccesoriosSchema);
 
-// =======================================
-// Exportación de todos los modelos
-// =======================================
 export { CompraAluminio, CompraVidrios, CompraAccesorios };

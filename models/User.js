@@ -2,7 +2,7 @@
 import mongoose from 'mongoose';
 
 const UserSchema = new mongoose.Schema({
-  email: { type: String, required: true, unique: true },
+  email: { type: String, required: true, unique: true }, // Globalmente único
   password: { type: String, required: true },
   firstName: { type: String, required: true },
   lastName: { type: String, required: true },
@@ -13,16 +13,13 @@ const UserSchema = new mongoose.Schema({
   direccion: { type: String, default: '' },
   localidad: { type: String, default: '' },
   codigoPostal: { type: String, default: '' },
-  esAdmin: { type: Boolean, default: false }, // 🔹 Identifica si el usuario es Administrador
-  perfiles: [{ type: mongoose.Schema.Types.ObjectId, ref: "Perfil" }], // Lista de perfiles asignados
-  perfilActivo: { type: mongoose.Schema.Types.ObjectId, ref: "Perfil" }, // Perfil actualmente en uso
+  esAdmin: { type: Boolean, default: false },
+  perfiles: [{ type: mongoose.Schema.Types.ObjectId, ref: "Perfil" }],
+  perfilActivo: { type: mongoose.Schema.Types.ObjectId, ref: "Perfil" },
 
-
-  // Campos para restablecimiento de contraseña
+  // Para reseteo de contraseña
   resetPasswordToken: { type: String },
   resetPasswordExpires: { type: Date }
-}, 
-{ timestamps: true });
+}, { timestamps: true });
 
 export default mongoose.model('User', UserSchema);
-

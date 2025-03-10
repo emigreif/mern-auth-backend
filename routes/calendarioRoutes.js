@@ -1,3 +1,4 @@
+// backend/routes/calendarioRoutes.js
 import express from "express";
 import { protect } from "../middleware/authMiddleware.js";
 import {
@@ -10,19 +11,15 @@ import {
 
 const router = express.Router();
 
-// 📌 Obtener todos los calendarios con filtros opcionales (obra o actividad)
+// Obtener todos los calendarios (con filtros opcionales)
 router.get("/", protect, listarCalendarios);
 
-// 📌 Generar calendario automáticamente con las fechas de la obra
+// Generar calendario automáticamente
 router.post("/generar", protect, generarCalendarioDesdeObra);
 
-// 📌 Obtener el calendario de una obra específica
+// Obtener, actualizar y eliminar por obraId
 router.get("/:obraId", protect, obtenerCalendario);
-
-// 📌 Actualizar el calendario manualmente
 router.put("/:obraId", protect, actualizarCalendario);
-
-// 📌 Eliminar el calendario de una obra
 router.delete("/:obraId", protect, eliminarCalendario);
 
 export default router;
