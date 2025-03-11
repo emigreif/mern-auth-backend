@@ -1,9 +1,9 @@
 // backend/controllers/authController.js
-import User from '../models/User.js';
-import bcrypt from 'bcryptjs';
-import jwt from 'jsonwebtoken';
-import nodemailer from 'nodemailer';
-import crypto from 'crypto';
+import User from "../models/User.js";
+import bcrypt from "bcryptjs";
+import jwt from "jsonwebtoken";
+import nodemailer from "nodemailer";
+import crypto from "crypto";
 
 // 1. REGISTRO
 export const register = async (req, res) => {
@@ -62,13 +62,13 @@ export const register = async (req, res) => {
     return res.status(201).json({ message: "Usuario registrado con éxito" });
   } catch (error) {
     return res.status(500).json({
-      message: 'Error registrando usuario',
+      message: "Error registrando usuario",
       error: error.message || error
     });
   }
 };
 
-// 2. LOGIN
+// 2. LOGIN (PRIMER LOGIN: USUARIO)
 export const login = async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -86,7 +86,9 @@ export const login = async (req, res) => {
     // Generar token JWT
     const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: "1h" });
 
-    return res.json({ token, user });
+    // Retornamos token y user (sin password)
+    const { password: _, ...userData } = user._doc;
+    return res.json({ token, user: userData });
   } catch (error) {
     return res.status(500).json({ message: "Error en el servidor", error: error.message });
   }
@@ -95,16 +97,15 @@ export const login = async (req, res) => {
 // 3. LOGOUT
 export const logout = (req, res) => {
   try {
-    // Si usas cookies para el token:
-    res.clearCookie('token', { httpOnly: true, secure: true, sameSite: 'None' });
-    return res.status(200).json({ message: 'Logout exitoso' });
+    // Ahora no manejamos cookies => simplemente respondemos OK
+    return res.status(200).json({ message: "Logout exitoso" });
   } catch (error) {
-    console.error('Error al hacer logout', error);
-    return res.status(500).json({ message: 'Error en el servidor' });
+    console.error("Error al hacer logout", error);
+    return res.status(500).json({ message: "Error en el servidor" });
   }
 };
 
-// 4. FORGOT PASSWORD (genera token y envía correo)
+// 4. FORGOT PASSWORD
 export const forgotPassword = async (req, res) => {
   try {
     const { email } = req.body;
@@ -119,7 +120,7 @@ export const forgotPassword = async (req, res) => {
     }
 
     // Generar token aleatorio
-    const resetToken = crypto.randomBytes(20).toString('hex');
+    const resetToken = crypto.randomBytes(20).toString("hex");
 
     // Asignar token y fecha de expiración (1 hora)
     user.resetPasswordToken = resetToken;
@@ -128,21 +129,22 @@ export const forgotPassword = async (req, res) => {
 
     // Configurar transporter de nodemailer
     const transporter = nodemailer.createTransport({
-      service: 'gmail', // o el proveedor que uses
+      service: "gmail", // o el proveedor que uses
       auth: {
         user: process.env.EMAIL_USER,
         pass: process.env.EMAIL_PASS,
       },
     });
 
-    // Construir el link de reseteo (ajusta la URL a tu frontend)
+    // Construir el link de reseteo
+    // Ajustar la URL a tu frontend
     const resetUrl = `http://localhost:5173/reset-password/${resetToken}`;
 
     // Contenido del email
     const mailOptions = {
       from: process.env.EMAIL_USER,
       to: user.email,
-      subject: 'Recuperar contraseña',
+      subject: "Recuperar contraseña",
       text: `Has solicitado un cambio de contraseña. Haz clic aquí para restablecerla: ${resetUrl}`,
     };
 
@@ -158,7 +160,7 @@ export const forgotPassword = async (req, res) => {
   }
 };
 
-// 5. RESET PASSWORD (usa el token para validar)
+// 5. RESET PASSWORD
 export const resetPassword = async (req, res) => {
   try {
     const { token } = req.params; // resetToken en la URL
@@ -167,7 +169,7 @@ export const resetPassword = async (req, res) => {
     // Buscar usuario con ese token y que no esté expirado
     const user = await User.findOne({
       resetPasswordToken: token,
-      resetPasswordExpires: { $gt: Date.now() }, // Debe ser mayor a la fecha actual
+      resetPasswordExpires: { $gt: Date.now() },
     });
 
     if (!user) {

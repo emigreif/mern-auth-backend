@@ -52,13 +52,6 @@ app.use(
 
 app.use(cookieParser());
 
-// ❗ Uso de logs (opcional). 
-// Si no deseas exponer tokens en logs de producción, coméntalo o quítalo.
-app.use((req, res, next) => {
-  console.log(`📌 [${req.method}] ${req.url}`);
-  console.log("🔍 Headers:", req.headers);
-  next();
-});
 
 // ✅ Definir las rutas
 app.use("/api/auth", authRoutes);
