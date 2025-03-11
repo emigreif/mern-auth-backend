@@ -1,13 +1,10 @@
 // backend/models/Perfil.js
-import mongoose from "mongoose";
+import mongoose from 'mongoose';
 
 const PerfilSchema = new mongoose.Schema({
-  // Agregas user para que cada usuario pueda tener sus propios perfiles
-  user: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
-
-  // El nombre del perfil (solo será único para ese user)
-  nombre: { type: String, required: true, trim: true },
-
+  nombre: { type: String, required: true },
+  password: { type: String, default: "" },
+  userId: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
   permisos: {
     dashboard: { type: Boolean, default: false },
     obras: { type: Boolean, default: false },
@@ -17,11 +14,8 @@ const PerfilSchema = new mongoose.Schema({
     contabilidad: { type: Boolean, default: false },
     reportes: { type: Boolean, default: false },
     nomina: { type: Boolean, default: false },
+    admin: { type: Boolean, default: false }, // Indica si es perfil administrador
   },
-});
-
-// Índice compuesto para que el par (user + nombre) sea único, 
-// pero distintos usuarios pueden tener el mismo nombre de perfil
-PerfilSchema.index({ user: 1, nombre: 1 }, { unique: true });
+}, { timestamps: true });
 
 export default mongoose.model("Perfil", PerfilSchema);
