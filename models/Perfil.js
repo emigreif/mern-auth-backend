@@ -1,8 +1,8 @@
 // backend/models/Perfil.js
-import mongoose from 'mongoose';
+import mongoose from "mongoose";
 
 const PerfilSchema = new mongoose.Schema({
-  nombre: { type: String, required: true },
+  nombre: { type: String, required: true }, // <-- sin unique
   password: { type: String, default: "" },
   userId: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
   permisos: {
@@ -14,8 +14,11 @@ const PerfilSchema = new mongoose.Schema({
     contabilidad: { type: Boolean, default: false },
     reportes: { type: Boolean, default: false },
     nomina: { type: Boolean, default: false },
-    admin: { type: Boolean, default: false }, // Indica si es perfil administrador
+    admin: { type: Boolean, default: false },
   },
 }, { timestamps: true });
+
+// (Opcional) índice único para (userId + nombre):
+PerfilSchema.index({ userId: 1, nombre: 1 }, { unique: true });
 
 export default mongoose.model("Perfil", PerfilSchema);
