@@ -35,8 +35,54 @@ export const listarProveedores = async (req, res) => {
     res.status(500).json({ message: "Error al listar proveedores", error: error.message });
   }
 };
+// Obtener un proveedor por ID
+export const obtenerProveedor = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const proveedor = await Proveedor.findOne({ _id: id, user: req.user.id });
+    if (!proveedor) {
+      return res.status(404).json({ message: "Proveedor no encontrado" });
+    }
+    res.json(proveedor);
+  } catch (error) {
+    console.error("Error al obtener proveedor:", error);
+    res.status(500).json({ message: "Error al obtener proveedor" });
+  }
+};
 
-// etc. obtenerProveedor, actualizarProveedor, eliminarProveedor
+// **Actualizar** un proveedor por ID
+export const actualizarProveedor = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const proveedorActualizado = await Proveedor.findOneAndUpdate(
+      { _id: id, user: req.user.id },
+      req.body,
+      { new: true }
+    );
+    if (!proveedorActualizado) {
+      return res.status(404).json({ message: "Proveedor no encontrado" });
+    }
+    res.json(proveedorActualizado);
+  } catch (error) {
+    console.error("Error al actualizar proveedor:", error);
+    res.status(500).json({ message: "Error al actualizar proveedor" });
+  }
+};
+
+// Eliminar un proveedor
+export const eliminarProveedor = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const proveedorEliminado = await Proveedor.findOneAndDelete({ _id: id, user: req.user.id });
+    if (!proveedorEliminado) {
+      return res.status(404).json({ message: "Proveedor no encontrado" });
+    }
+    res.json({ message: "Proveedor eliminado correctamente" });
+  } catch (error) {
+    console.error("Error al eliminar proveedor:", error);
+    res.status(500).json({ message: "Error al eliminar proveedor" });
+  }
+};
 
 /**
  * Ejemplo de cálculo de saldo: 

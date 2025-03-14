@@ -61,3 +61,53 @@ export const listarMovimientos = async (req, res) => {
     return res.status(500).json({ message: "Error al listar", error: error.message });
   }
 };
+export const actualizarMovimiento = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const updated = await MovimientoContable.findOneAndUpdate(
+      { _id: id, user: req.user.id },
+      req.body,
+      { new: true }
+    );
+    if (!updated) {
+      return res.status(404).json({ message: "Movimiento no encontrado" });
+    }
+    return res.json(updated);
+  } catch (error) {
+    console.error("Error actualizando movimiento:", error);
+    return res.status(500).json({ message: "Error al actualizar movimiento" });
+  }
+};
+export const eliminarMovimiento = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const deleted = await MovimientoContable.findOneAndDelete({ _id: id, user: req.user.id });
+    if (!deleted) {
+      return res.status(404).json({ message: "Movimiento no encontrado" });
+    }
+    return res.json({ message: "Movimiento eliminado correctamente" });
+  } catch (error) {
+    console.error("Error eliminando movimiento:", error);
+    return res.status(500).json({ message: "Error al eliminar movimiento" });
+  }
+};
+export const obtenerMovimiento = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const mov = await MovimientoContable.findOne({
+      _id: id,
+      user: req.user.id
+    })
+      .populate("idObra")
+      .populate("idProveedor")
+      .populate("idCliente");
+
+    if (!mov) {
+      return res.status(404).json({ message: "Movimiento no encontrado" });
+    }
+    return res.json(mov);
+  } catch (error) {
+    console.error("Error obteniendo movimiento:", error);
+    return res.status(500).json({ message: "Error al obtener movimiento" });
+  }
+};
