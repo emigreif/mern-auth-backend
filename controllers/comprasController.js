@@ -1,96 +1,167 @@
 // backend/controllers/comprasController.js
-import { CompraAluminio, CompraVidrios, CompraAccesorios } from "../models/Compra.js";
-import { getAll, getById, create, update, remove } from "./BaseController.js";
+import { CompraBase, CompraAluminio, CompraVidrios, CompraAccesorios } from "../models/Compra.js";
+import nodemailer from "nodemailer";
 import { generarOrdenCompraPDF } from "../utils/pdfService.js";
 import { sendEmailWithAttachment } from "../utils/emailService.js";
 
-// Función auxiliar para seleccionar el modelo según el tipo de compra
-const getModel = (tipo) => {
+function getModel(tipo) {
   switch (tipo) {
     case "aluminio": return CompraAluminio;
     case "vidrios": return CompraVidrios;
     case "accesorios": return CompraAccesorios;
     default: return null;
   }
-};
+}
 
-// CRUD básico (apoyado en BaseController)
-export const listarCompras = (req, res) => {
-  const Model = getModel(req.params.tipo);
-  if (!Model) return res.status(400).json({ message: "Tipo de compra inválido" });
-  return getAll(Model)(req, res);
-};
-
-export const obtenerCompra = (req, res) => {
-  const Model = getModel(req.params.tipo);
-  if (!Model) return res.status(400).json({ message: "Tipo de compra inválido" });
-  return getById(Model)(req, res);
-};
-
-export const crearCompra = (req, res) => {
-  const Model = getModel(req.params.tipo);
-  if (!Model) return res.status(400).json({ message: "Tipo de compra inválido" });
-  return create(Model)(req, res);
-};
-
-export const actualizarCompra = (req, res) => {
-  const Model = getModel(req.params.tipo);
-  if (!Model) return res.status(400).json({ message: "Tipo de compra inválido" });
-  return update(Model)(req, res);
-};
-
-export const eliminarCompra = (req, res) => {
-  const Model = getModel(req.params.tipo);
-  if (!Model) return res.status(400).json({ message: "Tipo de compra inválido" });
-  return remove(Model)(req, res);
-};
-
-// Nuevo: Enviar orden de compra por correo (PDF)
-export const enviarOrdenCompra = async (req, res) => {
+// Listar
+export const listarCompras = async (req, res) => {
   try {
-    const Model = getModel(req.params.tipo);
-    if (!Model) {
-      return res.status(400).json({ message: "Tipo de compra inválido" });
+    const { tipo } = req.params;
+    // Si tipo = "todas", se buscan todas. Sino, filtrar por tipo.
+    let filter = { user: req.user.id };
+    if (tipo !== "todas") {
+      filter.tipo = tipo;
     }
+    // Populate
+    const compras = await CompraBase.find(filter)
+      .populate("proveedor", "nombre emails") 
+      .populate("obra", "nombre codigoObra")
+      .sort({ createdAt: -1 });
+    res.json(compras);
+  } catch (error) {
+    res.status(500).json({ message: "Error al listar compras", error: error.message });
+  }
+};
 
-    // Buscar la compra asegurando que pertenece al usuario
-    const compra = await Model.findOne({ _id: req.params.id, user: req.user.id })
-      .populate("user")      // Para acceder a user.razonSocial
-      .populate("proveedor"); // Para acceder a proveedor.emails (u otro campo)
+// Obtener
+export const obtenerCompra = async (req, res) => {
+  try {
+    const { tipo, id } = req.params;
+    // si quisieras forzar el discriminador, podrías: .findOne({ _id, tipo })
+    const compra = await CompraBase.findOne({ _id: id, user: req.user.id })
+      .populate("proveedor", "nombre emails")
+      .populate("obra", "nombre codigoObra");
+    if (!compra) return res.status(404).json({ message: "Compra no encontrada" });
+    res.json(compra);
+  } catch (error) {
+    res.status(500).json({ message: "Error al obtener compra", error: error.message });
+  }
+};
 
-    if (!compra) {
-      return res.status(404).json({ message: "Compra no encontrada" });
-    }
+// Crear
+export const crearCompra = async (req, res) => {
+  try {
+    const { tipo } = req.params;
+    const Model = getModel(tipo);
+    if (!Model) return res.status(400).json({ message: "Tipo de compra inválido" });
 
-    // Generar PDF en memoria
-    const { pdfBuffer, filename } = await generarOrdenCompraPDF(compra);
+    const newData = { ...req.body, user: req.user.id, tipo };
+    const compra = new Model(newData);
+    await compra.save();
 
-    // Construir asunto del correo (usa los campos del modelo)
-    const subject = `Orden de Compra: ${compra.user.razonSocial} - ${compra.numeroPedido} - ${compra.tipoCompra}`;
-    const text = "Adjuntamos la orden de compra en formato PDF.";
+    // Generar PDF
+    const pdfBuffer = await generarOrdenCompraPDF(compra, tipo);
+    // Enviar correo
+    // subject: "OC #<numeroOC> - Obra: <obra> - <RazónSocial> - <Tipo>"
+    const subject = `OC #${compra.numeroOC} - ${req.user.razonSocial || "MiEmpresa"} - ${tipo.toUpperCase()}`;
+    const text = `Estimado proveedor,\nAdjuntamos la orden de compra #${compra.numeroOC}...`;
+    const to = "proveedor@correo.com"; // Podrías usar compra.proveedor.emails[0]
 
-    // Obtener el email del proveedor (ejemplo: primer email del array)
-    let proveedorEmail = "proveedor@example.com";
-    if (compra.proveedor && compra.proveedor.emails && compra.proveedor.emails.length > 0) {
-      proveedorEmail = compra.proveedor.emails[0];
-    }
+    const mailRes = await sendEmailWithAttachment(to, subject, text, pdfBuffer);
+
+    res.status(201).json(compra);
+  } catch (error) {
+    console.error(error);
+    res.status(400).json({ message: "Error al crear compra", error: error.message });
+  }
+};
+
+// Actualizar
+export const actualizarCompra = async (req, res) => {
+  try {
+    const { tipo, id } = req.params;
+    const compra = await CompraBase.findOneAndUpdate(
+      { _id: id, user: req.user.id },
+      req.body,
+      { new: true }
+    );
+    if (!compra) return res.status(404).json({ message: "Compra no encontrada" });
+    res.json(compra);
+  } catch (error) {
+    res.status(400).json({ message: "Error al actualizar compra", error: error.message });
+  }
+};
+
+// Eliminar (anular)
+export const eliminarCompra = async (req, res) => {
+  try {
+    const { tipo, id } = req.params;
+    const compra = await CompraBase.findOne({ _id: id, user: req.user.id });
+    if (!compra) return res.status(404).json({ message: "Compra no encontrada" });
+
+    // En lugar de borrar, marcamos estado = "anulado" y enviamos correo de anulación
+    compra.estado = "anulado";
+    await compra.save();
 
     // Enviar correo
-    const emailResult = await sendEmailWithAttachment({
-      to: proveedorEmail,
-      subject,
-      text,
-      pdfBuffer,
-      pdfFilename: filename
+    // subject: "Anulación OC #..."
+    // etc.
+    res.json({ message: "Compra anulada correctamente" });
+  } catch (error) {
+    res.status(500).json({ message: "Error al anular compra", error: error.message });
+  }
+};
+
+// Ingreso de material
+export const ingresoMaterial = async (req, res) => {
+  try {
+    const { id } = req.params; // ID de la compra
+    const { numeroRemito, items } = req.body; // items: [{ itemId, cantidadIngresada }, ...]
+
+    const compra = await CompraBase.findOne({ _id: id, user: req.user.id });
+    if (!compra) return res.status(404).json({ message: "Compra no encontrada" });
+
+    // Guardar el remito
+    compra.remitos.push({
+      numeroRemito,
+      fechaIngreso: new Date(),
+      items,
     });
 
-    if (!emailResult.success) {
-      return res.status(500).json({ message: "Error al enviar el correo" });
+    // Actualizar cantidades ingresadas
+    if (compra.tipo === "aluminio") {
+      items.forEach(({ itemId, cantidadIngresada }) => {
+        const item = compra.pedido.find((p) => p._id.toString() === itemId);
+        if (item) {
+          item.cantidadIngresada += cantidadIngresada;
+        }
+      });
+    } else if (compra.tipo === "vidrios") {
+      items.forEach(({ itemId, cantidadIngresada }) => {
+        const v = compra.vidrios.find((p) => p._id.toString() === itemId);
+        if (v) {
+          v.cantidadIngresada += cantidadIngresada;
+        }
+      });
+    } else if (compra.tipo === "accesorios") {
+      items.forEach(({ itemId, cantidadIngresada }) => {
+        const a = compra.accesorios.find((p) => p._id.toString() === itemId);
+        if (a) {
+          a.cantidadIngresada += cantidadIngresada;
+        }
+      });
     }
 
-    res.json({ message: "Correo enviado correctamente" });
+    // Verificar si ya se ingresó todo => estado = "completado"
+    // (opcional)
+    // Por ejemplo, en Aluminio => si cada item.cantidadIngresada >= item.cantidad => completado
+    let completado = false; // tu lógica
+    // ...
+    // compra.estado = completado ? "completado" : compra.estado;
+
+    await compra.save();
+    res.json({ message: "Ingreso de material registrado" });
   } catch (error) {
-    console.error("Error en enviarOrdenCompra:", error);
-    res.status(500).json({ message: "Error en el servidor" });
+    res.status(500).json({ message: "Error al ingresar material", error: error.message });
   }
 };

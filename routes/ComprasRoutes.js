@@ -7,27 +7,24 @@ import {
   crearCompra,
   actualizarCompra,
   eliminarCompra,
-  enviarOrdenCompra
+  ingresoMaterial
 } from "../controllers/comprasController.js";
 
 const router = express.Router();
 
-/**
- * Recuerda que en tu controller usas req.params.tipo (aluminio, vidrios, accesorios).
- * Por eso las rutas deben incluir ":tipo".
- */
+// GET /api/compras/:tipo (o "todas")
+router.get("/:tipo", protect, listarCompras);
+// POST /api/compras/:tipo
+router.post("/:tipo", protect, crearCompra);
 
-// CRUD endpoints
-router.route("/:tipo")
-  .get(protect, listarCompras)
-  .post(protect, crearCompra);
+// GET /api/compras/:tipo/:id
+router.get("/:tipo/:id", protect, obtenerCompra);
+// PUT /api/compras/:tipo/:id
+router.put("/:tipo/:id", protect, actualizarCompra);
+// DELETE /api/compras/:tipo/:id => anula la compra
+router.delete("/:tipo/:id", protect, eliminarCompra);
 
-router.route("/:tipo/:id")
-  .get(protect, obtenerCompra)
-  .put(protect, actualizarCompra)
-  .delete(protect, eliminarCompra);
-
-// Nuevo endpoint para enviar la orden de compra
-router.post("/:tipo/:id/enviar", protect, enviarOrdenCompra);
+// POST /api/compras/ingreso/:id => ingreso de material
+router.post("/ingreso/:id", protect, ingresoMaterial);
 
 export default router;
