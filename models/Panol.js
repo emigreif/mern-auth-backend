@@ -1,51 +1,58 @@
 // backend/models/Panol.js
-import mongoose from 'mongoose';
+import mongoose from "mongoose";
 
+// Sub-esquema para Herramientas
 const herramientaSchema = new mongoose.Schema({
-  descripcion: { type: String, required: true, trim: true },
-  marca: { type: String, required: true, trim: true },
-  modelo: { type: String, required: true, trim: true },
-  identificacion: { type: String, required: true, trim: true },
+  marca: String,
+  modelo: String,
+  descripcion: String,
+  numeroSerie: String,
   estado: {
     type: String,
-    enum: ['disponible', 'en uso', 'en mantenimiento'],
-    default: 'disponible'
+    enum: ["en stock", "en obra", "baja"],
+    default: "en stock"
   },
-}, { timestamps: true });
+  // Otras campos: "quienRetiro", "fechaRetiro", "fechaDevolucion", etc.
+  user: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true }
+});
 
+// Sub-esquema para Perfiles
 const perfilSchema = new mongoose.Schema({
-  codigo: { type: String, required: true, trim: true },
-  cantidad: { type: Number, required: true, min: 0 },
-  descripcion: { type: String, required: true, trim: true },
-  largo: { type: String, required: true, trim: true },
-  color: { type: String, required: true, trim: true },
-}, { timestamps: true });
+  codigo: String,
+  descripcion: String,
+  tratamiento: String,
+  largo: Number,
+  cantidad: Number,
+  user: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true }
+});
 
-const accesorioSchema = new mongoose.Schema({
-  codigo: { type: String, required: true, trim: true },
-  descripcion: { type: String, required: true, trim: true },
-  color: { type: String, required: true, trim: true },
-  cantidad: { type: Number, required: true, min: 0 },
-  marca: { type: String, required: true, trim: true },
-}, { timestamps: true });
-
+// Sub-esquema para Vidrios
 const vidrioSchema = new mongoose.Schema({
-  codigo: { type: String, required: true, trim: true },
-  descripcion: { type: String, required: true, trim: true },
-  cantidad: { type: Number, required: true, min: 0 },
-  ancho: { type: Number, required: true },
-  alto: { type: Number, required: true },
-}, { timestamps: true });
+  tipo: { type: String, enum: ["simple", "dvh", "tvh", "laminado"], default: "simple" },
+  descripcion: String,
+  ancho: Number,
+  alto: Number,
+  cantidad: Number,
+  user: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true }
+});
+
+// Sub-esquema para Accesorios
+const accesorioSchema = new mongoose.Schema({
+  codigo: String,
+  descripcion: String,
+  color: String,
+  cantidad: Number,
+  unidad: String,
+  user: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true }
+});
 
 const panolSchema = new mongoose.Schema({
+  // Estructura principal
   herramientas: [herramientaSchema],
   perfiles: [perfilSchema],
-  accesorios: [accesorioSchema],
   vidrios: [vidrioSchema],
-  user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true }
-}, { timestamps: true });
+  accesorios: [accesorioSchema],
+  user: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true }
+});
 
-// ➜ Índice para filtrar por user
-panolSchema.index({ user: 1 });
-
-export default mongoose.model('Panol', panolSchema);
+export default mongoose.model("Panol", panolSchema);

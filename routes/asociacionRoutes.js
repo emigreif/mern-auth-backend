@@ -1,23 +1,17 @@
 // backend/routes/asociacionRoutes.js
 import express from "express";
-import {
-  asociarMedidasAVanos,
-  obtenerAsignaciones,
-  eliminarAsignacion,
-} from "../controllers/asociacionController.js";
 import { protect } from "../middleware/authMiddleware.js";
+import {
+  asignarTipologiasAUbicacion,
+  eliminarTipologiaDeUbicacion
+} from "../controllers/asociacionController.js";
 
 const router = express.Router();
 
-// POST y GET en la raíz "/"
-router.post("/", protect, asociarMedidasAVanos);
-router.get("/", protect, obtenerAsignaciones);
+// POST => asignar tipologías
+router.post("/asignar", protect, asignarTipologiasAUbicacion);
 
-/**
- * Según tu controlador `eliminarAsignacion`, se usan `ubicacionId` y `vanoId` en `req.params`.
- * Por lo tanto, la ruta debe incluir ambos parámetros. 
- * Ajustamos a "/:ubicacionId/:vanoId".
- */
-router.delete("/:ubicacionId/:vanoId", protect, eliminarAsignacion);
+// DELETE => quitar tipología (ubicacionId, tipologiaId)
+router.delete("/:ubicacionId/:tipologiaId", protect, eliminarTipologiaDeUbicacion);
 
 export default router;
