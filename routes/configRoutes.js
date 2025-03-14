@@ -1,13 +1,12 @@
+// backend/routes/configRoutes.js
 import express from "express";
-import { obtenerConfiguracion, actualizarConfiguracion } from "../controllers/configController.js";
 import { protect } from "../middleware/authMiddleware.js";
+import { obtenerConfiguracion, actualizarConfiguracion } from "../controllers/configController.js";
 
 const router = express.Router();
 
-// 📌 Ruta para obtener la configuración del usuario autenticado
-router.get("/", protect, obtenerConfiguracion);
-
-// 📌 Ruta para actualizar la configuración
-router.put("/", protect, actualizarConfiguracion);
+router.route("/")
+  .get(protect, obtenerConfiguracion)
+  .put(protect, actualizarConfiguracion);
 
 export default router;

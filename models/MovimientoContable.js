@@ -1,72 +1,72 @@
 // backend/models/MovimientoContable.js
-import mongoose from "mongoose";
+import mongoose from 'mongoose';
 
-const movimientoSchema = new mongoose.Schema(
-  {
-    // Tipo de movimiento
-    tipo: {
-      type: String,
-      enum: [
-        "PAGO_EMITIDO",      // Egreso
-        "PAGO_RECIBIDO",     // Ingreso
-        "FACTURA_EMITIDA",   // Podrías usarlo si registras facturas
-        "FACTURA_RECIBIDA",  // ...
-      ],
-      required: true,
-    },
+const partidaObraSchema = new mongoose.Schema({
+  obra: { type: mongoose.Schema.Types.ObjectId, ref: 'Obra' },
+  monto: { type: Number, default: 0 },
+}, { _id: false });
 
-    // Monto del movimiento
-    monto: { type: Number, required: true },
-
-    // Fecha del movimiento contable
-    fecha: { type: Date, default: Date.now },
-
-    // "conFactura" / "sinFactura"
-    // O podrías usar un boolean "conFactura" => true/false
-    factura: {
-      type: String,
-      enum: ["con", "sin"],
-      default: "sin",
-    },
-
-    // Campo para método de pago (efectivo, cheque, transferencia, etc.)
-    metodoPago: {
-      type: String,
-      enum: ["efectivo", "cheque", "transferencia", "otro"],
-      required: true,
-    },
-
-    // Para cheques: datos específicos
-    cheque: {
-      numero: { type: String, trim: true },
-      banco: { type: String, trim: true },
-      fechaAcreditacion: { type: Date },
-      endosadoA: { type: String, trim: true }, // si es cheque emitido y se endosa
-    },
-
-    // Para transferencias: datos específicos
-    transferencia: {
-      nroOperacion: { type: String, trim: true },
-      fechaAcreditacion: { type: Date },
-    },
-
-    // Descripción o detalle del movimiento
-    descripcion: { type: String, trim: true },
-
-    // Relación con Obra (opcional)
-    // si no se asigna a ninguna, se puede usar "obra: null"
-    obra: { type: mongoose.Schema.Types.ObjectId, ref: "Obra" },
-
-    // Relación con Proveedor (para PAGO_EMITIDO)
-    proveedor: { type: mongoose.Schema.Types.ObjectId, ref: "Proveedor" },
-
-    // Relación con Cliente (para PAGO_RECIBIDO, si aplica)
-    cliente: { type: mongoose.Schema.Types.ObjectId, ref: "Cliente" },
-
-    // El usuario dueño de este movimiento
-    user: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
+const movimientoSchema = new mongoose.Schema({
+  tipo: {
+    type: String,
+    enum: [
+      // Ventas / Cobranzas
+      'FACTURA_EMITIDA',
+      'PAGO_RECIBIDO',       // genérico
+      'EFECTIVO_RECIBIDO',
+      'CHEQUE_RECIBIDO',
+      'TRANSFERENCIA_RECIBIDA',
+      // Compras / Pagos
+      'FACTURA_RECIBIDA',
+      'PAGO_EMITIDO',
+      'EFECTIVO_EMITIDO',
+      'CHEQUE_EMITIDO',
+      'TRANSFERENCIA_EMITIDA',
+    ],
+    required: true
   },
-  { timestamps: true }
-);
+  monto: { type: Number, required: true },
 
-export default mongoose.model("MovimientoContable", movimientoSchema);
+  // Para movimientos con/sin factura
+  esConFactura: { type: Boolean, default: false },
+
+  fecha: { type: Date, default: Date.now },           // Fecha del movimiento
+  fechaAcreditacion: { type: Date },                 // Fecha en que se acredita (cheque/transfer)
+  descripcion: { type: String },
+
+  // Referencias
+  idProveedor: { type: mongoose.Schema.Types.ObjectId, ref: 'Proveedor' },
+  idCliente: { type: mongoose.Schema.Types.ObjectId, ref: 'Cliente' },
+
+  // Subdividir la factura/pago en partidas de obras
+  partidasObra: [partidaObraSchema],
+
+  // Sub-índice de factura (por si se subdivide la misma)
+  subIndiceFactura: { type: String },
+
+  // DETALLES de cheque (si tipo es CHEQUE_RECIBIDO / CHEQUE_EMITIDO)
+  datosCheque: {
+    numeroCheque: { type: String },
+    banco: { type: String },
+    fechaVencimiento: { type: Date },
+    endosadoA: { type: String },      // en caso de cheque emitido
+    estadoCheque: {
+      type: String,
+      enum: ['pendiente', 'acreditado', 'devuelto', 'endosado', 'cancelado'],
+      default: 'pendiente'
+    }
+  },
+
+  // DETALLES de transferencia (si tipo es TRANSFERENCIA_*)
+  datosTransferencia: {
+    numeroComprobante: { type: String },
+    bancoOrigen: { type: String },
+    bancoDestino: { type: String },
+  },
+
+  // El usuario dueño de este movimiento
+  user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true }
+
+}, { timestamps: true });
+
+export default mongoose.model('MovimientoContable', movimientoSchema);
