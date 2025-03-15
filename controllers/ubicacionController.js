@@ -1,6 +1,6 @@
 // backend/controllers/ubicacionController.js
 import Ubicacion from "../models/Ubicacion.js";
-import { getAll, getById, create, update, remove } from "./BaseController.js";
+import { getAll, getById, create, update, remove } from "./baseController.js";
 
 // 1. CRUD básico
 export const listarUbicaciones = getAll(Ubicacion);

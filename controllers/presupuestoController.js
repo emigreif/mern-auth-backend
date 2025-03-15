@@ -1,6 +1,6 @@
 // backend/controllers/presupuestoController.js
-import Presupuesto from "../models/Presupuesto.js";
-import {  getById, create, update, remove } from "./BaseController.js";
+import Presupuesto from "../models/presupuesto.js";
+import {  getById, create, update, remove } from "./baseController.js";
 
 
 export const obtenerPresupuesto = getById(Presupuesto);

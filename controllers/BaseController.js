@@ -1,3 +1,4 @@
+// controllers/baseController.js
 export const getAll = (Model) => async (req, res) => {
   try {
     const data = await Model.find({ user: req.user.id });
@@ -43,7 +44,10 @@ export const update = (Model) => async (req, res) => {
 
 export const remove = (Model) => async (req, res) => {
   try {
-    const deletedItem = await Model.findOneAndDelete({ _id: req.params.id, user: req.user.id });
+    const deletedItem = await Model.findOneAndDelete({
+      _id: req.params.id,
+      user: req.user.id
+    });
     if (!deletedItem) return res.status(404).json({ message: "No encontrado" });
     res.json({ message: "Eliminado correctamente" });
   } catch (error) {

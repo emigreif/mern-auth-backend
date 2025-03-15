@@ -1,4 +1,4 @@
-
+// backend/routes/obraRoutes.js
 import express from "express";
 import { protect } from "../middleware/authMiddleware.js";
 import {
@@ -10,6 +10,11 @@ import {
 } from "../controllers/obraController.js";
 
 const router = express.Router();
+
+/**
+ * /api/obras => GET (listar), POST (crear)
+ * /api/obras/:id => GET, PUT, DELETE
+ */
 
 router.route("/")
   .get(protect, listarObras)

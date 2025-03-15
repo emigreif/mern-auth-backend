@@ -1,6 +1,6 @@
-// backend/controllers/perfilController.js
-import Perfil from "../models/Perfil.js";
-import User from "../models/User.js";
+// controllers/perfilController.js
+import Perfil from "../models/perfil.js";
+import User from "../models/user.js";
 
 // Listar Perfiles => si no hay, crea "admin"/"1234"
 export const listarPerfiles = async (req, res) => {
@@ -22,7 +22,7 @@ export const listarPerfiles = async (req, res) => {
           reportes: true,
           nomina: true,
           admin: true
-        },
+        }
       });
       await adminPerfil.save();
       perfiles = [adminPerfil];
@@ -30,7 +30,9 @@ export const listarPerfiles = async (req, res) => {
     res.json(perfiles);
   } catch (error) {
     console.error("Error al listar perfiles:", error);
-    res.status(500).json({ message: "Error al listar perfiles", error: error.message });
+    res
+      .status(500)
+      .json({ message: "Error al listar perfiles", error: error.message });
   }
 };
 
@@ -45,7 +47,7 @@ export const crearPerfil = async (req, res) => {
     const count = await Perfil.countDocuments({ userId });
     if (count >= user.cantidadUsuarios) {
       return res.status(403).json({
-        message: `Has alcanzado el máximo de perfiles (${user.cantidadUsuarios}).`,
+        message: `Has alcanzado el máximo de perfiles (${user.cantidadUsuarios}).`
       });
     }
 
@@ -70,7 +72,9 @@ export const loginPerfil = async (req, res) => {
     const userId = req.user.id;
     const { perfilName, perfilPass } = req.body;
     const perfil = await Perfil.findOne({ userId, nombre: perfilName });
-    if (!perfil) return res.status(404).json({ message: "Perfil no encontrado" });
+    if (!perfil) {
+      return res.status(404).json({ message: "Perfil no encontrado" });
+    }
     if (perfil.password !== perfilPass) {
       return res.status(401).json({ message: "Contraseña de perfil inválida" });
     }
@@ -86,6 +90,7 @@ export const editarPerfil = async (req, res) => {
   try {
     const userId = req.user.id;
     const { id, nombre, password, permisos } = req.body;
+
     const perfil = await Perfil.findOne({ _id: id, userId });
     if (!perfil) return res.status(404).json({ message: "Perfil no encontrado" });
 

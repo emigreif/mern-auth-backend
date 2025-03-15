@@ -1,16 +1,21 @@
-// backend/controllers/employeeController.js
-import Employee from "../models/Employee.js";
-import { getById, create, update, remove } from "./BaseController.js";
+// controllers/employeeController.js
+import Employee from "../models/employee.js";
+import { getById, create, update, remove } from "./baseController.js";
 
-// GET con populate
+/**
+ * GET con populate si deseas
+ */
 export const getEmployees = async (req, res) => {
   try {
-    // Filtra por el user
-    const employees = await Employee.find({ user: req.user.id })
-      .populate("user", "firstName lastName email");
+    const employees = await Employee.find({ user: req.user.id }).populate(
+      "user",
+      "firstName lastName email"
+    );
     res.json(employees);
   } catch (error) {
-    res.status(500).json({ message: "Error al obtener empleados", error: error.message });
+    res
+      .status(500)
+      .json({ message: "Error al obtener empleados", error: error.message });
   }
 };
 

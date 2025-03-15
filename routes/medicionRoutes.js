@@ -13,9 +13,17 @@ import {
 
 const router = express.Router();
 
+/**
+ * /api/mediciones => GET (listar), POST (crear)
+ * /api/mediciones/:id => GET, PUT, DELETE
+ * /api/mediciones/masivo => POST (crear masivo)
+ * /api/mediciones/reporte/obra/:obraId => GET
+ */
+
 router.get("/", protect, listarMediciones);
-router.get("/:id", protect, obtenerMedicion);
 router.post("/", protect, crearMedicion);
+
+router.get("/:id", protect, obtenerMedicion);
 router.put("/:id", protect, actualizarMedicion);
 router.delete("/:id", protect, eliminarMedicion);
 

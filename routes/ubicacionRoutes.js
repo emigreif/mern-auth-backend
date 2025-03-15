@@ -12,13 +12,19 @@ import {
 
 const router = express.Router();
 
+/**
+ * /api/ubicaciones => GET (listar), POST (crear)
+ * /api/ubicaciones/:id => GET, PUT, DELETE
+ * /api/ubicaciones/generar => POST (crear en masa)
+ */
+
 router.get("/", protect, listarUbicaciones);
-router.get("/:id", protect, obtenerUbicacion);
 router.post("/", protect, crearUbicacion);
+
+router.get("/:id", protect, obtenerUbicacion);
 router.put("/:id", protect, actualizarUbicacion);
 router.delete("/:id", protect, eliminarUbicacion);
 
-// Generar masivamente
 router.post("/generar", protect, generarUbicaciones);
 
 export default router;

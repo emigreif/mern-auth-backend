@@ -11,13 +11,15 @@ import {
 
 const router = express.Router();
 
-// Obtener todos los calendarios (con filtros opcionales)
-router.get("/", protect, listarCalendarios);
+/**
+ * /api/calendario => GET (listar con filtros)
+ * /api/calendario/generar => POST (body: { obraId })
+ * /api/calendario/:obraId => GET (obtener), PUT (actualizar), DELETE (eliminar)
+ */
 
-// Generar calendario automáticamente
+router.get("/", protect, listarCalendarios);
 router.post("/generar", protect, generarCalendarioDesdeObra);
 
-// Obtener, actualizar y eliminar por obraId
 router.get("/:obraId", protect, obtenerCalendario);
 router.put("/:obraId", protect, actualizarCalendario);
 router.delete("/:obraId", protect, eliminarCalendario);

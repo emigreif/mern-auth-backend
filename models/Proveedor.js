@@ -1,18 +1,25 @@
-// backend/models/Proveedor.js
-import mongoose from 'mongoose';
+// models/proveedor.js
+import mongoose from "mongoose";
 
-const proveedorSchema = new mongoose.Schema({
-  nombre: { type: String, required: true, trim: true },
-  direccion: { type: String, required: true, trim: true },
-  emails: [{ type: String, trim: true, lowercase: true }],
-  telefono: { type: String, trim: true },
-  whatsapp: { type: String, trim: true },
-  balance: { type: Number, default: 0 },
-  rubro: [{ type: String, enum: ['Vidrio', 'Perfiles', 'Accesorios',, 'Compras Generales', 'otro'] }],
-  user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true }
-}, { timestamps: true });
+const proveedorSchema = new mongoose.Schema(
+  {
+    nombre: { type: String, required: true, trim: true },
+    direccion: { type: String, required: true, trim: true },
+    emails: [{ type: String, trim: true, lowercase: true }],
+    telefono: { type: String, trim: true },
+    whatsapp: { type: String, trim: true },
+    balance: { type: Number, default: 0 },
+    rubro: [
+      {
+        type: String,
+        enum: ["Vidrio", "Perfiles", "Accesorios", "Compras Generales", "otro"]
+      }
+    ],
+    user: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true }
+  },
+  { timestamps: true }
+);
 
-// ➜ Índice para filtrar por user
 proveedorSchema.index({ user: 1 });
 
-export default mongoose.model('Proveedor', proveedorSchema);
+export default mongoose.model("Proveedor", proveedorSchema);

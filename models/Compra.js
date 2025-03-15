@@ -1,116 +1,95 @@
-// backend/models/Compra.js
+// models/compra.js
 import mongoose from "mongoose";
-import { getNextOrderNumber } from "../utils/orderNumber.js";
 
 /**
- * Estado de la compra:
- * - pendiente (creada, no ingresado todo el material)
- * - completada (ya ingresado todo)
- * - anulado (se envía correo de anulación)
+ * Discriminadores para compra de Aluminio, Vidrios y Accesorios
  */
-
-const BaseCompraSchema = new mongoose.Schema(
+const compraBaseSchema = new mongoose.Schema(
   {
-    numeroOC: { type: Number, unique: true },
-    tipo: { type: String, enum: ["aluminio", "vidrios", "accesorios"], required: true },
-    estado: { type: String, enum: ["pendiente", "anulado", "completado"], default: "pendiente" },
-    fechaCompra: { type: Date, default: Date.now },
-    fechaEstimadaEntrega: { type: Date }, // para semáforo
-    user: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
-
-    // Proveedor
-    proveedor: { type: mongoose.Schema.Types.ObjectId, ref: "Proveedor", required: true },
-    // Obra
-    obra: { type: mongoose.Schema.Types.ObjectId, ref: "Obra", required: true },
-
-    // Lugar de entrega
-    lugarEntrega: { type: String, default: "" },
-
-    // Remitos ingresados
+    numeroOC: { type: Number, default: 0 },
+    tipo: { type: String, required: true }, // "aluminio", "vidrios", "accesorios"
+    proveedor: { type: mongoose.Schema.Types.ObjectId, ref: "Proveedor" },
+    obra: { type: mongoose.Schema.Types.ObjectId, ref: "Obra" },
+    fechaEstimadaEntrega: { type: Date },
+    factura: { type: String, trim: true },
+    remito: { type: String, trim: true },
+    lugarEntrega: { type: String, trim: true },
+    direccionEntrega: { type: String, trim: true },
+    tratamiento: { type: String, trim: true },
+    estado: { type: String, default: "pendiente" }, // "pendiente", "anulado", "completado"
     remitos: [
       {
         numeroRemito: String,
         fechaIngreso: Date,
         items: [
           {
-            // itemId para identificar qué item se está ingresando
             itemId: String,
-            cantidadIngresada: Number,
-          },
-        ],
-      },
+            cantidadIngresada: Number
+          }
+        ]
+      }
     ],
-
-    // Info de correo
-    factura: { type: String },
-    // etc.
+    user: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true }
   },
   { timestamps: true, discriminatorKey: "tipo" }
 );
 
+export const CompraBase = mongoose.model("CompraBase", compraBaseSchema);
+
 /**
- * Al guardar por primera vez, asignar un numeroOC correlativo.
+ * CompraAluminio
  */
-BaseCompraSchema.pre("save", async function (next) {
-  if (this.isNew && !this.numeroOC) {
-    try {
-      const nextSeq = await getNextOrderNumber();
-      this.numeroOC = nextSeq;
-      next();
-    } catch (err) {
-      next(err);
-    }
-  } else {
-    next();
-  }
-});
-
-// Modelo base
-export const CompraBase = mongoose.model("CompraBase", BaseCompraSchema);
-
-// Modelo Aluminio
-const AluminioSchema = new mongoose.Schema({
-  direccionEntrega: { type: String },
-  tratamiento: { type: String },
+const compraAluminioSchema = new mongoose.Schema({
   pedido: [
     {
       codigo: String,
       descripcion: String,
       largo: Number,
       cantidad: Number,
-      cantidadIngresada: { type: Number, default: 0 },
-    },
-  ],
+      cantidadIngresada: { type: Number, default: 0 }
+    }
+  ]
 });
-export const CompraAluminio = CompraBase.discriminator("aluminio", AluminioSchema);
+export const CompraAluminio = CompraBase.discriminator(
+  "aluminio",
+  compraAluminioSchema
+);
 
-// Modelo Vidrios
-const VidriosSchema = new mongoose.Schema({
+/**
+ * CompraVidrios
+ */
+const compraVidriosSchema = new mongoose.Schema({
   vidrios: [
     {
+      codigo: String,
       descripcion: String,
-      cantidad: Number,
-      cantidadIngresada: { type: Number, default: 0 },
       ancho: Number,
       alto: Number,
-      observaciones: String,
-    },
-  ],
+      cantidad: Number,
+      cantidadIngresada: { type: Number, default: 0 }
+    }
+  ]
 });
-export const CompraVidrios = CompraBase.discriminator("vidrios", VidriosSchema);
+export const CompraVidrios = CompraBase.discriminator(
+  "vidrios",
+  compraVidriosSchema
+);
 
-// Modelo Accesorios
-const AccesoriosSchema = new mongoose.Schema({
+/**
+ * CompraAccesorios
+ */
+const compraAccesoriosSchema = new mongoose.Schema({
   accesorios: [
     {
       codigo: String,
       descripcion: String,
       color: String,
       cantidad: Number,
-      cantidadIngresada: { type: Number, default: 0 },
-      unidad: String,
-      observaciones: String,
-    },
-  ],
+      cantidadIngresada: { type: Number, default: 0 }
+    }
+  ]
 });
-export const CompraAccesorios = CompraBase.discriminator("accesorios", AccesoriosSchema);
+export const CompraAccesorios = CompraBase.discriminator(
+  "accesorios",
+  compraAccesoriosSchema
+);

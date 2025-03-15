@@ -1,5 +1,6 @@
-import Cliente from "../models/Cliente.js";
-import { getAll, getById, create, update, remove } from "./BaseController.js";
+// controllers/clienteController.js
+import Cliente from "../models/cliente.js";
+import { getAll, getById, create, update, remove } from "./baseController.js";
 
 export const listarClientes = getAll(Cliente);
 export const obtenerCliente = getById(Cliente);

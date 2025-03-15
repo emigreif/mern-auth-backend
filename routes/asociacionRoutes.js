@@ -8,10 +8,12 @@ import {
 
 const router = express.Router();
 
-// POST => asignar tipologías
-router.post("/asignar", protect, asignarTipologiasAUbicacion);
+/**
+ * /api/asociacion/asignar => POST (body: { ubicacionId, tipologiaIds[] })
+ * /api/asociacion/:ubicacionId/:tipologiaId => DELETE
+ */
 
-// DELETE => quitar tipología (ubicacionId, tipologiaId)
+router.post("/asignar", protect, asignarTipologiasAUbicacion);
 router.delete("/:ubicacionId/:tipologiaId", protect, eliminarTipologiaDeUbicacion);
 
 export default router;

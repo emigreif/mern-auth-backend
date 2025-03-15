@@ -1,7 +1,13 @@
-// backend/middleware/authMiddleware.js
+// middleware/authMiddleware.js
 import jwt from "jsonwebtoken";
-import User from "../models/User.js"; // Ruta según tu estructura
+import User from "../models/user.js"; // Ajusta la ruta si difiere en tu estructura
 
+/**
+ * Middleware protect:
+ *  - Verifica el token JWT en Authorization: Bearer <token>
+ *  - Decodifica y asigna req.user con el user de la DB
+ *  - Si falla, retorna 401
+ */
 export const protect = async (req, res, next) => {
   let token = req.headers.authorization;
 
@@ -16,14 +22,16 @@ export const protect = async (req, res, next) => {
       // Verificar que el usuario aún exista
       const user = await User.findById(decoded.id);
       if (!user) {
-        return res.status(401).json({ message: "Usuario no encontrado o inactivo" });
+        return res
+          .status(401)
+          .json({ message: "Usuario no encontrado o inactivo" });
       }
 
-      // Guardar algunos datos en req.user
+      // Guardar datos en req.user
       req.user = {
         id: user._id,
         email: user.email,
-        esAdmin: user.esAdmin,
+        esAdmin: user.esAdmin
       };
 
       next();

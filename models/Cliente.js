@@ -1,26 +1,22 @@
-// backend/models/Cliente.js
+// models/cliente.js
 import mongoose from "mongoose";
 
 const clienteSchema = new mongoose.Schema(
   {
-    tipoCliente: { type: String, enum: ["particular", "empresa"], required: true },
     nombre: { type: String, required: true, trim: true },
     apellido: { type: String, required: true, trim: true },
-    empresa: { type: String, trim: true },
-    email: { type: String, required: true, trim: true, lowercase: true },
-    telefono: { type: String, required: true, trim: true },
+    email: { type: String, trim: true },
+    telefono: { type: String, trim: true },
     direccion: {
-      calle: { type: String, required: true, trim: true },
-      ciudad: { type: String, required: true, trim: true },
+      calle: { type: String, trim: true },
+      ciudad: { type: String, trim: true }
     },
-    obras: [{ type: mongoose.Schema.Types.ObjectId, ref: "Obra" }],
-    notas: { type: String, trim: true },
-    user: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
+    user: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true }
   },
   { timestamps: true }
 );
 
-// ➜ Índice compuesto para que `email` sea único POR usuario (y no global)
-clienteSchema.index({ user: 1, email: 1 }, { unique: true });
+// Índice opcional si deseas buscar por user + email
+clienteSchema.index({ user: 1 });
 
 export default mongoose.model("Cliente", clienteSchema);

@@ -1,5 +1,5 @@
-// backend/controllers/authController.js
-import User from "../models/User.js";
+// controllers/authController.js
+import User from "../models/user.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import nodemailer from "nodemailer";
@@ -25,7 +25,9 @@ export const register = async (req, res) => {
 
     // Verificar campos obligatorios
     if (!email || !password || !repeatPassword || !firstName || !lastName) {
-      return res.status(400).json({ message: "Todos los campos obligatorios deben ser completados" });
+      return res
+        .status(400)
+        .json({ message: "Todos los campos obligatorios deben ser completados" });
     }
 
     // Verificar contraseñas
@@ -84,7 +86,9 @@ export const login = async (req, res) => {
     }
 
     // Generar token JWT
-    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: "1h" });
+    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
+      expiresIn: "1h"
+    });
 
     // Retornamos token y user (sin password)
     const { password: _, ...userData } = user._doc;
@@ -97,7 +101,7 @@ export const login = async (req, res) => {
 // 3. LOGOUT
 export const logout = (req, res) => {
   try {
-    // Ahora no manejamos cookies => simplemente respondemos OK
+    // No manejamos cookies => simplemente respondemos OK
     return res.status(200).json({ message: "Logout exitoso" });
   } catch (error) {
     console.error("Error al hacer logout", error);
@@ -116,7 +120,9 @@ export const forgotPassword = async (req, res) => {
     // Verificar si el usuario existe
     const user = await User.findOne({ email });
     if (!user) {
-      return res.status(404).json({ message: "No existe un usuario con ese email" });
+      return res
+        .status(404)
+        .json({ message: "No existe un usuario con ese email" });
     }
 
     // Generar token aleatorio
@@ -129,15 +135,14 @@ export const forgotPassword = async (req, res) => {
 
     // Configurar transporter de nodemailer
     const transporter = nodemailer.createTransport({
-      service: "gmail", // o el proveedor que uses
+      service: "gmail",
       auth: {
         user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS,
-      },
+        pass: process.env.EMAIL_PASS
+      }
     });
 
     // Construir el link de reseteo
-    // Ajustar la URL a tu frontend
     const resetUrl = `http://localhost:5173/reset-password/${resetToken}`;
 
     // Contenido del email
@@ -145,14 +150,14 @@ export const forgotPassword = async (req, res) => {
       from: process.env.EMAIL_USER,
       to: user.email,
       subject: "Recuperar contraseña",
-      text: `Has solicitado un cambio de contraseña. Haz clic aquí para restablecerla: ${resetUrl}`,
+      text: `Has solicitado un cambio de contraseña. Haz clic aquí para restablecerla: ${resetUrl}`
     };
 
     // Enviar correo
     await transporter.sendMail(mailOptions);
 
     res.json({
-      message: "Email de recuperación enviado. Revisa tu bandeja de entrada.",
+      message: "Email de recuperación enviado. Revisa tu bandeja de entrada."
     });
   } catch (error) {
     console.error("Error en forgotPassword:", error);
@@ -163,13 +168,13 @@ export const forgotPassword = async (req, res) => {
 // 5. RESET PASSWORD
 export const resetPassword = async (req, res) => {
   try {
-    const { token } = req.params; // resetToken en la URL
+    const { token } = req.params; // resetToken en la URL (si lo usaras así)
     const { newPassword } = req.body;
 
     // Buscar usuario con ese token y que no esté expirado
     const user = await User.findOne({
       resetPasswordToken: token,
-      resetPasswordExpires: { $gt: Date.now() },
+      resetPasswordExpires: { $gt: Date.now() }
     });
 
     if (!user) {

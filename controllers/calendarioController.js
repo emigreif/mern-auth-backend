@@ -1,60 +1,110 @@
-import Obra from "../models/Obra.js";
+// controllers/calendarioController.js
+import Obra from "../models/obra.js";
 
-// 📌 Obtener todos los eventos del calendario con opción de filtrar por obra o actividad
+/**
+ * Obtener todos los eventos del calendario con opción de filtrar por obra o actividad
+ */
 export const listarCalendarios = async (req, res) => {
   try {
     const { obraId, actividad } = req.query;
-
     let query = { user: req.user.id };
 
-    // 📌 Filtrar por una obra específica si obraId está presente
+    // Filtrar por obra específica si obraId está presente
     if (obraId) {
       query._id = obraId;
     }
 
-    // 📌 Obtener todas las obras del usuario con los filtros aplicados
     const obras = await Obra.find(query);
-
     if (!obras.length) {
-      return res.status(404).json({ message: "No se encontraron obras con estos filtros" });
+      return res
+        .status(404)
+        .json({ message: "No se encontraron obras con estos filtros" });
     }
 
-    // 📌 Formatear datos para enviarlos al frontend
     let eventos = [];
-
     obras.forEach((obra) => {
-      if (!obra.fechaMedicion) return; // Si no tiene fechas definidas, se ignora
-
+      // Si no tiene fechas definidas, se ignora
+      // (o ajusta la lógica según necesites)
       const actividadesDisponibles = {
-        medicion: { title: "Medición", date: obra.fechaMedicion, color: "blue" },
-        compraVidrios: { title: "Compra Vidrios", date: obra.fechaCompraVidrios, color: "green" },
-        compraPerfiles: { title: "Compra Perfiles", date: obra.fechaCompraPerfiles, color: "green" },
-        compraAccesorios: { title: "Compra Accesorios", date: obra.fechaCompraAccesorios, color: "green" },
-        inicioProduccion: { title: "Inicio Producción", date: obra.fechaInicioProduccion, color: "yellow" },
-        inicioCorte: { title: "Inicio Corte", date: obra.fechaInicioCortePerfiles, color: "yellow" },
-        inicioArmado: { title: "Inicio Armado", date: obra.fechaInicioArmado, color: "yellow" },
-        inicioEnvidriado: { title: "Inicio Envidriado", date: obra.fechaEnvidriado, color: "yellow" },
-        finProduccion: { title: "Fin Producción", date: obra.fechaFinProduccion, color: "orange" },
-        entrega: { title: "Entrega", date: obra.fechaEntrega, color: "red" },
-        montaje: { title: "Montaje", date: obra.fechaInicioMontaje, color: "red" },
-        finalObra: { title: "Final de Obra", date: obra.fechaFinalObra, color: "gray" }
+        medicion: {
+          title: "Medición",
+          date: obra.fechaMedicion,
+          color: "blue"
+        },
+        compraVidrios: {
+          title: "Compra Vidrios",
+          date: obra.fechaCompraVidrios,
+          color: "green"
+        },
+        compraPerfiles: {
+          title: "Compra Perfiles",
+          date: obra.fechaCompraPerfiles,
+          color: "green"
+        },
+        compraAccesorios: {
+          title: "Compra Accesorios",
+          date: obra.fechaCompraAccesorios,
+          color: "green"
+        },
+        inicioProduccion: {
+          title: "Inicio Producción",
+          date: obra.fechaInicioProduccion,
+          color: "yellow"
+        },
+        inicioCorte: {
+          title: "Inicio Corte",
+          date: obra.fechaInicioCortePerfiles,
+          color: "yellow"
+        },
+        inicioArmado: {
+          title: "Inicio Armado",
+          date: obra.fechaInicioArmado,
+          color: "yellow"
+        },
+        inicioEnvidriado: {
+          title: "Inicio Envidriado",
+          date: obra.fechaEnvidriado,
+          color: "yellow"
+        },
+        finProduccion: {
+          title: "Fin Producción",
+          date: obra.fechaFinProduccion,
+          color: "orange"
+        },
+        entrega: {
+          title: "Entrega",
+          date: obra.fechaEntrega,
+          color: "red"
+        },
+        montaje: {
+          title: "Montaje",
+          date: obra.fechaInicioMontaje,
+          color: "red"
+        },
+        finalObra: {
+          title: "Final de Obra",
+          date: obra.fechaFinalObra,
+          color: "gray"
+        }
       };
 
-      // 📌 Si hay un filtro de actividad, solo agregar esa actividad
       if (actividad && actividadesDisponibles[actividad]) {
-        eventos.push({
-          title: `${actividadesDisponibles[actividad].title} - ${obra.nombre}`,
-          start: actividadesDisponibles[actividad].date,
-          color: actividadesDisponibles[actividad].color
-        });
+        const item = actividadesDisponibles[actividad];
+        if (item.date) {
+          eventos.push({
+            title: `${item.title} - ${obra.nombre}`,
+            start: item.date,
+            color: item.color
+          });
+        }
       } else {
-        // 📌 Si no hay filtro, agregar todas las actividades de la obra
+        // Agregar todas las actividades
         Object.values(actividadesDisponibles).forEach(({ title, date, color }) => {
           if (date) {
             eventos.push({
               title: `${title} - ${obra.nombre}`,
               start: date,
-              color: color
+              color
             });
           }
         });
@@ -63,15 +113,18 @@ export const listarCalendarios = async (req, res) => {
 
     res.json(eventos);
   } catch (error) {
-    res.status(500).json({ message: "Error al listar los calendarios", error: error.message });
+    res
+      .status(500)
+      .json({ message: "Error al listar los calendarios", error: error.message });
   }
 };
 
-// 📌 Generar automáticamente las fechas del calendario en base a la obra
+/**
+ * Generar automáticamente las fechas del calendario en base a la obra
+ */
 export const generarCalendarioDesdeObra = async (req, res) => {
   try {
     const { obraId } = req.body;
-
     const obra = await Obra.findOne({ _id: obraId, user: req.user.id });
 
     if (!obra) {
@@ -79,7 +132,9 @@ export const generarCalendarioDesdeObra = async (req, res) => {
     }
 
     if (!obra.fechaEntrega) {
-      return res.status(400).json({ message: "La obra no tiene una fecha de entrega definida." });
+      return res
+        .status(400)
+        .json({ message: "La obra no tiene una fecha de entrega definida." });
     }
 
     const fechaBase = new Date(obra.fechaEntrega);
@@ -97,14 +152,17 @@ export const generarCalendarioDesdeObra = async (req, res) => {
     obra.fechaFinalObra = new Date(fechaBase.setDate(fechaBase.getDate() + 5));
 
     await obra.save();
-
     res.json({ message: "Calendario generado correctamente", obra });
   } catch (error) {
-    res.status(500).json({ message: "Error al generar el calendario", error: error.message });
+    res
+      .status(500)
+      .json({ message: "Error al generar el calendario", error: error.message });
   }
 };
 
-// 📌 Obtener un calendario específico de una obra
+/**
+ * Obtener un calendario específico de una obra
+ */
 export const obtenerCalendario = async (req, res) => {
   try {
     const { obraId } = req.params;
@@ -116,11 +174,15 @@ export const obtenerCalendario = async (req, res) => {
 
     res.json(obra);
   } catch (error) {
-    res.status(500).json({ message: "Error al obtener el calendario", error: error.message });
+    res
+      .status(500)
+      .json({ message: "Error al obtener el calendario", error: error.message });
   }
 };
 
-// 📌 Actualizar manualmente un calendario
+/**
+ * Actualizar manualmente un calendario (fechas de la obra)
+ */
 export const actualizarCalendario = async (req, res) => {
   try {
     const { obraId } = req.params;
@@ -136,11 +198,15 @@ export const actualizarCalendario = async (req, res) => {
 
     res.json({ message: "Calendario actualizado correctamente", obra: obraActualizada });
   } catch (error) {
-    res.status(500).json({ message: "Error al actualizar el calendario", error: error.message });
+    res
+      .status(500)
+      .json({ message: "Error al actualizar el calendario", error: error.message });
   }
 };
 
-// 📌 Eliminar un calendario (borrar fechas de una obra)
+/**
+ * Eliminar un calendario (borrar fechas de una obra)
+ */
 export const eliminarCalendario = async (req, res) => {
   try {
     const { obraId } = req.params;
@@ -166,6 +232,8 @@ export const eliminarCalendario = async (req, res) => {
 
     res.json({ message: "Calendario eliminado correctamente", obra });
   } catch (error) {
-    res.status(500).json({ message: "Error al eliminar el calendario", error: error.message });
+    res
+      .status(500)
+      .json({ message: "Error al eliminar el calendario", error: error.message });
   }
 };

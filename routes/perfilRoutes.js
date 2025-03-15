@@ -11,9 +11,17 @@ import {
 
 const router = express.Router();
 
-router.get("/", protect, listarPerfiles);     // GET => crea admin si no hay
-router.post("/", protect, crearPerfil);       // POST => respeta límite de cantidadUsuarios
-router.post("/login", protect, loginPerfil);  // 2do login
+/**
+ * /api/perfiles => GET (listar, crea admin si no hay),
+ *                  POST (crear, respeta límite)
+ * /api/perfiles/login => POST (2do login)
+ * /api/perfiles => PUT (editar)
+ * /api/perfiles/:id => DELETE (eliminar)
+ */
+
+router.get("/", protect, listarPerfiles);
+router.post("/", protect, crearPerfil);
+router.post("/login", protect, loginPerfil);
 router.put("/", protect, editarPerfil);
 router.delete("/:id", protect, eliminarPerfil);
 

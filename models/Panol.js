@@ -1,4 +1,4 @@
-// backend/models/Panol.js
+// models/panol.js
 import mongoose from "mongoose";
 
 // Sub-esquema para Herramientas
@@ -11,9 +11,7 @@ const herramientaSchema = new mongoose.Schema({
     type: String,
     enum: ["en stock", "en obra", "baja"],
     default: "en stock"
-  },
-  // Otras campos: "quienRetiro", "fechaRetiro", "fechaDevolucion", etc.
-  user: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true }
+  }
 });
 
 // Sub-esquema para Perfiles
@@ -22,18 +20,21 @@ const perfilSchema = new mongoose.Schema({
   descripcion: String,
   tratamiento: String,
   largo: Number,
-  cantidad: Number,
-  user: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true }
+  cantidad: Number
 });
 
 // Sub-esquema para Vidrios
 const vidrioSchema = new mongoose.Schema({
-  tipo: { type: String, enum: ["simple", "dvh", "tvh", "laminado"], default: "simple" },
+  tipo: {
+    type: String,
+    enum: ["simple", "dvh", "tvh", "laminado"],
+    default: "simple"
+  },
+  codigo: String,
   descripcion: String,
   ancho: Number,
   alto: Number,
-  cantidad: Number,
-  user: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true }
+  cantidad: Number
 });
 
 // Sub-esquema para Accesorios
@@ -42,12 +43,10 @@ const accesorioSchema = new mongoose.Schema({
   descripcion: String,
   color: String,
   cantidad: Number,
-  unidad: String,
-  user: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true }
+  unidad: { type: String, default: "u" }
 });
 
 const panolSchema = new mongoose.Schema({
-  // Estructura principal
   herramientas: [herramientaSchema],
   perfiles: [perfilSchema],
   vidrios: [vidrioSchema],
