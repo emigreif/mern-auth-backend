@@ -1,5 +1,5 @@
 // // backend/controllers/asociacionController.js
-// import Ubicacion from "../models/Ubicacion.js";
+// import Ubicacion from "../models/ubicacion.js";
 
 // /**
 //  * Ejemplo: Asignar una o varias tipologías a una ubicación
