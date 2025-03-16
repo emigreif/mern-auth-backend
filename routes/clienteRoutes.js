@@ -1,4 +1,4 @@
-// backend/routes/clienteroutes.js
+// backend/routes/ClienteRoutes.js
 import express from "express";
 import { protect } from "../middleware/authMiddleware.js";
 import {
@@ -11,18 +11,13 @@ import {
 
 const router = express.Router();
 
-/**
- * /api/clientes => GET, POST
- * /api/clientes/:id => GET, PUT, DELETE
- */
-
 router.route("/")
-  .get(protect, listarClientes)
-  .post(protect, crearCliente);
+  .get(protect, listarClientes)   // GET /api/clientes
+  .post(protect, crearCliente);   // POST /api/clientes
 
 router.route("/:id")
-  .get(protect, obtenerCliente)
-  .put(protect, actualizarCliente)
-  .delete(protect, eliminarCliente);
+  .get(protect, obtenerCliente)   // GET /api/clientes/:id
+  .put(protect, actualizarCliente)// PUT /api/clientes/:id
+  .delete(protect, eliminarCliente);// DELETE /api/clientes/:id
 
 export default router;
