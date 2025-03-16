@@ -1,5 +1,5 @@
 // backend/controllers/ubicacionController.js
-import Ubicacion from "../models/Ubicacion.js";
+import Ubicacion from "../models/ubicacion.js";
 import { getAll, getById, create, update, remove } from "./baseController.js";
 
 // 1. CRUD básico
