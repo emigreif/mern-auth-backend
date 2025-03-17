@@ -16,6 +16,7 @@ import contabilidadRoutes from "./routes/contabilidadRoutes.js";
 import employeeRoutes from "./routes/employeeRoutes.js";
 import medicionRoutes from "./routes/medicionRoutes.js";
 import obraRoutes from "./routes/obraRoutes.js";
+/* import paymentRoutes from "./routes/paymentRoutes.js"; */
 import panolRoutes from "./routes/panolRoutes.js";
 import perfilRoutes from "./routes/perfilRoutes.js";
 import presupuestoRoutes from "./routes/presupuestoRoutes.js";
@@ -64,6 +65,7 @@ app.use("/api/contabilidad", contabilidadRoutes);
 app.use("/api/employee", employeeRoutes);
 app.use("/api/mediciones", medicionRoutes);
 app.use("/api/obras", obraRoutes);
+/* app.use("/api/payment", paymentRoutes); */
 app.use("/api/panol", panolRoutes);
 app.use("/api/perfiles", perfilRoutes);
 app.use("/api/presupuestos", presupuestoRoutes);
