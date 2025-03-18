@@ -1,6 +1,6 @@
 // backend/controllers/clienteController.js
 import Cliente from "../models/cliente.js";
-import { getAll, getById, create, update, remove } from "./BaseController.js";
+import { getAll, getById, create, update, remove } from "./baseController.js";
 
 /**
  * Controladores basados en BaseController (getAll, getById, create, update, remove).
