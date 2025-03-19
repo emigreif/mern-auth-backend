@@ -1,57 +1,62 @@
-// models/panol.js
+
 import mongoose from "mongoose";
 
-// Sub-esquema para Herramientas
 const herramientaSchema = new mongoose.Schema({
-  marca: String,
-  modelo: String,
-  descripcion: String,
-  numeroSerie: String,
+  marca: { type: String, required: true },
+  modelo: { type: String, required: true },
+  descripcion: { type: String, required: true },
+  numeroSerie: { type: String, required: true, unique: true },
   estado: {
     type: String,
-    enum: ["en stock", "en obra", "baja"],
-    default: "en stock"
+    enum: ["en taller", "en obra", "en reparación"],
+    default: "en taller"
+  },
+  obra: { type: mongoose.Schema.Types.ObjectId, ref: "Obra", default: null }, // Si está en obra, referencia a la obra
+  responsable: { type: mongoose.Schema.Types.ObjectId, ref: "Nomina", default: null } // Quién la retiró
+});
+
+const perfilSchema = new mongoose.Schema({
+  codigo: { type: String, required: true },
+  cantidad: { type: Number, required: true },
+  descripcion: { type: String, required: true },
+  largo: { type: Number, required: true },
+  pesoxmetro: { type: Number, required: true },
+  color: { type: String, required: true }
+});
+
+const accesorioSchema = new mongoose.Schema({
+  codigo: { type: String, required: true },
+  descripcion: { type: String, required: true },
+  color: { type: String, required: true },
+  cantidad: { type: Number, required: true },
+  unidad: { type: String, required: true, default: "u" },
+  tipo: {
+    type: String,
+    enum: ["accesorios", "herrajes", "tornillos", "bulones", "felpas", "selladores / espuma", "otro"],
+    required: true
   }
 });
 
-// Sub-esquema para Perfiles
-const perfilSchema = new mongoose.Schema({
-  codigo: String,
-  descripcion: String,
-  tratamiento: String,
-  largo: Number,
-  cantidad: Number
-});
-
-// Sub-esquema para Vidrios
 const vidrioSchema = new mongoose.Schema({
+  codigo: { type: String, required: true },
+  descripcion: { type: String, required: true },
+  cantidad: { type: Number, required: true },
+  ancho: { type: Number, required: true },
+  alto: { type: Number, required: true },
   tipo: {
     type: String,
-    enum: ["simple", "dvh", "tvh", "laminado"],
+    enum: ["simple", "dvh", "tvh"],
     default: "simple"
-  },
-  codigo: String,
-  descripcion: String,
-  ancho: Number,
-  alto: Number,
-  cantidad: Number
-});
-
-// Sub-esquema para Accesorios
-const accesorioSchema = new mongoose.Schema({
-  codigo: String,
-  descripcion: String,
-  color: String,
-  cantidad: Number,
-  unidad: { type: String, default: "u" }
+  }
 });
 
 const panolSchema = new mongoose.Schema({
+  user: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
   herramientas: [herramientaSchema],
   perfiles: [perfilSchema],
-  vidrios: [vidrioSchema],
   accesorios: [accesorioSchema],
-  user: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true }
+  vidrios: [vidrioSchema]
 });
 
-export default mongoose.model("Panol", panolSchema);
+const Panol = mongoose.model("Panol", panolSchema);
+export default Panol;

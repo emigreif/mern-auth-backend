@@ -1,12 +1,11 @@
-// controllers/panolController.js
 import Panol from "../models/panol.js";
 
 /**
- * Obtener el estado del pañol (o crearlo si no existe)
+ * 📌 Obtener el estado del pañol
  */
 export const obtenerPanol = async (req, res) => {
   try {
-    let panol = await Panol.findOne({ user: req.user.id });
+    let panol = await Panol.findOne({ user: req.user.id }).populate("herramientas.obra herramientas.responsable");
     if (!panol) {
       panol = new Panol({ user: req.user.id });
       await panol.save();
@@ -17,45 +16,68 @@ export const obtenerPanol = async (req, res) => {
   }
 };
 
-// 📌 Agregar una herramienta
+/** ===========================
+ * 📌 MÉTODOS PARA HERRAMIENTAS
+ * ===========================*/
+
+/**
+ * Agregar una nueva herramienta
+ */
 export const agregarHerramienta = async (req, res) => {
   try {
-    const { marca, modelo, descripcion, numeroSerie, estado } = req.body;
+    const { marca, modelo, descripcion, numeroSerie, estado, obra, responsable } = req.body;
 
     if (!marca || !modelo || !descripcion || !numeroSerie) {
-      return res.status(400).json({ message: "Campos obligatorios incompletos" });
+      return res.status(400).json({ message: "Todos los campos son requeridos." });
     }
 
     let panol = await Panol.findOne({ user: req.user.id });
-    if (!panol) {
-      panol = new Panol({ user: req.user.id });
-    }
+    if (!panol) panol = new Panol({ user: req.user.id });
 
-    panol.herramientas.push({
-      marca,
-      modelo,
-      descripcion,
-      numeroSerie,
-      estado
-    });
-
+    const nuevaHerramienta = { marca, modelo, descripcion, numeroSerie, estado, obra, responsable };
+    panol.herramientas.push(nuevaHerramienta);
     await panol.save();
-    res.status(201).json(panol.herramientas);
+
+    res.status(201).json(nuevaHerramienta);
   } catch (error) {
     res.status(400).json({ message: "Error al agregar herramienta", error: error.message });
   }
 };
 
-// 📌 Eliminar herramienta
+/**
+ * Modificar estado de herramienta
+ */
+export const modificarHerramienta = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { estado, obra, responsable } = req.body;
+
+    let panol = await Panol.findOne({ user: req.user.id });
+    if (!panol) return res.status(404).json({ message: "Pañol no encontrado" });
+
+    let herramienta = panol.herramientas.id(id);
+    if (!herramienta) return res.status(404).json({ message: "Herramienta no encontrada" });
+
+    herramienta.estado = estado;
+    herramienta.obra = estado === "en obra" ? obra : null;
+    herramienta.responsable = estado === "en obra" ? responsable : null;
+
+    await panol.save();
+    res.json(herramienta);
+  } catch (error) {
+    res.status(400).json({ message: "Error al modificar herramienta", error: error.message });
+  }
+};
+
+/**
+ * Eliminar herramienta
+ */
 export const eliminarHerramienta = async (req, res) => {
   try {
     let panol = await Panol.findOne({ user: req.user.id });
     if (!panol) return res.status(404).json({ message: "Pañol no encontrado" });
 
-    panol.herramientas = panol.herramientas.filter(
-      (h) => h._id.toString() !== req.params.id
-    );
-
+    panol.herramientas = panol.herramientas.filter(h => h._id.toString() !== req.params.id);
     await panol.save();
     res.json({ message: "Herramienta eliminada" });
   } catch (error) {
@@ -63,43 +85,62 @@ export const eliminarHerramienta = async (req, res) => {
   }
 };
 
-// 📌 Agregar un perfil
+/** ===========================
+ * 📌 MÉTODOS PARA PERFILES
+ * ===========================*/
+
+/**
+ * Crear un nuevo perfil
+ */
 export const agregarPerfil = async (req, res) => {
   try {
-    const { codigo, cantidad, descripcion, largo, color } = req.body;
-
-    if (!codigo || cantidad == null || !descripcion || !largo || !color) {
-      return res.status(400).json({ message: "Campos obligatorios incompletos" });
-    }
+    const { codigo, cantidad, descripcion, largo, pesoxmetro, color } = req.body;
 
     let panol = await Panol.findOne({ user: req.user.id });
     if (!panol) panol = new Panol({ user: req.user.id });
 
-    panol.perfiles.push({
-      codigo,
-      cantidad,
-      descripcion,
-      largo,
-      color
-    });
+    const nuevoPerfil = { codigo, cantidad, descripcion, largo, pesoxmetro, color };
+    panol.perfiles.push(nuevoPerfil);
 
     await panol.save();
-    res.status(201).json(panol.perfiles);
+    res.status(201).json(nuevoPerfil);
   } catch (error) {
     res.status(400).json({ message: "Error al agregar perfil", error: error.message });
   }
 };
 
-// 📌 Eliminar perfil
+/**
+ * Modificar perfil
+ */
+export const modificarPerfil = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const cambios = req.body;
+
+    let panol = await Panol.findOne({ user: req.user.id });
+    if (!panol) return res.status(404).json({ message: "Pañol no encontrado" });
+
+    let perfil = panol.perfiles.id(id);
+    if (!perfil) return res.status(404).json({ message: "Perfil no encontrado" });
+
+    Object.assign(perfil, cambios);
+
+    await panol.save();
+    res.json(perfil);
+  } catch (error) {
+    res.status(400).json({ message: "Error al modificar perfil", error: error.message });
+  }
+};
+
+/**
+ * Eliminar perfil
+ */
 export const eliminarPerfil = async (req, res) => {
   try {
     let panol = await Panol.findOne({ user: req.user.id });
     if (!panol) return res.status(404).json({ message: "Pañol no encontrado" });
 
-    panol.perfiles = panol.perfiles.filter(
-      (p) => p._id.toString() !== req.params.id
-    );
-
+    panol.perfiles = panol.perfiles.filter(p => p._id.toString() !== req.params.id);
     await panol.save();
     res.json({ message: "Perfil eliminado" });
   } catch (error) {
@@ -107,92 +148,65 @@ export const eliminarPerfil = async (req, res) => {
   }
 };
 
-// 📌 Agregar un accesorio
+/** ===========================
+ * 📌 MÉTODOS PARA ACCESORIOS
+ * ===========================*/
+
+/**
+ * Crear un nuevo accesorio
+ */
 export const agregarAccesorio = async (req, res) => {
   try {
-    const { codigo, descripcion, color, cantidad, marca, unidad } = req.body;
-
-    // Ajusta según tu schema
-    if (!codigo || !descripcion || !color || cantidad == null) {
-      return res.status(400).json({ message: "Campos obligatorios incompletos" });
-    }
+    const { codigo, descripcion, color, cantidad, unidad, tipo } = req.body;
 
     let panol = await Panol.findOne({ user: req.user.id });
     if (!panol) panol = new Panol({ user: req.user.id });
 
-    panol.accesorios.push({
-      codigo,
-      descripcion,
-      color,
-      cantidad,
-      unidad: unidad || "u"
-    });
+    const nuevoAccesorio = { codigo, descripcion, color, cantidad, unidad, tipo };
+    panol.accesorios.push(nuevoAccesorio);
 
     await panol.save();
-    res.status(201).json(panol.accesorios);
+    res.status(201).json(nuevoAccesorio);
   } catch (error) {
     res.status(400).json({ message: "Error al agregar accesorio", error: error.message });
   }
 };
 
-// 📌 Eliminar accesorio
+/**
+ * Modificar accesorio
+ */
+export const modificarAccesorio = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const cambios = req.body;
+
+    let panol = await Panol.findOne({ user: req.user.id });
+    if (!panol) return res.status(404).json({ message: "Pañol no encontrado" });
+
+    let accesorio = panol.accesorios.id(id);
+    if (!accesorio) return res.status(404).json({ message: "Accesorio no encontrado" });
+
+    Object.assign(accesorio, cambios);
+
+    await panol.save();
+    res.json(accesorio);
+  } catch (error) {
+    res.status(400).json({ message: "Error al modificar accesorio", error: error.message });
+  }
+};
+
+/**
+ * Eliminar accesorio
+ */
 export const eliminarAccesorio = async (req, res) => {
   try {
     let panol = await Panol.findOne({ user: req.user.id });
     if (!panol) return res.status(404).json({ message: "Pañol no encontrado" });
 
-    panol.accesorios = panol.accesorios.filter(
-      (a) => a._id.toString() !== req.params.id
-    );
-
+    panol.accesorios = panol.accesorios.filter(a => a._id.toString() !== req.params.id);
     await panol.save();
     res.json({ message: "Accesorio eliminado" });
   } catch (error) {
     res.status(400).json({ message: "Error al eliminar accesorio", error: error.message });
-  }
-};
-
-// 📌 Agregar un vidrio
-export const agregarVidrio = async (req, res) => {
-  try {
-    const { codigo, descripcion, cantidad, ancho, alto, tipo } = req.body;
-
-    if (!codigo || cantidad == null || !descripcion || !ancho || !alto) {
-      return res.status(400).json({ message: "Campos obligatorios incompletos" });
-    }
-
-    let panol = await Panol.findOne({ user: req.user.id });
-    if (!panol) panol = new Panol({ user: req.user.id });
-
-    panol.vidrios.push({
-      codigo,
-      descripcion,
-      cantidad,
-      ancho,
-      alto,
-      tipo: tipo || "simple"
-    });
-
-    await panol.save();
-    res.status(201).json(panol.vidrios);
-  } catch (error) {
-    res.status(400).json({ message: "Error al agregar vidrio", error: error.message });
-  }
-};
-
-// 📌 Eliminar un vidrio
-export const eliminarVidrio = async (req, res) => {
-  try {
-    let panol = await Panol.findOne({ user: req.user.id });
-    if (!panol) return res.status(404).json({ message: "Pañol no encontrado" });
-
-    panol.vidrios = panol.vidrios.filter(
-      (v) => v._id.toString() !== req.params.id
-    );
-
-    await panol.save();
-    res.json({ message: "Vidrio eliminado" });
-  } catch (error) {
-    res.status(400).json({ message: "Error al eliminar vidrio", error: error.message });
   }
 };
