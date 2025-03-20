@@ -210,3 +210,69 @@ export const eliminarAccesorio = async (req, res) => {
     res.status(400).json({ message: "Error al eliminar accesorio", error: error.message });
   }
 };
+/** ===========================
+ * 📌 MÉTODOS PARA VIDRIOS
+ * ===========================*/
+
+/**
+ * Crear un nuevo vidrio
+ */
+export const agregarVidrio = async (req, res) => {
+  try {
+    const { codigo, descripcion, cantidad, ancho, alto, tipo } = req.body;
+
+    if (!codigo || !descripcion || cantidad == null || !ancho || !alto) {
+      return res.status(400).json({ message: "Todos los campos son requeridos." });
+    }
+
+    let panol = await Panol.findOne({ user: req.user.id });
+    if (!panol) panol = new Panol({ user: req.user.id });
+
+    const nuevoVidrio = { codigo, descripcion, cantidad, ancho, alto, tipo };
+    panol.vidrios.push(nuevoVidrio);
+
+    await panol.save();
+    res.status(201).json(nuevoVidrio);
+  } catch (error) {
+    res.status(400).json({ message: "Error al agregar vidrio", error: error.message });
+  }
+};
+
+/**
+ * Modificar un vidrio
+ */
+export const modificarVidrio = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const cambios = req.body;
+
+    let panol = await Panol.findOne({ user: req.user.id });
+    if (!panol) return res.status(404).json({ message: "Pañol no encontrado" });
+
+    let vidrio = panol.vidrios.id(id);
+    if (!vidrio) return res.status(404).json({ message: "Vidrio no encontrado" });
+
+    Object.assign(vidrio, cambios);
+
+    await panol.save();
+    res.json(vidrio);
+  } catch (error) {
+    res.status(400).json({ message: "Error al modificar vidrio", error: error.message });
+  }
+};
+
+/**
+ * Eliminar un vidrio
+ */
+export const eliminarVidrio = async (req, res) => {
+  try {
+    let panol = await Panol.findOne({ user: req.user.id });
+    if (!panol) return res.status(404).json({ message: "Pañol no encontrado" });
+
+    panol.vidrios = panol.vidrios.filter(v => v._id.toString() !== req.params.id);
+    await panol.save();
+    res.json({ message: "Vidrio eliminado" });
+  } catch (error) {
+    res.status(400).json({ message: "Error al eliminar vidrio", error: error.message });
+  }
+};
