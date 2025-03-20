@@ -15,32 +15,32 @@ import {
   modificarAccesorio,
   eliminarAccesorio
 } from "../controllers/panolController.js";
-import { authMiddleware } from "../middleware/authMiddleware.js";
+import { protect } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
 // 📌 Obtener todo el pañol del usuario
-router.get("/", authMiddleware, obtenerPanol);
+router.get("/", protect, obtenerPanol);
 
 // 📌 Herramientas
-router.post("/herramientas", authMiddleware, agregarHerramienta); // Crear
-router.put("/herramientas/:id", authMiddleware, modificarHerramienta); // Modificar
-router.delete("/herramientas/:id", authMiddleware, eliminarHerramienta); // Eliminar
-router.post("/herramientas/:id/movimiento", authMiddleware, registrarMovimientoHerramienta); // Registrar movimiento
+router.post("/herramientas", protect, agregarHerramienta); // Crear
+router.put("/herramientas/:id", protect, modificarHerramienta); // Modificar
+router.delete("/herramientas/:id", protect, eliminarHerramienta); // Eliminar
+router.post("/herramientas/:id/movimiento", protect, registrarMovimientoHerramienta); // Registrar movimiento
 
 // 📌 Perfiles
-router.post("/perfiles", authMiddleware, agregarPerfil); // Crear
-router.put("/perfiles/:id", authMiddleware, modificarPerfil); // Modificar
-router.delete("/perfiles/:id", authMiddleware, eliminarPerfil); // Eliminar
+router.post("/perfiles", protect, agregarPerfil); // Crear
+router.put("/perfiles/:id", protect, modificarPerfil); // Modificar
+router.delete("/perfiles/:id", protect, eliminarPerfil); // Eliminar
 
 // 📌 Vidrios
-router.post("/vidrios", authMiddleware, agregarVidrio); // Crear
-router.put("/vidrios/:id", authMiddleware, modificarVidrio); // Modificar
-router.delete("/vidrios/:id", authMiddleware, eliminarVidrio); // Eliminar
+router.post("/vidrios", protect, agregarVidrio); // Crear
+router.put("/vidrios/:id", protect, modificarVidrio); // Modificar
+router.delete("/vidrios/:id", protect, eliminarVidrio); // Eliminar
 
 // 📌 Accesorios
-router.post("/accesorios", authMiddleware, agregarAccesorio); // Crear
-router.put("/accesorios/:id", authMiddleware, modificarAccesorio); // Modificar
-router.delete("/accesorios/:id", authMiddleware, eliminarAccesorio); // Eliminar
+router.post("/accesorios", protect, agregarAccesorio); // Crear
+router.put("/accesorios/:id", protect, modificarAccesorio); // Modificar
+router.delete("/accesorios/:id", protect, eliminarAccesorio); // Eliminar
 
 export default router;
