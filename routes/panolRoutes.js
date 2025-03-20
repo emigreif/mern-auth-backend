@@ -210,3 +210,4 @@ export const eliminarAccesorio = async (req, res) => {
     res.status(400).json({ message: "Error al eliminar accesorio", error: error.message });
   }
 };
+export default router;
