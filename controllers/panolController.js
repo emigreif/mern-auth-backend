@@ -27,20 +27,57 @@ export const agregarHerramienta = async (req, res) => {
   try {
     const { marca, modelo, descripcion, numeroSerie, estado, obra, responsable } = req.body;
 
-    if (!marca || !modelo || !descripcion || !numeroSerie) {
+    if (!marca || !modelo || !descripcion || !numeroSerie.trim()) {
       return res.status(400).json({ message: "Todos los campos son requeridos." });
     }
 
     let panol = await Panol.findOne({ user: req.user.id });
     if (!panol) panol = new Panol({ user: req.user.id });
 
-    const nuevaHerramienta = { marca, modelo, descripcion, numeroSerie, estado, obra, responsable };
+    const nuevaHerramienta = {
+      marca, modelo, descripcion, numeroSerie, estado, obra, responsable,
+      historial: [{ fecha: new Date(), estadoNuevo: estado, obra, responsable }]
+    };
+
     panol.herramientas.push(nuevaHerramienta);
     await panol.save();
 
     res.status(201).json(nuevaHerramienta);
   } catch (error) {
     res.status(400).json({ message: "Error al agregar herramienta", error: error.message });
+  }
+};
+
+/**
+ * Registrar movimiento de herramienta
+ */
+export const registrarMovimientoHerramienta = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { estado, obra, responsable } = req.body;
+
+    let panol = await Panol.findOne({ user: req.user.id });
+    if (!panol) return res.status(404).json({ message: "Pañol no encontrado" });
+
+    let herramienta = panol.herramientas.id(id);
+    if (!herramienta) return res.status(404).json({ message: "Herramienta no encontrada" });
+
+    herramienta.historial.push({
+      fecha: new Date(),
+      estadoAnterior: herramienta.estado,
+      estadoNuevo: estado,
+      obra,
+      responsable
+    });
+
+    herramienta.estado = estado;
+    herramienta.obra = estado === "en obra" ? obra : null;
+    herramienta.responsable = estado === "en obra" ? responsable : null;
+
+    await panol.save();
+    res.json({ message: "Movimiento registrado correctamente", herramienta });
+  } catch (error) {
+    res.status(400).json({ message: "Error al registrar movimiento", error: error.message });
   }
 };
 
