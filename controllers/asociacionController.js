@@ -1,4 +1,4 @@
-import Asociacion from "../models/asociacion.js";
+
 import Tipologia from "../models/tipologia.js";
 import Ubicacion from "../models/ubicacion.js";
 
