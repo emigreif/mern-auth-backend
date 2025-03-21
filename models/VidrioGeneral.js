@@ -1,3 +1,4 @@
+// models/VidrioGeneral.js
 import mongoose from "mongoose";
 
 const vidrioGeneralSchema = new mongoose.Schema({

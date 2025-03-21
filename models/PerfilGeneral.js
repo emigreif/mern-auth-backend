@@ -1,3 +1,4 @@
+// models/PerfilGeneral.js
 import mongoose from "mongoose";
 
 const perfilGeneralSchema = new mongoose.Schema({

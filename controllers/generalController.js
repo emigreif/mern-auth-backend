@@ -1,3 +1,6 @@
+// controllers/generalController.js
+
+
 import PerfilGeneral from "../models/PerfilGeneral.js";
 import VidrioGeneral from "../models/VidrioGeneral.js";
 import XLSX from "xlsx";

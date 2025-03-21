@@ -1,3 +1,4 @@
+// middleware/uploadMiddleware.js
 import multer from "multer";
 
 // Configuración de almacenamiento en memoria
