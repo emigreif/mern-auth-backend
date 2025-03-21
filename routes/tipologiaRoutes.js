@@ -1,38 +1,34 @@
-// backend/routes/tipologiaRoutes.js
 import express from "express";
-import { protect } from "../middleware/authMiddleware.js";
+import { protect } from "../middleware/authMiddleware.js"; // Middleware de autenticación
+import upload from "../middleware/uploadMiddleware.js"; // Middleware para subir archivos
+
 import {
   obtenerTipologias,
-  obtenerTipologiaPorId,
   crearTipologia,
   actualizarTipologia,
   eliminarTipologia,
   importarTipologiasDesdeExcel,
   agruparTipologias
 } from "../controllers/tipologiaController.js";
-import upload from "../middleware/uploadMiddleware.js";
 
 const router = express.Router();
 
-// ✅ Obtener todas las tipologías
+// 📌 Obtener todas las tipologías
 router.get("/", protect, obtenerTipologias);
 
-// ✅ Obtener una tipología por ID
-router.get("/:id", protect, obtenerTipologiaPorId);
-
-// ✅ Crear nueva tipología
+// 📌 Crear una nueva tipología
 router.post("/", protect, crearTipologia);
 
-// ✅ Actualizar una tipología existente
+// 📌 Actualizar una tipología por ID
 router.put("/:id", protect, actualizarTipologia);
 
-// ✅ Eliminar una tipología
+// 📌 Eliminar una tipología por ID
 router.delete("/:id", protect, eliminarTipologia);
 
-// ✅ Importar tipologías desde Excel
+// 📌 Importar tipologías desde Excel
 router.post("/importar", protect, upload.single("file"), importarTipologiasDesdeExcel);
 
-// ✅ Agrupar tipologías
+// 📌 Agrupar tipologías
 router.post("/agrupar", protect, agruparTipologias);
 
 export default router;

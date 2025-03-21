@@ -11,22 +11,14 @@ import {
 
 const router = express.Router();
 
-// ✅ Obtener todas las mediciones
-router.get("/", protect, obtenerMediciones);
+// 📌 Rutas protegidas para las mediciones
+router.get("/", protect, obtenerMediciones); // Obtener todas las mediciones
+router.get("/:id", protect, obtenerMedicionPorId); // Obtener una medición por ID
+router.post("/", protect, crearMedicion); // Crear una nueva medición
+router.put("/:id", protect, actualizarMedicion); // Actualizar una medición por ID
+router.delete("/:id", protect, eliminarMedicion); // Eliminar una medición por ID
 
-// ✅ Obtener una medición por ID
-router.get("/:id", protect, obtenerMedicionPorId);
-
-// ✅ Crear una nueva medición (basada en asociación de tipologías y ubicaciones)
-router.post("/", protect, crearMedicion);
-
-// ✅ Actualizar una medición existente
-router.put("/:id", protect, actualizarMedicion);
-
-// ✅ Eliminar una medición
-router.delete("/:id", protect, eliminarMedicion);
-
-// ✅ Generar un reporte de mediciones con diferencias
+// 📌 Generar reporte de mediciones
 router.get("/reporte", protect, generarReporteMediciones);
 
 export default router;

@@ -1,26 +1,55 @@
-// models/medicion.js
 import mongoose from "mongoose";
 
-/**
- * Cada medición guarda:
- *  - la ubicación (piso, identificador)
- *  - ancho/alto relevados
- *  - observaciones
- *  - user
- */
-const medicionSchema = new mongoose.Schema(
+const MedicionSchema = new mongoose.Schema(
   {
+    usuario: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true
+    },
+    obra: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Obra",
+      required: true
+    },
     ubicacion: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Ubicacion",
       required: true
     },
-    anchoRelevado: { type: Number, required: true },
-    altoRelevado: { type: Number, required: true },
-    observaciones: { type: String, trim: true },
-    user: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true }
+    tipologia: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Tipologia",
+      required: true
+    },
+    ancho: {
+      type: Number,
+      required: true
+    },
+    alto: {
+      type: Number,
+      required: true
+    },
+    cantidad: {
+      type: Number,
+      required: true,
+      min: 1
+    },
+    observaciones: {
+      type: String,
+      default: ""
+    },
+    estado: {
+      type: String,
+      enum: ["pendiente", "confirmada", "rechazada"],
+      default: "pendiente"
+    }
   },
   { timestamps: true }
 );
+
+const Medicion = mongoose.model("Medicion", MedicionSchema);
+export default Medicion;
+
 
 export default mongoose.model("Medicion", medicionSchema);
