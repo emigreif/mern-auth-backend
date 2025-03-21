@@ -1,36 +1,38 @@
 // backend/routes/tipologiaRoutes.js
 import express from "express";
 import { protect } from "../middleware/authMiddleware.js";
-import multer from "multer";
 import {
-  listarTipologias,
-  obtenerTipologia,
+  obtenerTipologias,
+  obtenerTipologiaPorId,
   crearTipologia,
   actualizarTipologia,
   eliminarTipologia,
-  agruparTipologias,
-  importarTipologias
+  importarTipologiasDesdeExcel,
+  agruparTipologias
 } from "../controllers/tipologiaController.js";
-
-const upload = multer(); // Para recibir archivos en memoria
+import upload from "../middleware/uploadMiddleware.js";
 
 const router = express.Router();
 
-/**
- * /api/tipologias => GET (listar), POST (crear)
- * /api/tipologias/:id => GET, PUT, DELETE
- * /api/tipologias/importar => POST (subir Excel, parsear con xlsx)
- * /api/tipologias/agrupar => POST (agrupar tipologías)
- */
+// ✅ Obtener todas las tipologías
+router.get("/", protect, obtenerTipologias);
 
-router.get("/", protect, listarTipologias);
+// ✅ Obtener una tipología por ID
+router.get("/:id", protect, obtenerTipologiaPorId);
+
+// ✅ Crear nueva tipología
 router.post("/", protect, crearTipologia);
 
-router.get("/:id", protect, obtenerTipologia);
+// ✅ Actualizar una tipología existente
 router.put("/:id", protect, actualizarTipologia);
+
+// ✅ Eliminar una tipología
 router.delete("/:id", protect, eliminarTipologia);
 
-router.post("/importar", protect, upload.single("archivoExcel"), importarTipologias);
+// ✅ Importar tipologías desde Excel
+router.post("/importar", protect, upload.single("file"), importarTipologiasDesdeExcel);
+
+// ✅ Agrupar tipologías
 router.post("/agrupar", protect, agruparTipologias);
 
 export default router;

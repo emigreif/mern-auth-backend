@@ -1,19 +1,28 @@
-// backend/routes/asociacionRoutes.js
 import express from "express";
 import { protect } from "../middleware/authMiddleware.js";
 import {
-  asignarTipologiasAUbicacion,
-  eliminarTipologiaDeUbicacion
+  obtenerAsociaciones,
+  obtenerAsociacionPorId,
+  crearAsociacion,
+  actualizarAsociacion,
+  eliminarAsociacion,
 } from "../controllers/asociacionController.js";
 
 const router = express.Router();
 
-/**
- * /api/asociacion/asignar => POST (body: { ubicacionId, tipologiaIds[] })
- * /api/asociacion/:ubicacionId/:tipologiaId => DELETE
- */
+// ✅ Obtener todas las asociaciones de tipologías y ubicaciones
+router.get("/", protect, obtenerAsociaciones);
 
-router.post("/asignar", protect, asignarTipologiasAUbicacion);
-router.delete("/:ubicacionId/:tipologiaId", protect, eliminarTipologiaDeUbicacion);
+// ✅ Obtener una asociación por ID
+router.get("/:id", protect, obtenerAsociacionPorId);
+
+// ✅ Crear una nueva asociación
+router.post("/", protect, crearAsociacion);
+
+// ✅ Actualizar una asociación existente
+router.put("/:id", protect, actualizarAsociacion);
+
+// ✅ Eliminar una asociación
+router.delete("/:id", protect, eliminarAsociacion);
 
 export default router;
