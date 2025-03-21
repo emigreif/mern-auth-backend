@@ -1,5 +1,5 @@
 import express from "express";
-import upload from "../middlewares/uploadMiddleware.js";
+import upload from "../middleware/uploadMiddleware.js";
 import { importarPerfilesDesdeExcel, importarVidriosDesdeExcel } from "../controllers/generalController.js";
 
 import { agregarPerfilGeneral, obtenerPerfilesGenerales, agregarVidrioGeneral, obtenerVidriosGenerales } from "../controllers/generalController.js";

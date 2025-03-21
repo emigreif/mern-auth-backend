@@ -15,6 +15,7 @@ import configRoutes from "./routes/configRoutes.js";
 import contabilidadRoutes from "./routes/contabilidadRoutes.js";
 import employeeRoutes from "./routes/employeeRoutes.js";
 import medicionRoutes from "./routes/medicionRoutes.js";
+import generalRoutes from "./routes/generalRoutes.js";
 import obraRoutes from "./routes/obraRoutes.js";
 /* import paymentRoutes from "./routes/paymentRoutes.js"; */
 import panolRoutes from "./routes/panolRoutes.js";
@@ -63,6 +64,7 @@ app.use("/api/compras", comprasRoutes);
 app.use("/api/configuracion", configRoutes);
 app.use("/api/contabilidad", contabilidadRoutes);
 app.use("/api/employee", employeeRoutes);
+app.use("/api/general", generalRoutes);
 app.use("/api/mediciones", medicionRoutes);
 app.use("/api/obras", obraRoutes);
 /* z */
