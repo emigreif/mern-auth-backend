@@ -2,8 +2,8 @@
 
 const tipologiaSchema =  new mongoose.Schema(
   {
-    codigo: { type: String, trim: true },
-    descripcion: { type: String, required: true, trim: true },
+    tipo: { type: String, required: true, trim: true },
+    descripcion: { type: String, trim: true },
     base: { type: Number, required: true },
     altura: { type: Number, required: true },
     cantidad: { type: Number, default: 1 },
