@@ -12,7 +12,7 @@ const asociacionSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "Ubicacion",
       required: true,
-      unique: true // Solo una asociación por ubicación
+      unique: true // Una única asociación por ubicación
     },
     obra: {
       type: mongoose.Schema.Types.ObjectId,
