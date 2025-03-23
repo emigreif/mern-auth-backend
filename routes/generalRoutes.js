@@ -3,23 +3,23 @@
 
 import express from "express";
 import upload from "../middleware/uploadMiddleware.js";
-import { importarPerfilesDesdeExcel, importarVidriosDesdeExcel } from "../controllers/generalController.js";
+import { importarPerfiles, importarVidrios } from "../controllers/generalController.js";
 
-import { agregarPerfilGeneral, obtenerPerfilesGenerales, agregarVidrioGeneral, obtenerVidriosGenerales } from "../controllers/generalController.js";
+import { agregarPerfil, obtenerPerfiles, agregarVidrio, obtenerVidrios } from "../controllers/generalController.js";
 
 const router = express.Router();
 
 // 📌 Rutas de Perfiles Generales
-router.get("/perfiles", obtenerPerfilesGenerales);
-router.post("/perfiles", agregarPerfilGeneral);
+router.get("/perfiles", obtenerPerfiles);
+router.post("/perfiles", agregarPerfil);
 
 // 📌 Rutas de Vidrios Generales
-router.get("/vidrios", obtenerVidriosGenerales);
-router.post("/vidrios", agregarVidrioGeneral);
+router.get("/vidrios", obtenerVidrios);
+router.post("/vidrios", agregarVidrio);
 
 // 📌 Rutas de Importación desde Excel
-router.post("/perfiles/importar", upload.single("file"), importarPerfilesDesdeExcel);
-router.post("/vidrios/importar", upload.single("file"), importarVidriosDesdeExcel);
+router.post("/perfiles/importar", upload.single("file"), importarPerfiles);
+router.post("/vidrios/importar", upload.single("file"), importarVidrios);
 
 
 export default router;

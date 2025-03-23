@@ -7,20 +7,13 @@ import mongoose from "mongoose";
  * - obra
  * - piso
  * - identificador
- * - array de tipologías
  */
-const ubicacionSchema = new mongoose.Schema(
-  {
-    obra: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Obra",
-      required: true
-    },
-    piso: { type: String, trim: true, required: true },
-    identificador: { type: String, trim: true, required: true },
-    tipologias: [{ type: mongoose.Schema.Types.ObjectId, ref: "Tipologia" }],
-    user: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true }
-  },
+const ubicacionSchema = new mongoose.Schema({
+  piso: { type: String, required: true },
+  ubicacion: { type: String, required: true },
+  obra: { type: mongoose.Schema.Types.ObjectId, ref: "Obra", required: true }, // 🔁 Relación directa con la obra
+ 
+},
   { timestamps: true }
 );
 

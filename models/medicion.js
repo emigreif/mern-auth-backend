@@ -48,8 +48,4 @@ const MedicionSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-const Medicion = mongoose.model("Medicion", MedicionSchema);
-export default Medicion;
-
-
-export default mongoose.model("Medicion", medicionSchema);
+export default mongoose.model("Medicion", MedicionSchema);

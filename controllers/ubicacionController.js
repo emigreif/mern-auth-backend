@@ -1,5 +1,5 @@
 import Ubicacion from "../models/ubicacion.js";
-import excelJS from "exceljs";
+
 
 /**
  * ✅ Obtener todas las ubicaciones
@@ -63,38 +63,5 @@ export const eliminarUbicacion = async (req, res) => {
     res.json({ message: "Ubicación eliminada" });
   } catch (error) {
     res.status(500).json({ message: "Error al eliminar la ubicación", error: error.message });
-  }
-};
-
-/**
- * ✅ Importar ubicaciones desde un archivo Excel
- */
-export const importarUbicacionesDesdeExcel = async (req, res) => {
-  try {
-    if (!req.file) {
-      return res.status(400).json({ message: "Debe subir un archivo Excel" });
-    }
-
-    const workbook = new excelJS.Workbook();
-    await workbook.xlsx.readFile(req.file.path);
-    const worksheet = workbook.worksheets[0];
-
-    const ubicacionesImportadas = [];
-    worksheet.eachRow((row, rowNumber) => {
-      if (rowNumber > 1) {
-        const nombre = row.getCell(1).value;
-        const descripcion = row.getCell(2).value;
-        const zona = row.getCell(3).value;
-
-        if (nombre && descripcion && zona) {
-          ubicacionesImportadas.push({ nombre, descripcion, zona });
-        }
-      }
-    });
-
-    await Ubicacion.insertMany(ubicacionesImportadas);
-    res.status(201).json({ message: "Ubicaciones importadas correctamente" });
-  } catch (error) {
-    res.status(500).json({ message: "Error al importar ubicaciones", error: error.message });
   }
 };
