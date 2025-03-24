@@ -16,7 +16,7 @@ router.get("/", protect, obtenerTipologias);
 router.post("/", protect, crearTipologia);
 router.put("/:id", protect, modificarTipologia);
 router.delete("/:id", protect, eliminarTipologia);
-router.post("/importar", protect, upload.single("file"), importarTipologiasDesdeExcel);
+router.post("/importar", protect, importarTipologiasDesdeExcel);
 router.post("/agrupar", protect, agruparTipologias);
 
 export default router;
