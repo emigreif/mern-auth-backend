@@ -36,8 +36,8 @@ app.use(express.json());
 
 // Configurar CORS
 const allowedOrigins = [
-  
-  "https://mern-auth-frontendemigreif.vercel.app/", "http://localhost:5173"
+  "http://localhost:5173",
+  "https://mern-auth-frontendemigreif.vercel.app/"
 ];
 
 app.use(
