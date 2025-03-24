@@ -125,6 +125,8 @@ export const importarTipologiasDesdeExcel = async (req, res) => {
       obra: t.obra, // deberías asegurarte de incluir obra en el frontend
       user: userId,
     }));
+    console.log(req.body) 
+    console.log(req.user)
 
     const creadas = await Tipologia.insertMany(mapeadas);
     res.status(201).json({ message: "Tipologías importadas", total: creadas.length });
