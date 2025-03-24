@@ -89,31 +89,38 @@ export const generarUbicaciones = async (req, res) => {
     const { obraId, pisos } = req.body;
 
     if (!obraId || !pisos || !Array.isArray(pisos)) {
-      return res.status(400).json({ message: "Datos incompletos o mal formato" });
+      return res.status(400).json({ message: "Datos inválidos" });
     }
 
-    const nuevas = [];
+    const ubicacionesGeneradas = [];
 
     for (const pisoData of pisos) {
-      const rangos = expandirRango(pisoData.rango); // Ej: "1-3, 5" => [1, 2, 3, 5]
-      for (const piso of rangos) {
-        for (let i = 1; i <= pisoData.ubicaciones; i++) {
-          nuevas.push({
-            piso: `P${piso}`,
-            ubicacion: `U${i}`,
-            obra: obraId,
-            user: req.user.id
-          });
+      const rangos = pisoData.rango.split(",").map(p => p.trim());
+
+      for (const r of rangos) {
+        const [inicio, fin] = r.includes("-") ? r.split("-").map(Number) : [Number(r), Number(r)];
+
+        for (let piso = inicio; piso <= fin; piso++) {
+          for (let i = 1; i <= pisoData.ubicaciones; i++) {
+            const nuevaUbicacion = new Ubicacion({
+              piso: `P${piso}`,
+              ubicacion: `U${i}`,
+              obra: obraId,
+              user: req.user.id
+            });
+            await nuevaUbicacion.save();
+            ubicacionesGeneradas.push(nuevaUbicacion);
+          }
         }
       }
     }
 
-    const creadas = await Ubicacion.insertMany(nuevas);
-    res.status(201).json({ creadas: creadas.length, ubicaciones: creadas });
+    res.status(201).json({ message: "Ubicaciones generadas", total: ubicacionesGeneradas.length });
   } catch (error) {
     res.status(500).json({ message: "Error al generar ubicaciones", error: error.message });
   }
 };
+
 
 // 🔹 Expande un rango tipo "1-3,5" => [1,2,3,5]
 function expandirRango(rango) {

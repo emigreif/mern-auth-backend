@@ -1,5 +1,5 @@
 import Tipologia from "../models/tipologia.js";
-import XLSX from "xlsx";
+
 
 /**
  * Obtener todas las tipologías del usuario
@@ -106,32 +106,29 @@ export const agruparTipologias = async (req, res) => {
 };
 
 // 📥 Importar desde Excel (desde fila 11)
+// En tipologiaController.js
 export const importarTipologiasDesdeExcel = async (req, res) => {
   try {
-    const archivo = req.file;
-    const obraId = req.body.obra;
+    const { tipologias } = req.body;
+    const userId = req.user.id;
 
-    if (!archivo) return res.status(400).json({ message: "No se subió el archivo" });
-    if (!obraId) return res.status(400).json({ message: "Falta ID de obra" });
+    if (!Array.isArray(tipologias) || tipologias.length === 0) {
+      return res.status(400).json({ message: "No se recibieron tipologías" });
+    }
 
-    const workbook = XLSX.readFile(archivo.path);
-    const sheet = workbook.Sheets[workbook.SheetNames[0]];
+    const mapeadas = tipologias.map((t) => ({
+      tipo: t.tipo,
+      descripcion: t.descripcion,
+      base: t.base,
+      altura: t.altura,
+      cantidad: t.cantidad || 1,
+      obra: t.obra, // deberías asegurarte de incluir obra en el frontend
+      user: userId,
+    }));
 
-    const json = XLSX.utils.sheet_to_json(sheet, { range: 10 }); // fila 11 = index 10
-
-    const tipologias = json.map(row => ({
-      tipo: row["Tipo"]?.toString().trim(),
-      cantidad: Number(row["Cant"]) || 1,
-      descripcion: row["Descripción"]?.toString().trim() || "",
-      base: Number(row["base"]) || 0,
-      altura: Number(row["altura"]) || 0,
-      obra: obraId,
-      user: req.user.id
-    })).filter(t => t.tipo && t.base && t.altura);
-
-    const creadas = await Tipologia.insertMany(tipologias);
-    res.status(201).json({ message: "Tipologías importadas", creadas });
-  } catch (err) {
-    res.status(500).json({ message: "Error al importar", error: err.message });
+    const creadas = await Tipologia.insertMany(mapeadas);
+    res.status(201).json({ message: "Tipologías importadas", total: creadas.length });
+  } catch (error) {
+    res.status(500).json({ message: "Error al importar", error: error.message });
   }
 };

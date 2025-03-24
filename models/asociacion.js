@@ -6,24 +6,24 @@ const asociacionSchema = new mongoose.Schema(
     tipologia: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Tipologia",
-      required: true
+      required: true,
     },
     ubicacion: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Ubicacion",
       required: true,
-      unique: true // Una única asociación por ubicación
+      unique: true, // Una única tipología por ubicación
     },
     obra: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Obra",
-      required: true
+      required: true,
     },
     user: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
-      required: true
-    }
+      required: true,
+    },
   },
   { timestamps: true }
 );
