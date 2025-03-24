@@ -11,139 +11,127 @@ export const obtenerTipologias = async (req, res) => {
   } catch (error) {
     res.status(500).json({ message: "Error al obtener tipologías", error: error.message });
   }
-};
+}
 
-/**
- * Crear una nueva tipología
- */
+// 🟢 Crear tipología manual
 export const crearTipologia = async (req, res) => {
   try {
-    const { codigo, descripcion, base, altura, cantidad, obra } = req.body;
+    const { tipo, descripcion, base, altura, cantidad, obra } = req.body;
 
-    if (!descripcion || !base || !altura || !obra) {
-      return res.status(400).json({ message: "Faltan campos requeridos." });
+    if (!tipo || !base || !altura || !obra) {
+      return res.status(400).json({ message: "Faltan campos obligatorios" });
     }
 
     const nueva = new Tipologia({
-      codigo,
+      tipo,
       descripcion,
       base,
       altura,
-      cantidad: cantidad || 1,
+      cantidad,
       obra,
       user: req.user.id
     });
 
     await nueva.save();
     res.status(201).json(nueva);
-  } catch (error) {
-    res.status(400).json({ message: "Error al crear tipología", error: error.message });
+  } catch (err) {
+    res.status(500).json({ message: "Error al crear tipología", error: err.message });
   }
 };
 
-/**
- * Actualizar tipología existente
- */
-export const actualizarTipologia = async (req, res) => {
+// 🟡 Modificar tipología
+export const modificarTipologia = async (req, res) => {
   try {
-    const tipologia = await Tipologia.findById(req.params.id);
+    const { id } = req.params;
+    const cambios = req.body;
+
+    const tipologia = await Tipologia.findById(id);
     if (!tipologia) return res.status(404).json({ message: "Tipología no encontrada" });
 
-    if (tipologia.user.toString() !== req.user.id) {
-      return res.status(403).json({ message: "No autorizado" });
-    }
-
-    Object.assign(tipologia, req.body);
+    Object.assign(tipologia, cambios);
     await tipologia.save();
-
     res.json(tipologia);
-  } catch (error) {
-    res.status(400).json({ message: "Error al actualizar tipología", error: error.message });
+  } catch (err) {
+    res.status(500).json({ message: "Error al modificar", error: err.message });
   }
 };
 
-/**
- * Eliminar tipología
- */
+// 🔴 Eliminar tipología
 export const eliminarTipologia = async (req, res) => {
   try {
-    const tipologia = await Tipologia.findById(req.params.id);
-    if (!tipologia) return res.status(404).json({ message: "Tipología no encontrada" });
-
-    if (tipologia.user.toString() !== req.user.id) {
-      return res.status(403).json({ message: "No autorizado" });
-    }
-
-    await tipologia.deleteOne();
+    const { id } = req.params;
+    await Tipologia.findByIdAndDelete(id);
     res.json({ message: "Tipología eliminada" });
-  } catch (error) {
-    res.status(400).json({ message: "Error al eliminar tipología", error: error.message });
+  } catch (err) {
+    res.status(500).json({ message: "Error al eliminar", error: err.message });
   }
 };
 
-/**
- * Importar tipologías desde un archivo Excel
- */
-export const importarTipologiasDesdeExcel = async (req, res) => {
-  try {
-    const { obra } = req.body;
-
-    if (!req.file) return res.status(400).json({ message: "Archivo no proporcionado" });
-    if (!obra) return res.status(400).json({ message: "Debe seleccionar una obra" });
-
-    const workbook = XLSX.read(req.file.buffer, { type: "buffer" });
-    const hoja = workbook.Sheets[workbook.SheetNames[0]];
-    const datos = XLSX.utils.sheet_to_json(hoja);
-
-    const tipologias = datos.map((fila) => ({
-      codigo: fila["Tipo"] || "",
-      descripcion: fila["Descripción"] || "",
-      base: parseFloat(fila["base"]) || 0,
-      altura: parseFloat(fila["altura"]) || 0,
-      cantidad: parseInt(fila["Cant"]) || 1,
-      obra,
-      user: req.user.id
-    }));
-
-    const creadas = await Tipologia.insertMany(tipologias);
-    res.status(201).json({ message: `Se importaron ${creadas.length} tipologías`, creadas });
-  } catch (error) {
-    res.status(500).json({ message: "Error al importar tipologías", error: error.message });
-  }
-};
-
-/**
- * Agrupar múltiples tipologías en una sola
- */
+// 🟣 Agrupar tipologías
 export const agruparTipologias = async (req, res) => {
   try {
-    const { ids, nuevaDescripcion, obra } = req.body;
+    const { ids, nuevaBase, nuevaAltura } = req.body;
 
-    if (!ids || ids.length < 2 || !nuevaDescripcion || !obra) {
-      return res.status(400).json({ message: "Faltan datos para agrupar" });
+    if (!ids || ids.length < 2) return res.status(400).json({ message: "Se requieren al menos 2 tipologías" });
+
+    const tipologias = await Tipologia.find({ _id: { $in: ids } });
+
+    const tipoUnico = tipologias[0].tipo;
+    const cantidadesIguales = tipologias.every(t => t.tipo === tipoUnico && t.cantidad === tipologias[0].cantidad);
+
+    if (!cantidadesIguales) {
+      return res.status(400).json({ message: "Las tipologías deben tener el mismo tipo y cantidad" });
     }
 
-    const originales = await Tipologia.find({ _id: { $in: ids }, user: req.user.id });
+    const descripcionConcat = tipologias.map(t => t.descripcion).join(" / ");
 
-    if (originales.length !== ids.length) {
-      return res.status(404).json({ message: "Algunas tipologías no se encontraron" });
-    }
-
-    const agrupada = new Tipologia({
-      codigo: "AGR-" + Date.now(),
-      descripcion: nuevaDescripcion,
-      base: Math.max(...originales.map((t) => t.base)),
-      altura: Math.max(...originales.map((t) => t.altura)),
-      cantidad: originales.reduce((acc, t) => acc + (t.cantidad || 1), 0),
-      agrupada: true,
-      origenes: ids,
-      obra,
-      user: req.user.id
+    const nuevaTipologia = new Tipologia({
+      tipo: tipoUnico,
+      descripcion: descripcionConcat,
+      base: nuevaBase,
+      altura: nuevaAltura,
+      cantidad: tipologias[0].cantidad,
+      obra: tipologias[0].obra,
+      user: tipologias[0].user
     });
 
-    await agrupada.save();
-    res.status(201).json({ message: "Tipologías agrupadas", agrupada });
-  } catch (error) {
-    res.status(500).json({ message: "Error al agrupar tipologías", error: error.message });
+    await nuevaTipologia.save();
+
+    await Tipologia.deleteMany({ _id: { $in: ids } });
+
+    res.status(201).json(nuevaTipologia);
+  } catch (err) {
+    res.status(500).json({ message: "Error al agrupar", error: err.message });
+  }
+};
+
+// 📥 Importar desde Excel (desde fila 11)
+export const importarTipologiasDesdeExcel = async (req, res) => {
+  try {
+    const archivo = req.file;
+    const obraId = req.body.obra;
+
+    if (!archivo) return res.status(400).json({ message: "No se subió el archivo" });
+    if (!obraId) return res.status(400).json({ message: "Falta ID de obra" });
+
+    const workbook = XLSX.readFile(archivo.path);
+    const sheet = workbook.Sheets[workbook.SheetNames[0]];
+
+    const json = XLSX.utils.sheet_to_json(sheet, { range: 10 }); // fila 11 = index 10
+
+    const tipologias = json.map(row => ({
+      tipo: row["Tipo"]?.toString().trim(),
+      cantidad: Number(row["Cant"]) || 1,
+      descripcion: row["Descripción"]?.toString().trim() || "",
+      base: Number(row["base"]) || 0,
+      altura: Number(row["altura"]) || 0,
+      obra: obraId,
+      user: req.user.id
+    })).filter(t => t.tipo && t.base && t.altura);
+
+    const creadas = await Tipologia.insertMany(tipologias);
+    res.status(201).json({ message: "Tipologías importadas", creadas });
+  } catch (err) {
+    res.status(500).json({ message: "Error al importar", error: err.message });
   }
 };

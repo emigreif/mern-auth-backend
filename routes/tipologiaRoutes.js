@@ -1,11 +1,11 @@
 import express from "express";
 import {
-  obtenerTipologias,
   crearTipologia,
-  actualizarTipologia,
+  modificarTipologia,
   eliminarTipologia,
+  agruparTipologias,
   importarTipologiasDesdeExcel,
-  agruparTipologias
+  obtenerTipologias
 } from "../controllers/tipologiaController.js";
 import { protect } from "../middleware/authMiddleware.js";
 import upload from "../middleware/uploadMiddleware.js";
@@ -14,7 +14,7 @@ const router = express.Router();
 
 router.get("/", protect, obtenerTipologias);
 router.post("/", protect, crearTipologia);
-router.put("/:id", protect, actualizarTipologia);
+router.put("/:id", protect, modificarTipologia);
 router.delete("/:id", protect, eliminarTipologia);
 router.post("/importar", protect, upload.single("file"), importarTipologiasDesdeExcel);
 router.post("/agrupar", protect, agruparTipologias);
