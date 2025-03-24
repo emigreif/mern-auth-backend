@@ -1,3 +1,4 @@
+// routes/ubicacionRoutes.js
 import express from "express";
 import { protect } from "../middleware/authMiddleware.js";
 import {
@@ -6,23 +7,19 @@ import {
   crearUbicacion,
   actualizarUbicacion,
   eliminarUbicacion,
+  generarUbicaciones
 } from "../controllers/ubicacionController.js";
 
 const router = express.Router();
 
-// ✅ Obtener todas las ubicaciones
+// Todas las rutas protegidas
 router.get("/", protect, obtenerUbicaciones);
-
-// ✅ Obtener una ubicación por ID
 router.get("/:id", protect, obtenerUbicacionPorId);
-
-// ✅ Crear una nueva ubicación
 router.post("/", protect, crearUbicacion);
-
-// ✅ Actualizar una ubicación existente
 router.put("/:id", protect, actualizarUbicacion);
-
-// ✅ Eliminar una ubicación
 router.delete("/:id", protect, eliminarUbicacion);
+
+// ✅ Generación masiva
+router.post("/generar", protect, generarUbicaciones);
 
 export default router;
