@@ -88,53 +88,52 @@ export const generarUbicaciones = async (req, res) => {
   try {
     const { obraId, pisos } = req.body;
 
-    if (!obraId || !pisos || !Array.isArray(pisos)) {
-      return res.status(400).json({ message: "Datos inválidos" });
+    if (!obraId || !Array.isArray(pisos) || pisos.length === 0) {
+      return res.status(400).json({ message: "Datos insuficientes" });
     }
 
-    const ubicacionesGeneradas = [];
+    const ubicacionesAGuardar = [];
 
-    for (const pisoData of pisos) {
-      const rangos = pisoData.rango.split(",").map(p => p.trim());
+    for (let pisoItem of pisos) {
+      const rango = pisoItem.rango.trim(); // ej: "1-3,5"
+      const cantUbicaciones = parseInt(pisoItem.ubicaciones);
 
-      for (const r of rangos) {
-        const [inicio, fin] = r.includes("-") ? r.split("-").map(Number) : [Number(r), Number(r)];
+      const pisosExpandidos = expandirRangos(rango);
 
-        for (let piso = inicio; piso <= fin; piso++) {
-          for (let i = 1; i <= pisoData.ubicaciones; i++) {
-            const nuevaUbicacion = new Ubicacion({
-              piso: `P${piso}`,
-              ubicacion: `U${i}`,
-              obra: obraId,
-              user: req.user.id
-            });
-            await nuevaUbicacion.save();
-            ubicacionesGeneradas.push(nuevaUbicacion);
-          }
+      for (let piso of pisosExpandidos) {
+        for (let i = 1; i <= cantUbicaciones; i++) {
+          ubicacionesAGuardar.push({
+            piso: `P${piso}`,
+            ubicacion: `U${i}`,
+            obra: obraId,
+            user: req.user.id,
+          });
         }
       }
     }
 
-    res.status(201).json({ message: "Ubicaciones generadas", total: ubicacionesGeneradas.length });
+    await Ubicacion.insertMany(ubicacionesAGuardar);
+
+    res.status(201).json({ message: "Ubicaciones generadas", total: ubicacionesAGuardar.length });
   } catch (error) {
     res.status(500).json({ message: "Error al generar ubicaciones", error: error.message });
   }
 };
 
-
-// 🔹 Expande un rango tipo "1-3,5" => [1,2,3,5]
-function expandirRango(rango) {
-  const valores = [];
-  const partes = rango.split(",").map(p => p.trim());
+// Función para convertir "1-3,5,7-9" => [1,2,3,5,7,8,9]
+function expandirRangos(rangoStr) {
+  const partes = rangoStr.split(",");
+  const resultado = [];
 
   for (let parte of partes) {
     if (parte.includes("-")) {
       const [inicio, fin] = parte.split("-").map(Number);
-      for (let i = inicio; i <= fin; i++) valores.push(i);
+      for (let i = inicio; i <= fin; i++) resultado.push(i);
     } else {
-      valores.push(Number(parte));
+      resultado.push(Number(parte));
     }
   }
 
-  return valores;
+  return resultado;
 }
+
