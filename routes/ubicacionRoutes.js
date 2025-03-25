@@ -8,7 +8,8 @@ import {
   actualizarUbicacion,
   eliminarUbicacion,
   eliminarUbicacionesPorPiso,
-  generarUbicaciones
+  editarUbicacionesPorPiso,
+   generarUbicaciones
 } from "../controllers/ubicacionController.js";
 
 const router = express.Router();
@@ -21,6 +22,6 @@ router.put("/:id", protect, actualizarUbicacion);
 router.delete("/:id", protect, eliminarUbicacion);
 router.post("/generar", protect, generarUbicaciones);
 router.delete("/eliminar-por-piso", protect, eliminarUbicacionesPorPiso);
-
+router.put("/editar-piso", protect, editarUbicacionesPorPiso);
 
 export default router;

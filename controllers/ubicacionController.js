@@ -86,6 +86,34 @@ export const eliminarUbicacionesPorPiso = async (req, res) => {
   }
 };
 
+export const editarUbicacionesPorPiso = async (req, res) => {
+  try {
+    const { piso, obraId, cantidad } = req.body;
+    if (!piso || !obraId || !cantidad || cantidad < 1) {
+      return res.status(400).json({ message: "Datos inválidos" });
+    }
+
+    // Eliminar ubicaciones actuales
+    await Ubicacion.deleteMany({ piso, obra: obraId });
+
+    // Crear nuevas
+    const nuevasUbicaciones = [];
+    for (let i = 1; i <= cantidad; i++) {
+      nuevasUbicaciones.push({
+        piso,
+        ubicacion: `${piso}U${i}`,
+        obra: obraId,
+        user: req.user.id,
+      });
+    }
+
+    await Ubicacion.insertMany(nuevasUbicaciones);
+
+    res.json({ message: `Piso ${piso} actualizado`, total: cantidad });
+  } catch (error) {
+    res.status(500).json({ message: "Error al editar", error: error.message });
+  }
+};
 
 /**
  * ✅ Generar ubicaciones en lote a partir de rangos de pisos
