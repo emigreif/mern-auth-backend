@@ -6,7 +6,19 @@ import {
   obtenerObra,
   crearObra,
   actualizarObra,
-  eliminarObra
+  eliminarObra,
+  agregarPerfilesOV,
+  agregarVidriosOV,
+  agregarAccesoriosOV,
+  agregarTipologiasOV,
+  eliminarItemOV,
+  actualizarPerfilesOV,
+  actualizarVidriosOV,
+  actualizarAccesoriosOV,
+  actualizarTipologiasOV
+
+
+
 } from "../controllers/obraController.js";
 
 const router = express.Router();
@@ -25,4 +37,16 @@ router.route("/:id")
   .put(protect, actualizarObra)
   .delete(protect, eliminarObra);
 
+  router.post("/:id/perfilesOV", protect, agregarPerfilesOV);
+  router.post("/:id/vidriosOV", protect, agregarVidriosOV);
+  router.post("/:id/accesoriosOV", protect, agregarAccesoriosOV);
+  router.post("/:id/tipologiasOV", protect, agregarTipologiasOV);
+  router.put("/:id/perfilesOV", protect, actualizarPerfilesOV);
+router.put("/:id/vidriosOV", protect, actualizarVidriosOV);
+router.put("/:id/accesoriosOV", protect, actualizarAccesoriosOV);
+router.put("/:id/tipologiasOV", protect, actualizarTipologiasOV);
+  
+  // opcional
+  router.delete("/:id/:tipo/:itemId", protect, eliminarItemOV);
+  
 export default router;

@@ -67,7 +67,6 @@ app.use("/api/employee", employeeRoutes);
 app.use("/api/general", generalRoutes);
 app.use("/api/mediciones", medicionRoutes);
 app.use("/api/obras", obraRoutes);
-/* z */
 app.use("/api/panol", panolRoutes);
 app.use("/api/perfiles", perfilRoutes);
 app.use("/api/presupuestos", presupuestoRoutes);
