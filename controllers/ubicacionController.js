@@ -76,6 +76,16 @@ export const eliminarUbicacion = async (req, res) => {
     res.status(500).json({ message: "Error al eliminar la ubicación", error: error.message });
   }
 };
+export const eliminarUbicacionesPorPiso = async (req, res) => {
+  try {
+    const { piso, obraId } = req.body;
+    await Ubicacion.deleteMany({ piso, obra: obraId });
+    res.json({ message: `Ubicaciones del piso ${piso} eliminadas` });
+  } catch (error) {
+    res.status(500).json({ message: "Error al eliminar", error: error.message });
+  }
+};
+
 
 /**
  * ✅ Generar ubicaciones en lote a partir de rangos de pisos

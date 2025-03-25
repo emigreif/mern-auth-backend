@@ -7,6 +7,7 @@ import {
   crearUbicacion,
   actualizarUbicacion,
   eliminarUbicacion,
+  eliminarUbicacionesPorPiso,
   generarUbicaciones
 } from "../controllers/ubicacionController.js";
 
@@ -19,5 +20,7 @@ router.post("/", protect, crearUbicacion);
 router.put("/:id", protect, actualizarUbicacion);
 router.delete("/:id", protect, eliminarUbicacion);
 router.post("/generar", protect, generarUbicaciones);
+router.delete("/eliminar-por-piso", protect, eliminarUbicacionesPorPiso);
+
 
 export default router;
