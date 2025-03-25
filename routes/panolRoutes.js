@@ -38,6 +38,9 @@ router.post("/perfiles/asignar-excel", protect, asignarPerfilesDesdeExcel);
 router.post("/vidrios", protect, agregarVidrio); // Crear
 router.put("/vidrios/:id", protect, modificarVidrio); // Modificar
 router.delete("/vidrios/:id", protect, eliminarVidrio); // Eliminar
+// 📐 Asignar vidrios (manual y excel)
+router.post("/vidrios/asignar-manual", protect, asignarVidriosManual);
+router.post("/vidrios/asignar-excel", protect, asignarVidriosDesdeExcel);
 
 // 📌 Accesorios
 router.post("/accesorios", protect, agregarAccesorio); // Crear

@@ -498,3 +498,98 @@ export const asignarAccesoriosDesdeExcel = async (req, res) => {
     res.status(500).json({ message: "Error al importar accesorios", error: err.message });
   }
 };
+/**
+ * Asignar vidrios desde carga manual
+ */
+export const asignarVidriosManual = async (req, res) => {
+  try {
+    const { obra, items } = req.body;
+    if (!obra || !Array.isArray(items)) {
+      return res.status(400).json({ message: "Datos inválidos" });
+    }
+
+    const panol = await Panol.findOne({ user: req.user.id });
+    if (!panol) return res.status(404).json({ message: "Pañol no encontrado" });
+
+    const asignados = [];
+    const faltantes = [];
+
+    for (const pedido of items) {
+      const candidatos = panol.vidrios
+        .filter((v) => v.ancho >= pedido.ancho && v.alto >= pedido.alto && v.cantidad > 0)
+        .sort((a, b) => {
+          const desperdicioA = (a.ancho * a.alto) - (pedido.ancho * pedido.alto);
+          const desperdicioB = (b.ancho * b.alto) - (pedido.ancho * pedido.alto);
+          return desperdicioA - desperdicioB;
+        });
+
+      const sugerido = candidatos[0];
+
+      if (!sugerido) {
+        faltantes.push({ ...pedido, motivo: "No hay vidrio con medidas suficientes" });
+        continue;
+      }
+
+      sugerido.cantidad -= 1;
+      asignados.push({ ...pedido, asignado: { ancho: sugerido.ancho, alto: sugerido.alto } });
+    }
+
+    await panol.save();
+    return res.json({ asignados, faltantes });
+  } catch (err) {
+    console.error("Error asignando vidrios manual:", err);
+    res.status(500).json({ message: "Error al asignar vidrios", error: err.message });
+  }
+};
+
+/**
+ * Asignar vidrios desde Excel
+ */
+export const asignarVidriosDesdeExcel = async (req, res) => {
+  try {
+    const { obra, items } = req.body;
+    if (!obra || !Array.isArray(items)) {
+      return res.status(400).json({ message: "Datos inválidos" });
+    }
+
+    const panol = await Panol.findOne({ user: req.user.id });
+    if (!panol) return res.status(404).json({ message: "Pañol no encontrado" });
+
+    const asignados = [];
+    const faltantes = [];
+
+    for (const raw of items) {
+      const ancho = parseFloat(raw.ancho || 0);
+      const alto = parseFloat(raw.alto || 0);
+
+      if (!ancho || !alto || ancho <= 0 || alto <= 0) {
+        faltantes.push({ ...raw, motivo: "Medidas inválidas" });
+        continue;
+      }
+
+      const candidatos = panol.vidrios
+        .filter((v) => v.ancho >= ancho && v.alto >= alto && v.cantidad > 0)
+        .sort((a, b) => {
+          const desperdicioA = (a.ancho * a.alto) - (ancho * alto);
+          const desperdicioB = (b.ancho * b.alto) - (ancho * alto);
+          return desperdicioA - desperdicioB;
+        });
+
+      const sugerido = candidatos[0];
+
+      if (!sugerido) {
+        faltantes.push({ ancho, alto, motivo: "Sin vidrio adecuado" });
+        continue;
+      }
+
+      sugerido.cantidad -= 1;
+      asignados.push({ ancho, alto, asignado: { ancho: sugerido.ancho, alto: sugerido.alto } });
+    }
+
+    await panol.save();
+    return res.json({ asignados, faltantes });
+  } catch (err) {
+    console.error("Error asignando vidrios desde Excel:", err);
+    res.status(500).json({ message: "Error al importar vidrios", error: err.message });
+  }
+};
