@@ -66,45 +66,57 @@ export const eliminarTipologia = async (req, res) => {
     res.status(500).json({ message: "Error al eliminar", error: err.message });
   }
 };
-
-// 🟣 Agrupar tipologías
 export const agruparTipologias = async (req, res) => {
   try {
-    const { ids, nuevaBase, nuevaAltura } = req.body;
+    const { tipo, descripcion, base, altura, origenes, obra } = req.body;
 
-    if (!ids || ids.length < 2) return res.status(400).json({ message: "Se requieren al menos 2 tipologías" });
+    if (!tipo || !base || !altura || !obra || !Array.isArray(origenes) || origenes.length < 2) {
+      return res.status(400).json({ message: "Datos insuficientes para agrupar" });
+    }
 
-    const tipologias = await Tipologia.find({ _id: { $in: ids } });
+    // Obtener las tipologías a agrupar
+    const tipologias = await Tipologia.find({ _id: { $in: origenes }, obra });
 
-    const tipoUnico = tipologias[0].tipo;
-    const cantidadesIguales = tipologias.every(t => t.tipo === tipoUnico && t.cantidad === tipologias[0].cantidad);
+    if (tipologias.length !== origenes.length) {
+      return res.status(404).json({ message: "Algunas tipologías no fueron encontradas" });
+    }
 
-    if (!cantidadesIguales) {
+    const tipoBase = tipologias[0].tipo;
+    const cantidadBase = tipologias[0].cantidad;
+
+    const mismas = tipologias.every(
+      (t) => t.tipo === tipoBase && t.cantidad === cantidadBase
+    );
+
+    if (!mismas) {
       return res.status(400).json({ message: "Las tipologías deben tener el mismo tipo y cantidad" });
     }
 
-    const descripcionConcat = tipologias.map(t => t.descripcion).join(" / ");
+    // Concatenar descripciones
+    const desc = tipologias.map(t => t.descripcion).join(" / ");
 
-    const nuevaTipologia = new Tipologia({
-      tipo: tipoUnico,
-      descripcion: descripcionConcat,
-      base: nuevaBase,
-      altura: nuevaAltura,
-      cantidad: tipologias[0].cantidad,
-      obra: tipologias[0].obra,
-      user: tipologias[0].user
+    // Crear nueva tipología
+    const nueva = new Tipologia({
+      tipo,
+      descripcion: descripcion || desc,
+      base,
+      altura,
+      cantidad: cantidadBase,
+      obra,
+      user: req.user.id
     });
 
-    await nuevaTipologia.save();
+    await nueva.save();
 
-    await Tipologia.deleteMany({ _id: { $in: ids } });
+    // Eliminar las originales
+    await Tipologia.deleteMany({ _id: { $in: origenes } });
 
-    res.status(201).json(nuevaTipologia);
-  } catch (err) {
-    res.status(500).json({ message: "Error al agrupar", error: err.message });
+    res.status(201).json(nueva);
+  } catch (error) {
+    res.status(500).json({ message: "Error al agrupar tipologías", error: error.message });
   }
 };
-// ✅ No necesitas multer aquí porque los datos ya vienen procesados en JSON
+
 export const importarTipologiasDesdeExcel = async (req, res) => {
   try {
     const { tipologias } = req.body;
