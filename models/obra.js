@@ -19,28 +19,44 @@ const ObraSchema = new mongoose.Schema(
     importeTotal: { type: Number, default: 0 },
     indiceActualizacionSaldo: { type: Number, default: 0 },
 
-    perfilesPresupuesto: [
+    // OV: Material confirmado post-venta
+    perfilesOV: [
       {
         codigo: String,
         descripcion: String,
         cantidad: { type: Number, min: 0 },
+        color: String,
         precio: { type: Number, min: 0 }
       }
     ],
-    vidriosPresupuesto: [
+    vidriosOV: [
       {
-        codigo: String,
         descripcion: String,
+        ancho: Number,
+        alto: Number,
         cantidad: { type: Number, min: 0 },
+        tipo: { type: String },
         precio: { type: Number, min: 0 }
       }
     ],
-    accesoriosPresupuesto: [
+    accesoriosOV: [
       {
         codigo: String,
         descripcion: String,
+        color: String,
         cantidad: { type: Number, min: 0 },
+        unidad: String,
+        tipo: String,
         precio: { type: Number, min: 0 }
+      }
+    ],
+    tipologiasOV: [
+      {
+        tipo: String,
+        descripcion: String,
+        base: Number,
+        altura: Number,
+        cantidad: Number
       }
     ],
 
@@ -101,7 +117,7 @@ const ObraSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-// pre("save"): si no existe codigoObra, buscar el último y sumarle 1
+// Pre-save: autogenerar código y fechas relativas
 ObraSchema.pre("save", async function (next) {
   if (!this.codigoObra) {
     const ultimaObra = await this.constructor
@@ -109,10 +125,24 @@ ObraSchema.pre("save", async function (next) {
       .sort("-codigoObra");
     this.codigoObra = ultimaObra ? ultimaObra.codigoObra + 1 : 1;
   }
+
+  if (this.fechaEntrega) {
+    const entrega = new Date(this.fechaEntrega);
+    const offsetDays = (d) => {
+      const result = new Date(entrega);
+      result.setDate(entrega.getDate() - d);
+      return result;
+    };
+    this.fechaInicioCortePerfiles = offsetDays(15);
+    this.fechaInicioArmado = offsetDays(10);
+    this.fechaEnvidriado = offsetDays(7);
+    this.fechaInicioMontaje = entrega;
+    this.fechaMedicion = offsetDays(60);
+  }
+
   next();
 });
 
-// Índice para búsquedas
 ObraSchema.index({ user: 1 });
 
 export default mongoose.model("Obra", ObraSchema);
