@@ -1,8 +1,8 @@
-// controllers/ubicacionController.js
+// src/controllers/ubicacionController.js
 import Ubicacion from "../models/ubicacion.js";
 
 /**
- * 🔹 Obtener todas las ubicaciones del usuario
+ * ✅ Obtener todas las ubicaciones del usuario
  */
 export const obtenerUbicaciones = async (req, res) => {
   try {
@@ -14,11 +14,11 @@ export const obtenerUbicaciones = async (req, res) => {
 };
 
 /**
- * 🔹 Obtener una ubicación por ID
+ * ✅ Obtener una ubicación por ID
  */
 export const obtenerUbicacionPorId = async (req, res) => {
   try {
-    const ubicacion = await Ubicacion.findOne({ _id: req.params.id, user: req.user.id });
+    const ubicacion = await Ubicacion.findById(req.params.id);
     if (!ubicacion) return res.status(404).json({ message: "Ubicación no encontrada" });
     res.json(ubicacion);
   } catch (error) {
@@ -27,21 +27,21 @@ export const obtenerUbicacionPorId = async (req, res) => {
 };
 
 /**
- * 🔹 Crear una sola ubicación manualmente
+ * ✅ Crear una nueva ubicación manual
  */
 export const crearUbicacion = async (req, res) => {
   try {
     const { piso, ubicacion, obra } = req.body;
 
     if (!piso || !ubicacion || !obra) {
-      return res.status(400).json({ message: "Campos requeridos: piso, ubicacion, obra" });
+      return res.status(400).json({ message: "Todos los campos son requeridos" });
     }
 
     const nuevaUbicacion = new Ubicacion({
       piso,
       ubicacion,
       obra,
-      user: req.user.id
+      user: req.user.id,
     });
 
     await nuevaUbicacion.save();
@@ -52,29 +52,25 @@ export const crearUbicacion = async (req, res) => {
 };
 
 /**
- * 🔹 Actualizar una ubicación existente
+ * ✅ Actualizar una ubicación existente
  */
 export const actualizarUbicacion = async (req, res) => {
   try {
-    const actualizada = await Ubicacion.findOneAndUpdate(
-      { _id: req.params.id, user: req.user.id },
-      req.body,
-      { new: true }
-    );
-    if (!actualizada) return res.status(404).json({ message: "Ubicación no encontrada" });
-    res.json(actualizada);
+    const ubicacion = await Ubicacion.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    if (!ubicacion) return res.status(404).json({ message: "Ubicación no encontrada" });
+    res.json(ubicacion);
   } catch (error) {
     res.status(500).json({ message: "Error al actualizar la ubicación", error: error.message });
   }
 };
 
 /**
- * 🔹 Eliminar una ubicación
+ * ✅ Eliminar una ubicación
  */
 export const eliminarUbicacion = async (req, res) => {
   try {
-    const eliminada = await Ubicacion.findOneAndDelete({ _id: req.params.id, user: req.user.id });
-    if (!eliminada) return res.status(404).json({ message: "Ubicación no encontrada" });
+    const ubicacion = await Ubicacion.findByIdAndDelete(req.params.id);
+    if (!ubicacion) return res.status(404).json({ message: "Ubicación no encontrada" });
     res.json({ message: "Ubicación eliminada" });
   } catch (error) {
     res.status(500).json({ message: "Error al eliminar la ubicación", error: error.message });
@@ -82,7 +78,7 @@ export const eliminarUbicacion = async (req, res) => {
 };
 
 /**
- * 🔹 Generar múltiples ubicaciones por piso y cantidad
+ * ✅ Generar ubicaciones en lote a partir de rangos de pisos
  */
 export const generarUbicaciones = async (req, res) => {
   try {
@@ -120,7 +116,7 @@ export const generarUbicaciones = async (req, res) => {
   }
 };
 
-// Función para convertir "1-3,5,7-9" => [1,2,3,5,7,8,9]
+// 🔧 Utilidad: convertir "1-3,5,7-9" => [1,2,3,5,7,8,9]
 function expandirRangos(rangoStr) {
   const partes = rangoStr.split(",");
   const resultado = [];
@@ -136,4 +132,3 @@ function expandirRangos(rangoStr) {
 
   return resultado;
 }
-

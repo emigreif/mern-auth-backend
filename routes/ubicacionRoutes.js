@@ -18,6 +18,6 @@ router.get("/:id", protect, obtenerUbicacionPorId);
 router.post("/", protect, crearUbicacion);
 router.put("/:id", protect, actualizarUbicacion);
 router.delete("/:id", protect, eliminarUbicacion);
-router.post("/generar", protect, generarUbicaciones); // NUEVA RUTA
+router.post("/generar", protect, generarUbicaciones);
 
 export default router;
