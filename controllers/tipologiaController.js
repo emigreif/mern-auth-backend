@@ -104,9 +104,7 @@ export const agruparTipologias = async (req, res) => {
     res.status(500).json({ message: "Error al agrupar", error: err.message });
   }
 };
-
-// 📥 Importar desde Excel (desde fila 11)
-// En tipologiaController.js
+// ✅ No necesitas multer aquí porque los datos ya vienen procesados en JSON
 export const importarTipologiasDesdeExcel = async (req, res) => {
   try {
     const { tipologias } = req.body;
@@ -116,19 +114,20 @@ export const importarTipologiasDesdeExcel = async (req, res) => {
       return res.status(400).json({ message: "No se recibieron tipologías" });
     }
 
-    const mapeadas = tipologias.map((t) => ({
+    const tipologiasFormateadas = tipologias.map((t) => ({
       tipo: t.tipo,
-      descripcion: t.descripcion,
+      descripcion: t.descripcion || "",
       base: t.base,
       altura: t.altura,
       cantidad: t.cantidad || 1,
-      obra: t.obra, // deberías asegurarte de incluir obra en el frontend
+      obra: t.obra,
       user: userId,
     }));
 
-    const creadas = await Tipologia.insertMany(mapeadas);
+    const creadas = await Tipologia.insertMany(tipologiasFormateadas);
     res.status(201).json({ message: "Tipologías importadas", total: creadas.length });
   } catch (error) {
-    res.status(500).json({ message: "Error al importar", error: error.message });
+    console.error("Error al importar tipologías:", error);
+    res.status(500).json({ message: "Error al importar tipologías", error: error.message });
   }
 };
