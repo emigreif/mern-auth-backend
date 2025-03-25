@@ -256,16 +256,16 @@ export const eliminarAccesorio = async (req, res) => {
  */
 export const agregarVidrio = async (req, res) => {
   try {
-    const { codigo, descripcion, cantidad, ancho, alto, tipo } = req.body;
+    const {  descripcion, cantidad, ancho, alto, tipo } = req.body;
 
-    if (!codigo || !descripcion || cantidad == null || !ancho || !alto) {
+    if ( !descripcion || cantidad == null || !ancho || !alto) {
       return res.status(400).json({ message: "Todos los campos son requeridos." });
     }
 
     let panol = await Panol.findOne({ user: req.user.id });
     if (!panol) panol = new Panol({ user: req.user.id });
 
-    const nuevoVidrio = { codigo, descripcion, cantidad, ancho, alto, tipo };
+    const nuevoVidrio = { descripcion, cantidad, ancho, alto, tipo };
     panol.vidrios.push(nuevoVidrio);
 
     await panol.save();
@@ -311,5 +311,190 @@ export const eliminarVidrio = async (req, res) => {
     res.json({ message: "Vidrio eliminado" });
   } catch (error) {
     res.status(400).json({ message: "Error al eliminar vidrio", error: error.message });
+  }
+};
+/**
+ * Asignar perfiles desde carga manual
+ */
+export const asignarPerfilesManual = async (req, res) => {
+  try {
+    const { obra, items } = req.body;
+
+    if (!obra || !Array.isArray(items)) {
+      return res.status(400).json({ message: "Datos inválidos" });
+    }
+
+    const panol = await Panol.findOne({ user: req.user.id });
+    if (!panol) return res.status(404).json({ message: "Pañol no encontrado" });
+
+    const asignados = [];
+    const faltantes = [];
+
+    for (const item of items) {
+      const perfil = panol.perfiles.find(
+        (p) => p.codigo === item.codigo && p.color === item.color
+      );
+
+      if (!perfil || perfil.cantidad < item.cantidad) {
+        faltantes.push({
+          codigo: item.codigo,
+          color: item.color,
+          cantidad: item.cantidad,
+          stock: perfil?.cantidad || 0
+        });
+        continue;
+      }
+
+      perfil.cantidad -= item.cantidad;
+      asignados.push(item);
+    }
+
+    await panol.save();
+    return res.json({ asignados, faltantes });
+  } catch (err) {
+    console.error("Error asignando perfiles manual:", err);
+    res.status(500).json({ message: "Error al asignar perfiles", error: err.message });
+  }
+};
+
+/**
+ * Asignar perfiles desde archivo Excel
+ */
+export const asignarPerfilesDesdeExcel = async (req, res) => {
+  try {
+    const { obra, items } = req.body;
+
+    if (!obra || !Array.isArray(items)) {
+      return res.status(400).json({ message: "Datos inválidos" });
+    }
+
+    const panol = await Panol.findOne({ user: req.user.id });
+    if (!panol) return res.status(404).json({ message: "Pañol no encontrado" });
+
+    const asignados = [];
+    const faltantes = [];
+
+    for (const raw of items) {
+      const codigo = raw.codigo?.trim();
+      const color = raw.color?.trim();
+      const cantidad = parseFloat(raw.cantidad || 0);
+
+      if (!codigo || !color || cantidad <= 0) {
+        faltantes.push({ codigo, color, cantidad, motivo: "Datos inválidos" });
+        continue;
+      }
+
+      const perfil = panol.perfiles.find(
+        (p) => p.codigo === codigo && p.color === color
+      );
+
+      if (!perfil || perfil.cantidad < cantidad) {
+        faltantes.push({
+          codigo,
+          color,
+          cantidad,
+          stock: perfil?.cantidad || 0
+        });
+        continue;
+      }
+
+      perfil.cantidad -= cantidad;
+      asignados.push({ codigo, color, cantidad });
+    }
+
+    await panol.save();
+    return res.json({ asignados, faltantes });
+  } catch (err) {
+    console.error("Error asignando perfiles desde Excel:", err);
+    res.status(500).json({ message: "Error al importar Excel", error: err.message });
+  }
+};
+/**
+ * Asignar accesorios desde carga manual
+ */
+export const asignarAccesoriosManual = async (req, res) => {
+  try {
+    const { obra, items } = req.body;
+    if (!obra || !Array.isArray(items)) {
+      return res.status(400).json({ message: "Datos inválidos" });
+    }
+
+    const panol = await Panol.findOne({ user: req.user.id });
+    if (!panol) return res.status(404).json({ message: "Pañol no encontrado" });
+
+    const asignados = [];
+    const faltantes = [];
+
+    for (const item of items) {
+      const acc = panol.accesorios.find(
+        (a) => a.codigo === item.codigo && a.color === item.color
+      );
+
+      if (!acc || acc.cantidad < item.cantidad) {
+        faltantes.push({
+          codigo: item.codigo,
+          color: item.color,
+          cantidad: item.cantidad,
+          stock: acc?.cantidad || 0
+        });
+        continue;
+      }
+
+      acc.cantidad -= item.cantidad;
+      asignados.push(item);
+    }
+
+    await panol.save();
+    return res.json({ asignados, faltantes });
+  } catch (err) {
+    console.error("Error asignando accesorios manual:", err);
+    res.status(500).json({ message: "Error al asignar accesorios", error: err.message });
+  }
+};
+
+/**
+ * Asignar accesorios desde Excel
+ */
+export const asignarAccesoriosDesdeExcel = async (req, res) => {
+  try {
+    const { obra, items } = req.body;
+    if (!obra || !Array.isArray(items)) {
+      return res.status(400).json({ message: "Datos inválidos" });
+    }
+
+    const panol = await Panol.findOne({ user: req.user.id });
+    if (!panol) return res.status(404).json({ message: "Pañol no encontrado" });
+
+    const asignados = [];
+    const faltantes = [];
+
+    for (const raw of items) {
+      const codigo = raw.codigo?.trim();
+      const color = raw.color?.trim();
+      const cantidad = parseFloat(raw.cantidad || 0);
+
+      if (!codigo || !color || cantidad <= 0) {
+        faltantes.push({ codigo, color, cantidad, motivo: "Datos inválidos" });
+        continue;
+      }
+
+      const acc = panol.accesorios.find(
+        (a) => a.codigo === codigo && a.color === color
+      );
+
+      if (!acc || acc.cantidad < cantidad) {
+        faltantes.push({ codigo, color, cantidad, stock: acc?.cantidad || 0 });
+        continue;
+      }
+
+      acc.cantidad -= cantidad;
+      asignados.push({ codigo, color, cantidad });
+    }
+
+    await panol.save();
+    return res.json({ asignados, faltantes });
+  } catch (err) {
+    console.error("Error asignando accesorios desde Excel:", err);
+    res.status(500).json({ message: "Error al importar accesorios", error: err.message });
   }
 };

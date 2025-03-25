@@ -38,17 +38,17 @@ const accesorioSchema = new mongoose.Schema({
 });
 
 const vidrioSchema = new mongoose.Schema({
-  codigo: { type: String, required: true },
   descripcion: { type: String, required: true },
   cantidad: { type: Number, required: true },
   ancho: { type: Number, required: true },
   alto: { type: Number, required: true },
   tipo: {
     type: String,
-    enum: ["simple", "dvh", "tvh"],
+    enum: ["simple", "dvh", "tvh", "laminado"],
     default: "simple"
   }
 });
+
 
 const panolSchema = new mongoose.Schema({
   user: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
