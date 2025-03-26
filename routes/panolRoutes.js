@@ -12,7 +12,13 @@ import {
   modificarVidrio,
   eliminarVidrio,
   agregarAccesorio,
+  asignarPerfilesDesdeExcel,
+  asignarVidriosManual,
+  asignarPerfilesManual,
   modificarAccesorio,
+  asignarVidriosDesdeExcel,
+  asignarAccesoriosManual,
+  asignarAccesoriosDesdeExcel,
   eliminarAccesorio
 } from "../controllers/panolController.js";
 import { protect } from "../middleware/authMiddleware.js";
