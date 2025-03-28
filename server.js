@@ -34,7 +34,7 @@ connectDB();
 const app = express();
 app.use(express.json());
 
-// Configurar CORS
+/* Configurar CORS
 const allowedOrigins = [
   "http://localhost:5173",
   "https://mern-auth-frontendemigreif.vercel.app/"
@@ -52,6 +52,25 @@ app.use(
     credentials: true
   })
 );
+*/
+// Configurar CORS para ahora dev
+if (process.env.NODE_ENV === "production") {
+  // En producción: permitir cualquier origen
+  app.use(
+    cors({
+      origin: true, // permite cualquier origen
+      credentials: true
+    })
+  );
+} else {
+  // En desarrollo: solo frontend local
+  app.use(
+    cors({
+      origin: "http://localhost:5173",
+      credentials: true
+    })
+  );
+}
 
 app.use(cookieParser());
 
