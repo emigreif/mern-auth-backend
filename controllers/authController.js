@@ -3,12 +3,11 @@ import User from "../models/user.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import nodemailer from "nodemailer";
-
-/* import mercadopago from "../config/mercadoPago.js"; */
+const Perfil = require("../models/perfil");
 import crypto from "crypto";
 
 // 1. REGISTRO
-export const register = async (req, res) => {
+const register = async (req, res) => {
   try {
     const {
       email,
@@ -22,32 +21,47 @@ export const register = async (req, res) => {
       cantidadUsuarios,
       direccion,
       localidad,
-      codigoPostal
+      codigoPostal,
     } = req.body;
 
     // Verificar campos obligatorios
     if (!email || !password || !repeatPassword || !firstName || !lastName) {
-      return res
-        .status(400)
-        .json({ message: "Todos los campos obligatorios deben ser completados" });
+      return res.status(400).json({
+        message: "Todos los campos obligatorios deben ser completados",
+      });
     }
 
-    // Verificar contraseñas
     if (password !== repeatPassword) {
       return res.status(400).json({ message: "Las contraseñas no coinciden" });
     }
 
-    // Chequear si ya existe el usuario
     const existingUser = await User.findOne({ email });
     if (existingUser) {
       return res.status(400).json({ message: "El usuario ya existe" });
     }
 
-    // Cifrar la contraseña
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
-    // Crear nuevo usuario
+    // ✅ Crear el perfil por defecto
+    const perfil = new Perfil({
+      nombre: "admin",
+      password: "1234",
+      permisos: {
+        dashboard: true,
+        obras: true,
+        clientes: true,
+        presupuestos: true,
+        proveedores: true,
+        contabilidad: true,
+        reportes: true,
+        nomina: true,
+        admin: true,
+      },
+    });
+    await perfil.save();
+
+    // Crear nuevo usuario con perfil asignado
     const newUser = new User({
       email,
       password: hashedPassword,
@@ -59,19 +73,21 @@ export const register = async (req, res) => {
       cantidadUsuarios: cantidadUsuarios || 1,
       direccion,
       localidad,
-      codigoPostal
+      codigoPostal,
+      perfilId: perfil._id,
     });
 
     await newUser.save();
-    return res.status(201).json({ message: "Usuario registrado con éxito" });
+
+    return res.status(201).json({ message: "Usuario y perfil creados con éxito" });
   } catch (error) {
+    console.error("Error en register:", error);
     return res.status(500).json({
       message: "Error registrando usuario",
-      error: error.message || error
+      error: error.message || error,
     });
   }
 };
-
 // 2. LOGIN (PRIMER LOGIN: USUARIO)
 export const login = async (req, res) => {
   try {
