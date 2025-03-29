@@ -11,18 +11,18 @@ const UserSchema = new mongoose.Schema(
     razonSocial: { type: String, default: "" },
     cuit: { type: String, default: "" },
     plan: { type: String, default: "" }, //{type: mongoose.Schema.Types.ObjectId, ref: "Plan"}, // Asegúrate de tener un modelo Plan con este nombre mas adelante
- /*    
-    planStatus: {
-      type: String,
-      enum: ["pendiente", "activo", "vencido", "cancelado"],
-      default: "pendiente"
-    },
-    planExpiration: { type: Date }, */
+    /*    
+       planStatus: {
+         type: String,
+         enum: ["pendiente", "activo", "vencido", "cancelado"],
+         default: "pendiente"
+       },
+       planExpiration: { type: Date }, */
     cantidadUsuarios: { type: Number, default: 1 },
     direccion: { type: String, default: "" },
     localidad: { type: String, default: "" },
     codigoPostal: { type: String, default: "" },
-   resetPasswordToken: { type: String },
+    resetPasswordToken: { type: String },
     resetPasswordExpires: { type: Date }
   },
   { timestamps: true }
