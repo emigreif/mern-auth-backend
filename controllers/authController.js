@@ -10,6 +10,9 @@ import crypto from "crypto";
 // 1. REGISTRO
 export const register = async (req, res) => {
   try {
+    // Mostrar el JSON enviado en la petición
+    console.log("JSON recibido en register:", req.body);
+
     const {
       email,
       password,
@@ -65,6 +68,7 @@ export const register = async (req, res) => {
     await newUser.save();
     return res.status(201).json({ message: "Usuario registrado con éxito" });
   } catch (error) {
+    console.error("Error registrando usuario:", error);
     return res.status(500).json({
       message: "Error registrando usuario",
       error: error.message || error
