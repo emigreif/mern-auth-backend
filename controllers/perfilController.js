@@ -1,4 +1,3 @@
-// controllers/perfilController.js
 import Perfil from "../models/perfil.js";
 import User from "../models/user.js";
 
