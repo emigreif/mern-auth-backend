@@ -7,7 +7,6 @@ import nodemailer from "nodemailer";
 /* import mercadopago from "../config/mercadoPago.js"; */
 import crypto from "crypto";
 
-// 1. REGISTRO
 export const register = async (req, res) => {
   try {
     // Mostrar el JSON enviado en la petición
