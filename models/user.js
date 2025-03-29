@@ -8,8 +8,6 @@ const UserSchema = new mongoose.Schema(
     password: { type: String, required: true },
     firstName: { type: String, required: true },
     lastName: { type: String, required: true },
-
-    // Información adicional de facturación / empresa
     razonSocial: { type: String, default: "" },
     cuit: { type: String, default: "" },
     plan: { type: String, default: "" }, //{type: mongoose.Schema.Types.ObjectId, ref: "Plan"}, // Asegúrate de tener un modelo Plan con este nombre mas adelante
