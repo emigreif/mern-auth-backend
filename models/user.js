@@ -10,14 +10,7 @@ const UserSchema = new mongoose.Schema(
     lastName: { type: String, required: true },
     razonSocial: { type: String, default: "" },
     cuit: { type: String, default: "" },
-    plan: { type: String, default: "" }, //{type: mongoose.Schema.Types.ObjectId, ref: "Plan"}, // Asegúrate de tener un modelo Plan con este nombre mas adelante
-    /*    
-       planStatus: {
-         type: String,
-         enum: ["pendiente", "activo", "vencido", "cancelado"],
-         default: "pendiente"
-       },
-       planExpiration: { type: Date }, */
+    plan: { type: String, default: "" }, 
     cantidadUsuarios: { type: Number, default: 1 },
     direccion: { type: String, default: "" },
     localidad: { type: String, default: "" },
@@ -29,3 +22,13 @@ const UserSchema = new mongoose.Schema(
 );
 
 export default mongoose.model("User", UserSchema);
+
+
+//{type: mongoose.Schema.Types.ObjectId, ref: "Plan"}, // Asegúrate de tener un modelo Plan con este nombre mas adelante
+    /*    
+       planStatus: {
+         type: String,
+         enum: ["pendiente", "activo", "vencido", "cancelado"],
+         default: "pendiente"
+       },
+       planExpiration: { type: Date }, */
