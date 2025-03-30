@@ -1,4 +1,5 @@
 import PerfilGeneral from "../models/PerfilGeneral.js";
+import CamaraGeneral from "../models/camaraGeneral.js";
 import VidrioGeneral from "../models/VidrioGeneral.js";
 import xlsx from "xlsx";
 
@@ -93,5 +94,24 @@ export const importarVidrios = async (req, res) => {
     res.json({ message: "Vidrios importados con éxito" });
   } catch (error) {
     res.status(400).json({ message: "Error al importar vidrios", error: error.message });
+  }
+};
+export const importarCamaras = async (req, res) => {
+  try {
+    const workbook = xlsx.read(req.file.buffer, { type: "buffer" });
+    const sheet = workbook.Sheets[workbook.SheetNames[0]];
+    const data = xlsx.utils.sheet_to_json(sheet);
+
+    const camaras = data.map((row) => ({
+      descripcion: row["Descripcion"],
+      espesor: Number(row["Espesor"]),
+    }));
+
+    await CamaraGeneral.insertMany(camaras);
+    res.json({ message: "Cámaras importadas con éxito" });
+  } catch (error) {
+    res
+      .status(400)
+      .json({ message: "Error al importar cámaras", error: error.message });
   }
 };

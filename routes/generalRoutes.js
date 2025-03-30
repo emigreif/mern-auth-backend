@@ -3,9 +3,7 @@
 
 import express from "express";
 import upload from "../middleware/uploadMiddleware.js";
-import { importarPerfiles, importarVidrios } from "../controllers/generalController.js";
-
-import { agregarPerfil, obtenerPerfiles, agregarVidrio, obtenerVidrios } from "../controllers/generalController.js";
+import { importarPerfiles, importarCamaras, importarVidrios, agregarPerfil, obtenerPerfiles, agregarVidrio, obtenerVidrios } from "../controllers/generalController.js";
 
 const router = express.Router();
 
@@ -21,5 +19,5 @@ router.post("/vidrios", agregarVidrio);
 router.post("/perfiles/importar", upload.single("file"), importarPerfiles);
 router.post("/vidrios/importar", upload.single("file"), importarVidrios);
 
-
+router.post("/camaras/importar", upload.single("file"), importarCamaras);
 export default router;
