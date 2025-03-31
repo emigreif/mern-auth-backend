@@ -110,7 +110,6 @@ export const importarProveedores = importarDesdeExcel(ProveedorGeneral, (row) =>
   },
 }));
 
-// CRUD Proveedores
 export const obtenerProveedores = async (req, res) => {
   try {
     const proveedores = await ProveedorGeneral.find();
@@ -148,7 +147,7 @@ export const eliminarProveedor = async (req, res) => {
   }
 };
 
-// CRUD Cámaras
+
 export const obtenerCamaras = async (req, res) => {
   try {
     const camaras = await CamaraGeneral.find();
@@ -187,7 +186,7 @@ export const eliminarCamara = async (req, res) => {
   }
 };
 
-// Accesorios
+
 export const obtenerAccesorios = async (req, res) => {
   try {
     const accesorios = await AccesorioGeneral.find();
