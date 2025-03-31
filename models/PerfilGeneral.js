@@ -1,18 +1,42 @@
-// models/PerfilGeneral.js
 import mongoose from "mongoose";
 
-const perfilGeneralSchema = new mongoose.Schema({
-  extrusora: {
-    type: String,
-    enum: ["Aluar", "Hydro", "Alcemar", "Aluwind", "Flamia MDT", "Rehau", "Munchtek", "Aluplast", "Veratek", "Veka", "Otro"],
-    required: true
+const perfilGeneralSchema = new mongoose.Schema(
+  {
+    codigo: {
+      type: String,
+      required: false,
+      trim: true,
+    },
+    descripcion: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+    extrusora: {
+      type: String,
+      required: false,
+      trim: true,
+    },
+    linea: {
+      type: [String], // Array de líneas
+      default: [],
+    },
+    largo: {
+      type: Number,
+      required: false,
+      default: 0,
+    },
+    peso: {
+      type: Number,
+      required: false,
+      default: 0,
+    },
   },
-  linea: { type: String, required: true },
-  codigo: { type: String, required: true, unique: true },
-  descripcion: { type: String, required: true },
-  largo: { type: Number, required: true }, // Largo en mm
-  pesoxmetro: { type: Number, required: true } // Peso en kg/m
-});
+  {
+    timestamps: true,
+  }
+);
 
 const PerfilGeneral = mongoose.model("PerfilGeneral", perfilGeneralSchema);
+
 export default PerfilGeneral;
