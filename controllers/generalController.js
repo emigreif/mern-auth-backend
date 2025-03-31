@@ -97,21 +97,40 @@ export const agregarPerfil = async (req, res) => {
 /**
  * Importar perfiles desde Excel
  */
+
 export const importarPerfiles = async (req, res) => {
   try {
-    const workbook = xlsx.read(req.file.buffer, { type: "buffer" });
-    const sheet = workbook.Sheets[workbook.SheetNames[0]];
-    const data = xlsx.utils.sheet_to_json(sheet);
-    
-    const perfiles = data.map((row) => ({
-      descripcion: row["Descripcion"],
-      extrusora: row["Extrusora"],
-    }));
+    const workbook = XLSX.read(req.file.buffer, { type: "buffer" });
+    const sheetName = workbook.SheetNames[0];
+    const sheet = workbook.Sheets[sheetName];
 
-    await PerfilGeneral.insertMany(perfiles);
-    res.json({ message: "Perfiles importados con éxito" });
+    const data = XLSX.utils.sheet_to_json(sheet, { defval: "" });
+
+    const perfiles = data.map((row) => {
+      return {
+        codigo: row["Codigo"] || "",
+        descripcion: row["Descripcion"] || "",
+        extrusora: row["Extrusora"] || "",
+        linea: typeof row["Linea"] === "string"
+          ? row["Linea"].split(",").map((l) => l.trim()) // convierte a array
+          : [],
+        largo: parseFloat(String(row["Largo"]).replace(",", ".")) || 0,
+        peso: parseFloat(String(row["Peso x Metro"]).replace(",", ".")) || 0,
+      };
+    });
+
+    const result = await PerfilGeneral.insertMany(perfiles);
+    res.status(200).json({
+      message: `✅ ${result.length} perfiles importados correctamente`,
+      data: result,
+    });
+
   } catch (error) {
-    res.status(400).json({ message: "Error al importar perfiles", error: error.message });
+    console.error("❌ Error al importar perfiles:", error);
+    res.status(500).json({
+      message: "Error al importar perfiles",
+      error: error.message,
+    });
   }
 };
 export const actualizarPerfil = async (req, res) => {
