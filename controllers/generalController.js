@@ -114,39 +114,65 @@ export const agregarPerfil = async (req, res) => {
 
 export const importarPerfiles = async (req, res) => {
   try {
+    if (!req.file) {
+      return res.status(400).json({ message: "No se subió ningún archivo." });
+    }
+
     const workbook = XLSX.read(req.file.buffer, { type: "buffer" });
     const sheetName = workbook.SheetNames[0];
-    const sheet = workbook.Sheets[sheetName];
+    const data = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName]);
 
-    const data = XLSX.utils.sheet_to_json(sheet, { defval: "" });
+    const nuevosPerfiles = [];
 
-    const perfiles = data.map((row) => {
-      return {
-        codigo: row["Codigo"] || "",
-        descripcion: row["Descripcion"] || "",
-        extrusora: row["Extrusora"] || "",
-        linea: typeof row["Linea"] === "string"
-          ? row["Linea"].split(",").map((l) => l.trim()) // convierte a array
-          : [],
-        largo: parseFloat(String(row["Largo"]).replace(",", ".")) || 0,
-        peso: parseFloat(String(row["Peso x Metro"]).replace(",", ".")) || 0,
-      };
-    });
+    for (const row of data) {
+      const { Descripcion, Linea, Extrusora, Largo, Peso_x_Metro, Codigo } = row;
 
-    const result = await PerfilGeneral.insertMany(perfiles);
+      if (!Descripcion || !Linea || !Codigo) continue;
+
+      const lineas = Linea.split(",").map(l => l.trim());
+
+      const existente = await PerfilGeneral.findOne({ Codigo });
+
+      if (existente) {
+        // Si ya existe, lo actualizamos
+        existente.Descripcion = Descripcion;
+        existente.Linea = [...new Set([...existente.Linea, ...lineas])]; // Merge sin duplicados
+        existente.Extrusora = Extrusora;
+        existente.Largo = Largo;
+        existente.Peso_x_Metro = Peso_x_Metro;
+        await existente.save();
+      } else {
+        // Si no existe, lo creamos
+        nuevosPerfiles.push({
+          Codigo,
+          Descripcion,
+          Linea: lineas,
+          Extrusora,
+          Largo,
+          Peso_x_Metro,
+        });
+      }
+    }
+
+    if (nuevosPerfiles.length > 0) {
+      await PerfilGeneral.insertMany(nuevosPerfiles);
+    }
+
     res.status(200).json({
-      message: `✅ ${result.length} perfiles importados correctamente`,
-      data: result,
+      message: "Importación completada correctamente.",
+      nuevos: nuevosPerfiles.length,
+      actualizados: data.length - nuevosPerfiles.length,
     });
 
   } catch (error) {
-    console.error("❌ Error al importar perfiles:", error);
+    console.error("❌ Error en importarPerfiles:", error);
     res.status(500).json({
-      message: "Error al importar perfiles",
+      message: "Error al procesar la importación.",
       error: error.message,
     });
   }
 };
+
 export const actualizarPerfil = async (req, res) => {
   try {
     const perfil = await PerfilGeneral.findByIdAndUpdate(req.params.id, req.body, { new: true });
