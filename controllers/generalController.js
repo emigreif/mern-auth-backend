@@ -3,7 +3,6 @@ import CamaraGeneral from "../models/camaraGeneral.js";
 import VidrioGeneral from "../models/VidrioGeneral.js";
 import AccesorioGeneral from "../models/accesorioGeneral.js";
 import ProveedorGeneral from "../models/proveedorGeneral.js";
-
 import xlsx from "xlsx";
 
 const importarDesdeExcel = (Model, mapRow) => {
@@ -52,7 +51,7 @@ const importarDesdeExcel = (Model, mapRow) => {
   };
 };
 
-
+// Importaciones
 export const importarPerfiles = importarDesdeExcel(PerfilGeneral, (row) => ({
   query: { codigo: row["Codigo"]?.toString().trim() },
   doc: {
@@ -77,6 +76,7 @@ export const importarVidrios = importarDesdeExcel(VidrioGeneral, (row) => ({
     espesor: parseFloat(row["Espesor"]?.toString().replace(",", ".")) || 0,
   },
 }));
+
 export const importarAccesorios = importarDesdeExcel(AccesorioGeneral, (row) => ({
   query: { codigo: row["Codigo"]?.toString().trim() },
   doc: {
@@ -88,7 +88,6 @@ export const importarAccesorios = importarDesdeExcel(AccesorioGeneral, (row) => 
   },
 }));
 
-
 export const importarCamaras = importarDesdeExcel(CamaraGeneral, (row) => ({
   query: { tipo: row["Tipo"] },
   doc: {
@@ -97,6 +96,96 @@ export const importarCamaras = importarDesdeExcel(CamaraGeneral, (row) => ({
     valorK: parseFloat(row["Valor K"]?.toString().replace(",", ".")) || 0,
   },
 }));
+
+export const importarProveedores = importarDesdeExcel(ProveedorGeneral, (row) => ({
+  query: { nombre: row["Nombre"]?.toString().trim() },
+  doc: {
+    nombre: row["Nombre"]?.toString().trim(),
+    direccion: row["Direccion"]?.toString().trim(),
+    emails: row["Emails"]?.split(",").map(e => e.trim()) || [],
+    telefono: row["Telefono"]?.split(",").map(t => t.trim()) || [],
+    whatsapp: row["Whatsapp"]?.split(",").map(w => w.trim()) || [],
+    marcas: row["Marcas"]?.split(",").map(m => m.trim()) || [],
+    rubro: row["Rubro"]?.split(",").map(r => r.trim()) || [],
+  },
+}));
+
+// CRUD Proveedores
+export const obtenerProveedores = async (req, res) => {
+  try {
+    const proveedores = await ProveedorGeneral.find();
+    res.json(proveedores);
+  } catch (error) {
+    res.status(500).json({ message: "Error al obtener proveedores", error: error.message });
+  }
+};
+
+export const agregarProveedor = async (req, res) => {
+  try {
+    const proveedor = new ProveedorGeneral(req.body);
+    await proveedor.save();
+    res.status(201).json(proveedor);
+  } catch (error) {
+    res.status(400).json({ message: "Error al agregar proveedor", error: error.message });
+  }
+};
+
+export const actualizarProveedor = async (req, res) => {
+  try {
+    const proveedor = await ProveedorGeneral.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    res.json(proveedor);
+  } catch (error) {
+    res.status(400).json({ message: "Error al actualizar proveedor", error: error.message });
+  }
+};
+
+export const eliminarProveedor = async (req, res) => {
+  try {
+    await ProveedorGeneral.findByIdAndDelete(req.params.id);
+    res.json({ message: "Proveedor eliminado" });
+  } catch (error) {
+    res.status(400).json({ message: "Error al eliminar proveedor", error: error.message });
+  }
+};
+
+// CRUD Cámaras
+export const obtenerCamaras = async (req, res) => {
+  try {
+    const camaras = await CamaraGeneral.find();
+    res.json(camaras);
+  } catch (error) {
+    res.status(500).json({ message: "Error al obtener cámaras", error: error.message });
+  }
+};
+
+export const agregarCamara = async (req, res) => {
+  try {
+    const { descripcion, espesor } = req.body;
+    const nuevaCamara = new CamaraGeneral({ descripcion, espesor });
+    await nuevaCamara.save();
+    res.status(201).json(nuevaCamara);
+  } catch (error) {
+    res.status(400).json({ message: "Error al agregar cámara", error: error.message });
+  }
+};
+
+export const actualizarCamara = async (req, res) => {
+  try {
+    const camara = await CamaraGeneral.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    res.json(camara);
+  } catch (error) {
+    res.status(400).json({ message: "Error al actualizar cámara", error: error.message });
+  }
+};
+
+export const eliminarCamara = async (req, res) => {
+  try {
+    await CamaraGeneral.findByIdAndDelete(req.params.id);
+    res.json({ message: "Cámara eliminada" });
+  } catch (error) {
+    res.status(400).json({ message: "Error al eliminar cámara", error: error.message });
+  }
+};
 
 // Accesorios
 export const obtenerAccesorios = async (req, res) => {
@@ -228,95 +317,3 @@ export const eliminarVidrio = async (req, res) => {
   }
 };
 
-// Cámaras
-export const obtenerCamaras = async (req, res) => {
-  try {
-    const camaras = await CamaraGeneral.find();
-    res.json(camaras);
-  } catch (error) {
-    res.status(500).json({ message: "Error al obtener cámaras", error: error.message });
-  }
-};
-export const importarProveedores = importarDesdeExcel(ProveedorGeneral, (row) => ({
-  query: { nombre: row["Nombre"]?.toString().trim() },
-  doc: {
-    nombre: row["Nombre"]?.toString().trim(),
-    direccion: row["Direccion"]?.toString().trim(),
-    emails: row["Emails"]?.split(",").map(e => e.trim()) || [],
-    telefono: row["Telefono"]?.split(",").map(t => t.trim()) || [],
-    whatsapp: row["Whatsapp"]?.split(",").map(w => w.trim()) || [],
-    marcas: parseInt(row["Marcas"]) || 0,
-    rubro: row["Rubro"]?.split(",").map(r => r.trim()) || [],
-  },
-}));
-
-export const obtenerProveedores = async (req, res) => {
-  try {
-    const proveedores = await Proveedor.find();
-    res.json(proveedores);
-  } catch (error) {
-    res.status(500).json({ message: "Error al obtener proveedores", error: error.message });
-  }
-};
-
-export const agregarProveedor = async (req, res) => {
-  try {
-    const proveedor = new Proveedor(req.body);
-    await proveedor.save();
-    res.status(201).json(proveedor);
-  } catch (error) {
-    res.status(400).json({ message: "Error al agregar proveedor", error: error.message });
-  }
-};
-
-export const actualizarProveedor = async (req, res) => {
-  try {
-    const proveedor = await Proveedor.findByIdAndUpdate(req.params.id, req.body, { new: true });
-    res.json(proveedor);
-  } catch (error) {
-    res.status(400).json({ message: "Error al actualizar proveedor", error: error.message });
-  }
-};
-
-export const eliminarProveedor = async (req, res) => {
-  try {
-    await Proveedor.findByIdAndDelete(req.params.id);
-    res.json({ message: "Proveedor eliminado" });
-  } catch (error) {
-    res.status(400).json({ message: "Error al eliminar proveedor", error: error.message });
-  }
-};
-
-
-
-
-
-
-export const agregarCamara = async (req, res) => {
-  try {
-    const { descripcion, espesor } = req.body;
-    const nuevaCamara = new CamaraGeneral({ descripcion, espesor });
-    await nuevaCamara.save();
-    res.status(201).json(nuevaCamara);
-  } catch (error) {
-    res.status(400).json({ message: "Error al agregar cámara", error: error.message });
-  }
-};
-
-export const actualizarCamara = async (req, res) => {
-  try {
-    const camara = await CamaraGeneral.findByIdAndUpdate(req.params.id, req.body, { new: true });
-    res.json(camara);
-  } catch (error) {
-    res.status(400).json({ message: "Error al actualizar cámara", error: error.message });
-  }
-};
-
-export const eliminarCamara = async (req, res) => {
-  try {
-    await CamaraGeneral.findByIdAndDelete(req.params.id);
-    res.json({ message: "Cámara eliminada" });
-  } catch (error) {
-    res.status(400).json({ message: "Error al eliminar cámara", error: error.message });
-  }
-};
