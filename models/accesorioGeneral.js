@@ -4,7 +4,6 @@ const accesorioSchema = new mongoose.Schema({
   codigo: { type: String, required: true },
   descripcion: { type: String, required: true },
   color: { type: String, required: true },
-  cantidad: { type: Number, required: true },
   unidad: { type: String, required: true, default: "u" },
   tipo: {
     type: String,
