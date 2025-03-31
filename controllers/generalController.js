@@ -50,6 +50,23 @@ export const importarAccesorios = async (req, res) => {
     res.status(400).json({ message: "Error al importar accesorios", error: error.message });
   }
 };
+export const actualizarAccesorio = async (req, res) => {
+  try {
+    const accesorio = await AccesorioGeneral.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    res.json(accesorio);
+  } catch (error) {
+    res.status(400).json({ message: "Error al actualizar accesorio", error: error.message });
+  }
+};
+
+export const eliminarAccesorio = async (req, res) => {
+  try {
+    await AccesorioGeneral.findByIdAndDelete(req.params.id);
+    res.json({ message: "Accesorio eliminado" });
+  } catch (error) {
+    res.status(400).json({ message: "Error al eliminar accesorio", error: error.message });
+  }
+};
 
 /**
  * Obtener todos los perfiles
@@ -95,6 +112,23 @@ export const importarPerfiles = async (req, res) => {
     res.json({ message: "Perfiles importados con éxito" });
   } catch (error) {
     res.status(400).json({ message: "Error al importar perfiles", error: error.message });
+  }
+};
+export const actualizarPerfil = async (req, res) => {
+  try {
+    const perfil = await PerfilGeneral.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    res.json(perfil);
+  } catch (error) {
+    res.status(400).json({ message: "Error al actualizar perfil", error: error.message });
+  }
+};
+
+export const eliminarPerfil = async (req, res) => {
+  try {
+    await PerfilGeneral.findByIdAndDelete(req.params.id);
+    res.json({ message: "Perfil eliminado" });
+  } catch (error) {
+    res.status(400).json({ message: "Error al eliminar perfil", error: error.message });
   }
 };
 
@@ -152,6 +186,23 @@ export const obtenerCamaras = async (req, res) => {
     res.status(500).json({ message: "Error al obtener cámaras", error: error.message });
   }
 };
+export const actualizarVidrio = async (req, res) => {
+  try {
+    const vidrio = await VidrioGeneral.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    res.json(vidrio);
+  } catch (error) {
+    res.status(400).json({ message: "Error al actualizar vidrio", error: error.message });
+  }
+};
+
+export const eliminarVidrio = async (req, res) => {
+  try {
+    await VidrioGeneral.findByIdAndDelete(req.params.id);
+    res.json({ message: "Vidrio eliminado" });
+  } catch (error) {
+    res.status(400).json({ message: "Error al eliminar vidrio", error: error.message });
+  }
+};
 
 export const agregarCamara = async (req, res) => {
   try {
@@ -179,5 +230,22 @@ export const importarCamaras = async (req, res) => {
     res.json({ message: "Cámaras importadas con éxito" });
   } catch (error) {
     res.status(400).json({ message: "Error al importar cámaras", error: error.message });
+  }
+};
+export const actualizarCamara = async (req, res) => {
+  try {
+    const camara = await CamaraGeneral.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    res.json(camara);
+  } catch (error) {
+    res.status(400).json({ message: "Error al actualizar cámara", error: error.message });
+  }
+};
+
+export const eliminarCamara = async (req, res) => {
+  try {
+    await CamaraGeneral.findByIdAndDelete(req.params.id);
+    res.json({ message: "Cámara eliminada" });
+  } catch (error) {
+    res.status(400).json({ message: "Error al eliminar cámara", error: error.message });
   }
 };
