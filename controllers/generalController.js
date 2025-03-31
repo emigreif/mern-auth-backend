@@ -85,12 +85,26 @@ export const obtenerPerfiles = async (req, res) => {
  */
 export const agregarPerfil = async (req, res) => {
   try {
-    const { descripcion, extrusora } = req.body;
-    const nuevoPerfil = new PerfilGeneral({ descripcion, extrusora });
-    await nuevoPerfil.save();
-    res.status(201).json(nuevoPerfil);
+    const { codigo, descripcion, extrusora, linea, largo, peso } = req.body;
+
+    const perfil = new PerfilGeneral({
+      codigo: codigo?.trim() || null,
+      descripcion: descripcion?.trim(),
+      extrusora: extrusora?.trim() || null,
+      linea: Array.isArray(linea)
+        ? linea
+        : typeof linea === "string"
+        ? linea.split(",").map((l) => l.trim())
+        : [],
+      largo: largo ? parseFloat(largo.toString().replace(",", ".")) : 0,
+      peso: peso ? parseFloat(peso.toString().replace(",", ".")) : 0,
+    });
+
+    const perfilGuardado = await perfil.save();
+    res.status(201).json(perfilGuardado);
   } catch (error) {
-    res.status(400).json({ message: "Error al agregar perfil", error: error.message });
+    console.error("❌ Error al agregar perfil:", error);
+    res.status(500).json({ message: "Error al agregar el perfil" });
   }
 };
 
