@@ -3,9 +3,14 @@
 
 import express from "express";
 import upload from "../middleware/uploadMiddleware.js";
-import { importarPerfiles, importarCamaras, importarVidrios, agregarPerfil, obtenerPerfiles, agregarVidrio, obtenerVidrios } from "../controllers/generalController.js";
+import { importarPerfiles, importarCamaras, importarVidrios, obtenerAccesorios, agregarAccesorio, importarAccesorios, agregarPerfil, obtenerPerfiles, agregarVidrio, obtenerVidrios } from "../controllers/generalController.js";
 
 const router = express.Router();
+
+router.get("/accesorios", obtenerAccesorios);
+router.post("/accesorios", agregarAccesorio);
+router.post("/accesorios/importar", upload.single("file"), importarAccesorios);
+
 
 // 📌 Rutas de Perfiles Generales
 router.get("/perfiles", obtenerPerfiles);

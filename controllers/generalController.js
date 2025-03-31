@@ -1,7 +1,55 @@
 import PerfilGeneral from "../models/PerfilGeneral.js";
 import CamaraGeneral from "../models/camaraGeneral.js";
 import VidrioGeneral from "../models/VidrioGeneral.js";
+import AccesorioGeneral from "../models/accesorioGeneral.js";
 import xlsx from "xlsx";
+
+
+
+
+// Listar
+export const obtenerAccesorios = async (req, res) => {
+  try {
+    const accesorios = await AccesorioGeneral.find();
+    res.json(accesorios);
+  } catch (error) {
+    res.status(500).json({ message: "Error al obtener accesorios", error: error.message });
+  }
+};
+
+// Agregar
+export const agregarAccesorio = async (req, res) => {
+  try {
+    const nuevo = new AccesorioGeneral(req.body);
+    await nuevo.save();
+    res.status(201).json(nuevo);
+  } catch (error) {
+    res.status(400).json({ message: "Error al agregar accesorio", error: error.message });
+  }
+};
+
+// Importar
+export const importarAccesorios = async (req, res) => {
+  try {
+    const workbook = xlsx.read(req.file.buffer, { type: "buffer" });
+    const sheet = workbook.Sheets[workbook.SheetNames[0]];
+    const data = xlsx.utils.sheet_to_json(sheet);
+
+    const accesorios = data.map((row) => ({
+      codigo: row["Codigo"],
+      descripcion: row["Descripcion"],
+      color: row["Color"],
+      cantidad: Number(row["Cantidad"]),
+      unidad: row["Unidad"] || "u",
+      tipo: row["Tipo"],
+    }));
+
+    await AccesorioGeneral.insertMany(accesorios);
+    res.json({ message: "Accesorios importados con éxito" });
+  } catch (error) {
+    res.status(400).json({ message: "Error al importar accesorios", error: error.message });
+  }
+};
 
 /**
  * Obtener todos los perfiles
