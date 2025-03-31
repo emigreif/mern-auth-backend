@@ -21,7 +21,11 @@ import {
     agregarAccesorio,
     actualizarAccesorio,
     eliminarAccesorio,
-  
+    importarProveedores,
+    obtenerProveedores,
+    agregarProveedor,
+    actualizarProveedor,
+    eliminarProveedor,
     importarCamaras,
     obtenerCamaras,
     agregarCamara,
@@ -57,5 +61,11 @@ router.post("/camaras", agregarCamara);
 router.put("/camaras/:id", actualizarCamara);
 router.delete("/camaras/:id", eliminarCamara);
 router.post("/camaras/importar", upload.single("file"), importarCamaras); 
+
+router.get("/proveedores", obtenerProveedores);
+router.post("/proveedores", agregarProveedor);
+router.put("/proveedores/:id", actualizarProveedor);
+router.delete("/proveedores/:id", eliminarProveedor);
+router.post("/proveedores/importar", upload.single("file"), importarProveedores);
 
 export default router;

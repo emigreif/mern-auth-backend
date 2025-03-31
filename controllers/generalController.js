@@ -2,6 +2,8 @@ import PerfilGeneral from "../models/PerfilGeneral.js";
 import CamaraGeneral from "../models/camaraGeneral.js";
 import VidrioGeneral from "../models/VidrioGeneral.js";
 import AccesorioGeneral from "../models/accesorioGeneral.js";
+import ProveedorGeneral from "../models/proveedorGeneral.js";
+
 import xlsx from "xlsx";
 
 const importarDesdeExcel = (Model, mapRow) => {
@@ -235,6 +237,60 @@ export const obtenerCamaras = async (req, res) => {
     res.status(500).json({ message: "Error al obtener cámaras", error: error.message });
   }
 };
+export const importarProveedores = importarDesdeExcel(roveedorGeneral, (row) => ({
+  query: { nombre: row["Nombre"]?.toString().trim() },
+  doc: {
+    nombre: row["Nombre"]?.toString().trim(),
+    direccion: row["Direccion"]?.toString().trim(),
+    emails: row["Emails"]?.split(",").map(e => e.trim()) || [],
+    telefono: row["Telefono"]?.split(",").map(t => t.trim()) || [],
+    whatsapp: row["Whatsapp"]?.split(",").map(w => w.trim()) || [],
+    marcas: parseInt(row["Marcas"]) || 0,
+    rubro: row["Rubro"]?.split(",").map(r => r.trim()) || [],
+  },
+}));
+
+export const obtenerProveedores = async (req, res) => {
+  try {
+    const proveedores = await Proveedor.find();
+    res.json(proveedores);
+  } catch (error) {
+    res.status(500).json({ message: "Error al obtener proveedores", error: error.message });
+  }
+};
+
+export const agregarProveedor = async (req, res) => {
+  try {
+    const proveedor = new Proveedor(req.body);
+    await proveedor.save();
+    res.status(201).json(proveedor);
+  } catch (error) {
+    res.status(400).json({ message: "Error al agregar proveedor", error: error.message });
+  }
+};
+
+export const actualizarProveedor = async (req, res) => {
+  try {
+    const proveedor = await Proveedor.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    res.json(proveedor);
+  } catch (error) {
+    res.status(400).json({ message: "Error al actualizar proveedor", error: error.message });
+  }
+};
+
+export const eliminarProveedor = async (req, res) => {
+  try {
+    await Proveedor.findByIdAndDelete(req.params.id);
+    res.json({ message: "Proveedor eliminado" });
+  } catch (error) {
+    res.status(400).json({ message: "Error al eliminar proveedor", error: error.message });
+  }
+};
+
+
+
+
+
 
 export const agregarCamara = async (req, res) => {
   try {
