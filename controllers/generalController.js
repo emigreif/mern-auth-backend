@@ -237,7 +237,7 @@ export const obtenerCamaras = async (req, res) => {
     res.status(500).json({ message: "Error al obtener cámaras", error: error.message });
   }
 };
-export const importarProveedores = importarDesdeExcel(roveedorGeneral, (row) => ({
+export const importarProveedores = importarDesdeExcel(ProveedorGeneral, (row) => ({
   query: { nombre: row["Nombre"]?.toString().trim() },
   doc: {
     nombre: row["Nombre"]?.toString().trim(),
