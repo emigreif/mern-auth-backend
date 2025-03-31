@@ -144,6 +144,26 @@ export const importarVidrios = async (req, res) => {
     res.status(400).json({ message: "Error al importar vidrios", error: error.message });
   }
 };
+export const obtenerCamaras = async (req, res) => {
+  try {
+    const camaras = await CamaraGeneral.find();
+    res.json(camaras);
+  } catch (error) {
+    res.status(500).json({ message: "Error al obtener cámaras", error: error.message });
+  }
+};
+
+export const agregarCamara = async (req, res) => {
+  try {
+    const { descripcion, espesor } = req.body;
+    const nuevaCamara = new CamaraGeneral({ descripcion, espesor });
+    await nuevaCamara.save();
+    res.status(201).json(nuevaCamara);
+  } catch (error) {
+    res.status(400).json({ message: "Error al agregar cámara", error: error.message });
+  }
+};
+
 export const importarCamaras = async (req, res) => {
   try {
     const workbook = xlsx.read(req.file.buffer, { type: "buffer" });
@@ -152,14 +172,12 @@ export const importarCamaras = async (req, res) => {
 
     const camaras = data.map((row) => ({
       descripcion: row["Descripcion"],
-      espesor: Number(row["Espesor"]),
+      espesor: row["Espesor"],
     }));
 
     await CamaraGeneral.insertMany(camaras);
     res.json({ message: "Cámaras importadas con éxito" });
   } catch (error) {
-    res
-      .status(400)
-      .json({ message: "Error al importar cámaras", error: error.message });
+    res.status(400).json({ message: "Error al importar cámaras", error: error.message });
   }
 };
