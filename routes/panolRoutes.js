@@ -17,7 +17,7 @@ import {
   asignarPerfilesManual,
   modificarAccesorio,
   asignarVidriosDesdeExcel,
-  asignarAccesoriosManual,
+  asignarAccesoriosManual,importMateriales,
   asignarAccesoriosDesdeExcel,
   eliminarAccesorio
 } from "../controllers/panolController.js";
@@ -40,6 +40,7 @@ router.put("/perfiles/:id", protect, modificarPerfil); // Modificar
 router.delete("/perfiles/:id", protect, eliminarPerfil); // Eliminar
 router.post("/perfiles/asignar-manual", protect, asignarPerfilesManual);
 router.post("/perfiles/asignar-excel", protect, asignarPerfilesDesdeExcel);
+router.post("/:tipo/import", protect, importMateriales);
 // 📌 Vidrios
 router.post("/vidrios", protect, agregarVidrio); // Crear
 router.put("/vidrios/:id", protect, modificarVidrio); // Modificar

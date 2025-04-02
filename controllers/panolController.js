@@ -593,3 +593,35 @@ export const asignarVidriosDesdeExcel = async (req, res) => {
     res.status(500).json({ message: "Error al importar vidrios", error: err.message });
   }
 };
+export const importMateriales = async (req, res) => {
+  const { tipo } = req.params;
+  const data = req.body;
+
+  if (!Array.isArray(data) || data.length === 0) {
+    return res.status(400).json({ message: "No hay datos para importar" });
+  }
+
+  try {
+    const panol = await Panol.findOne({ user: req.user.id });
+
+    if (!panol) return res.status(404).json({ message: "Pañol no encontrado" });
+
+    if (tipo === "perfiles") {
+      panol.perfiles.push(...data);
+    } else if (tipo === "vidrios") {
+      panol.vidrios.push(...data);
+    } else if (tipo === "accesorios") {
+      panol.accesorios.push(...data);
+    } else if (tipo === "herramientas") {
+      panol.herramientas.push(...data);
+    } else {
+      return res.status(400).json({ message: "Tipo no válido" });
+    }
+
+    await panol.save();
+    res.status(200).json({ message: "Materiales importados correctamente" });
+  } catch (error) {
+    console.error("Error al importar materiales:", error);
+    res.status(500).json({ message: "Error en la importación" });
+  }
+};
