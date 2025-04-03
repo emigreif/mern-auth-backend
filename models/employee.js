@@ -1,4 +1,3 @@
-// backend/models/employee.js
 import mongoose from "mongoose";
 
 const EmployeeSchema = new mongoose.Schema(
@@ -11,12 +10,8 @@ const EmployeeSchema = new mongoose.Schema(
     direccion: { type: String, trim: true },
     puesto: { type: String, required: true, trim: true },
     salario: { type: Number, required: true },
-
-    // NUEVOS CAMPOS
-    porcentajeRegistrado: { type: Number, default: 100 }, // % en blanco
-    salarioRegistrado: { type: Number, default: 0 },       // calculado
-    salarioNoRegistrado: { type: Number, default: 0 },     // calculado
-
+    salarioRegistrado: { type: Number, default: 0 },
+    salarioNoRegistrado: { type: Number, default: 0 },
     fechaIngreso: { type: Date, default: Date.now },
     activo: { type: Boolean, default: true },
     user: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true }
