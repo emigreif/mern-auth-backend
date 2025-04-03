@@ -6,7 +6,8 @@ import {
   getEmployeeById,
   createEmployee,
   updateEmployee,
-  deleteEmployee
+  deleteEmployee,
+  aplicarAumentoMasivo
 } from "../controllers/employeeController.js";
 
 const router = express.Router();
@@ -22,5 +23,6 @@ router.post("/", protect, createEmployee);
 router.get("/:id", protect, getEmployeeById);
 router.put("/:id", protect, updateEmployee);
 router.delete("/:id", protect, deleteEmployee);
+router.patch("/aumentos", protect, aplicarAumentoMasivo);
 
 export default router;
