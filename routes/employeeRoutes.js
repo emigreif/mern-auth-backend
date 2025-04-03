@@ -5,12 +5,14 @@ import {
   getEmployeeById,
   createEmployee,
   updateEmployee,
-  deleteEmployee,
+  deleteEmployee,aplicarAumentoEmpleado,
   aplicarAumentoMasivo,
   updateSueldoIndividual
 } from "../controllers/employeeController.js";
 
 const router = express.Router();
+router.patch("/:id/aumento", protect, aplicarAumentoEmpleado);
+router.patch("/aumentos/masivo", protect, aplicarAumentoMasivo);
 
 router.get("/", protect, getEmployees);
 router.post("/", protect, createEmployee);

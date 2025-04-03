@@ -56,6 +56,31 @@ export const updateSueldoIndividual = async (req, res) => {
 
   res.json(updated);
 };
+export const aplicarAumentoEmpleado = async (req, res) => {
+  const { aplicarA, tipo, valor } = req.body;
+  const userId = req.user._id;
+  const { id } = req.params;
+
+  const emp = await Employee.findOne({ _id: id, user: userId });
+  if (!emp) return res.status(404).json({ message: "Empleado no encontrado" });
+
+  let blanco = emp.salarioRegistrado;
+  let negro = emp.salarioNoRegistrado;
+
+  if (aplicarA === "blanco" || aplicarA === "ambos") {
+    blanco = tipo === "porcentaje" ? blanco * (1 + valor / 100) : blanco + valor;
+  }
+  if (aplicarA === "negro" || aplicarA === "ambos") {
+    negro = tipo === "porcentaje" ? negro * (1 + valor / 100) : negro + valor;
+  }
+
+  emp.salarioRegistrado = blanco;
+  emp.salarioNoRegistrado = negro;
+  emp.salario = blanco + negro;
+  await emp.save();
+
+  res.json({ message: "Aumento aplicado", empleado: emp });
+};
 
 export const getEmployeeById = getById(Employee);
 export const createEmployee = create(Employee);
