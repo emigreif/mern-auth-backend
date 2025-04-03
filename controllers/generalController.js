@@ -101,14 +101,35 @@ export const importarProveedores = importarDesdeExcel(ProveedorGeneral, (row) =>
   query: { nombre: row["Nombre"]?.toString().trim() },
   doc: {
     nombre: row["Nombre"]?.toString().trim(),
-    direccion: row["Direccion"]?.toString().trim(),
-    emails: row["Emails"]?.split(",").map(e => e.trim()) || [],
-    telefono: row["Telefono"]?.split(",").map(t => t.trim()) || [],
-    whatsapp: row["Whatsapp"]?.split(",").map(w => w.trim()) || [],
-    marcas: row["Marcas"]?.split(",").map(m => m.trim()) || [],
-    rubro: row["Rubro"]?.split(",").map(r => r.trim()) || [],
-  },
+    direccion: row["Direccion"]?.toString().trim() || "",
+    emails: (row["Emails"] || row["Email"] || "")
+      .toString()
+      .split(",")
+      .map(e => e.trim())
+      .filter(Boolean),
+    telefono: (row["Telefono"] || row["Teléfonos"] || "")
+      .toString()
+      .split(",")
+      .map(t => t.trim())
+      .filter(Boolean),
+    whatsapp: (row["Whatsapp"] || "")
+      .toString()
+      .split(",")
+      .map(w => w.trim())
+      .filter(Boolean),
+    marcas: (row["Marcas"] || "")
+      .toString()
+      .split(",")
+      .map(m => m.trim())
+      .filter(Boolean),
+    rubro: (row["Rubro"] || row["Rubros"] || "")
+      .toString()
+      .split(",")
+      .map(r => r.trim())
+      .filter(Boolean),
+  }
 }));
+
 
 export const obtenerProveedores = async (req, res) => {
   try {
