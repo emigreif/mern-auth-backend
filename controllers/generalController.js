@@ -22,6 +22,7 @@ const importarDesdeExcel = (Model, mapRow) => {
 
       for (const row of data) {
         const { query, doc } = mapRow(row);
+        console.log("🧾 DOC A IMPORTAR", doc); 
 
         try {
           const existente = await Model.findOne(query);
