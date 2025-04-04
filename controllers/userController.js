@@ -1,7 +1,7 @@
 // controllers/userController.js
 import User from "../models/user.js";
 import bcrypt from "bcryptjs";
-
+import Perfil from "../models/perfil.js";
 /**
  * Obtiene el perfil de usuario
  */
@@ -61,25 +61,25 @@ export const seleccionarPerfil = async (req, res) => {
   try {
     const { userId, perfilId } = req.body;
 
-    const usuario = await User.findById(userId);
-    if (!usuario) {
+    const user = await User.findById(userId);
+    if (!user) {
       return res.status(404).json({ message: "Usuario no encontrado" });
     }
 
-    // Suponiendo que el User tiene un array "perfiles" y un "perfilActivo"
-    // Ajusta según tu modelo real
-    if (!usuario.perfiles.includes(perfilId)) {
+    const perfil = await Perfil.findOne({ _id: perfilId, userId });
+    if (!perfil) {
       return res.status(403).json({ message: "No tienes acceso a este perfil" });
     }
 
-    usuario.perfilActivo = perfilId;
-    await usuario.save();
+    // Si luego querés guardar el perfil activo en el user (opcional):
+    // user.perfilActivo = perfilId;
+    // await user.save();
 
     res.status(200).json({
       message: "Perfil seleccionado correctamente",
-      perfilActivo: usuario.perfilActivo
+      perfil: perfil,
     });
   } catch (error) {
-    res.status(500).json({ message: "Error al seleccionar perfil", error });
+    res.status(500).json({ message: "Error al seleccionar perfil", error: error.message });
   }
 };
