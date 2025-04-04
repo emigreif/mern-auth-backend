@@ -98,11 +98,13 @@ export const importarCamaras = importarDesdeExcel(CamaraGeneral, (row) => ({
   },
 }));
 
-export const importarProveedores = importarDesdeExcel(ProveedorGeneral, (row) => ({
-  query: { nombre: row["Nombre"]?.toString().trim() },
-  doc: {
-    nombre: row["Nombre"]?.toString().trim(),
-    direccion: row["Direccion"]?.toString().trim() || "",
+export const importarProveedores = importarDesdeExcel(ProveedorGeneral, (row) => {
+  const nombre = row["Nombre"]?.toString().trim();
+  const direccion = row["Direccion"]?.toString().trim() || "";
+
+  const doc = {
+    nombre,
+    direccion,
     emails: (row["Emails"] || row["Email"] || "")
       .toString()
       .split(",")
@@ -128,9 +130,13 @@ export const importarProveedores = importarDesdeExcel(ProveedorGeneral, (row) =>
       .split(",")
       .map(r => r.trim())
       .filter(Boolean),
-  }
-}));
+  };
 
+  return {
+    query: { nombre },
+    doc,
+  };
+});
 
 export const obtenerProveedores = async (req, res) => {
   try {
@@ -143,6 +149,12 @@ export const obtenerProveedores = async (req, res) => {
 
 export const agregarProveedor = async (req, res) => {
   try {
+    const { nombre, direccion } = req.body;
+
+    if (!nombre || !direccion) {
+      return res.status(400).json({ message: "Nombre y dirección son obligatorios" });
+    }
+
     const proveedor = new ProveedorGeneral(req.body);
     await proveedor.save();
     res.status(201).json(proveedor);
@@ -168,7 +180,6 @@ export const eliminarProveedor = async (req, res) => {
     res.status(400).json({ message: "Error al eliminar proveedor", error: error.message });
   }
 };
-
 
 export const obtenerCamaras = async (req, res) => {
   try {
