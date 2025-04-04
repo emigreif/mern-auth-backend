@@ -62,6 +62,24 @@ export const register = async (req, res) => {
     });
 
     await newUser.save();
+    const perfilAdmin = new Perfil({
+      nombre: "admin",
+      password: "1234",
+      userId: newUser._id,
+      permisos: {
+        dashboard: true,
+        obras: true,
+        clientes: true,
+        presupuestos: true,
+        proveedores: true,
+        contabilidad: true,
+        reportes: true,
+        nomina: true,
+        admin: true
+      }
+    });
+    await perfilAdmin.save(); 
+
     return res.status(201).json({ message: "Usuario registrado con éxito" });
   } catch (error) {
     return res.status(500).json({
