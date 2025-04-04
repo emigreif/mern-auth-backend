@@ -6,7 +6,9 @@ export const listarPerfiles = async (req, res) => {
   try {
     const userId = req.user.id;
     let perfiles = await Perfil.find({ userId });
-    if (!perfiles || perfiles.length === 0) {
+
+    if (perfiles.length === 0) {
+      // Crear perfil por defecto si el usuario no tiene ninguno
       const adminPerfil = new Perfil({
         nombre: "admin",
         password: "1234",
@@ -26,14 +28,14 @@ export const listarPerfiles = async (req, res) => {
       await adminPerfil.save();
       perfiles = [adminPerfil];
     }
+
     res.json(perfiles);
   } catch (error) {
     console.error("Error al listar perfiles:", error);
-    res
-      .status(500)
-      .json({ message: "Error al listar perfiles", error: error.message });
+    res.status(500).json({ message: "Error en el servidor" });
   }
 };
+
 
 // Crear Perfil => verifica límite
 export const crearPerfil = async (req, res) => {

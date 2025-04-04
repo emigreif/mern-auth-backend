@@ -23,12 +23,3 @@ const UserSchema = new mongoose.Schema(
 
 export default mongoose.model("User", UserSchema);
 
-
-//{type: mongoose.Schema.Types.ObjectId, ref: "Plan"}, // Asegúrate de tener un modelo Plan con este nombre mas adelante
-    /*    
-       planStatus: {
-         type: String,
-         enum: ["pendiente", "activo", "vencido", "cancelado"],
-         default: "pendiente"
-       },
-       planExpiration: { type: Date }, */
