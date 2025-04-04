@@ -2,7 +2,7 @@ import User from "../models/user.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import nodemailer from "nodemailer";
-
+import Perfil from "../models/perfil.js";
 /* import mercadopago from "../config/mercadoPago.js"; */
 import crypto from "crypto";
 
