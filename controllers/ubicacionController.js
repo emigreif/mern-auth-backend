@@ -1,20 +1,20 @@
-// src/controllers/ubicacionController.js
 import Ubicacion from "../models/ubicacion.js";
+import { handleMongooseError } from "../utils/validationHelpers.js";
 
 /**
- * ✅ Obtener todas las ubicaciones del usuario
+ * 🔍 Obtener todas las ubicaciones del usuario
  */
 export const obtenerUbicaciones = async (req, res) => {
   try {
     const ubicaciones = await Ubicacion.find({ user: req.user.id }).populate("obra");
     res.json(ubicaciones);
   } catch (error) {
-    res.status(500).json({ message: "Error al obtener las ubicaciones", error: error.message });
+    handleMongooseError(res, error);
   }
 };
 
 /**
- * ✅ Obtener una ubicación por ID
+ * 🔍 Obtener una ubicación por ID
  */
 export const obtenerUbicacionPorId = async (req, res) => {
   try {
@@ -22,12 +22,12 @@ export const obtenerUbicacionPorId = async (req, res) => {
     if (!ubicacion) return res.status(404).json({ message: "Ubicación no encontrada" });
     res.json(ubicacion);
   } catch (error) {
-    res.status(500).json({ message: "Error al obtener la ubicación", error: error.message });
+    handleMongooseError(res, error);
   }
 };
 
 /**
- * ✅ Crear una nueva ubicación manual
+ * ➕ Crear nueva ubicación manual
  */
 export const crearUbicacion = async (req, res) => {
   try {
@@ -41,18 +41,18 @@ export const crearUbicacion = async (req, res) => {
       piso,
       ubicacion,
       obra,
-      user: req.user.id,
+      user: req.user.id
     });
 
     await nuevaUbicacion.save();
     res.status(201).json(nuevaUbicacion);
   } catch (error) {
-    res.status(400).json({ message: "Error al crear ubicación", error: error.message });
+    handleMongooseError(res, error);
   }
 };
 
 /**
- * ✅ Actualizar una ubicación existente
+ * 📝 Actualizar ubicación por ID
  */
 export const actualizarUbicacion = async (req, res) => {
   try {
@@ -60,12 +60,12 @@ export const actualizarUbicacion = async (req, res) => {
     if (!ubicacion) return res.status(404).json({ message: "Ubicación no encontrada" });
     res.json(ubicacion);
   } catch (error) {
-    res.status(500).json({ message: "Error al actualizar la ubicación", error: error.message });
+    handleMongooseError(res, error);
   }
 };
 
 /**
- * ✅ Eliminar una ubicación
+ * 🗑️ Eliminar ubicación por ID
  */
 export const eliminarUbicacion = async (req, res) => {
   try {
@@ -73,50 +73,55 @@ export const eliminarUbicacion = async (req, res) => {
     if (!ubicacion) return res.status(404).json({ message: "Ubicación no encontrada" });
     res.json({ message: "Ubicación eliminada" });
   } catch (error) {
-    res.status(500).json({ message: "Error al eliminar la ubicación", error: error.message });
+    handleMongooseError(res, error);
   }
 };
+
+/**
+ * 🗑️ Eliminar todas las ubicaciones de un piso
+ */
 export const eliminarUbicacionesPorPiso = async (req, res) => {
   try {
     const { piso, obraId } = req.body;
     await Ubicacion.deleteMany({ piso, obra: obraId });
     res.json({ message: `Ubicaciones del piso ${piso} eliminadas` });
   } catch (error) {
-    res.status(500).json({ message: "Error al eliminar", error: error.message });
+    handleMongooseError(res, error);
   }
 };
 
+/**
+ * 🧩 Editar ubicaciones por piso (borra y crea nuevas)
+ */
 export const editarUbicacionesPorPiso = async (req, res) => {
   try {
     const { piso, obraId, cantidad } = req.body;
+
     if (!piso || !obraId || !cantidad || cantidad < 1) {
       return res.status(400).json({ message: "Datos inválidos" });
     }
 
-    // Eliminar ubicaciones actuales
     await Ubicacion.deleteMany({ piso, obra: obraId });
 
-    // Crear nuevas
     const nuevasUbicaciones = [];
     for (let i = 1; i <= cantidad; i++) {
       nuevasUbicaciones.push({
         piso,
         ubicacion: `${piso}U${i}`,
         obra: obraId,
-        user: req.user.id,
+        user: req.user.id
       });
     }
 
     await Ubicacion.insertMany(nuevasUbicaciones);
-
     res.json({ message: `Piso ${piso} actualizado`, total: cantidad });
   } catch (error) {
-    res.status(500).json({ message: "Error al editar", error: error.message });
+    handleMongooseError(res, error);
   }
 };
 
 /**
- * ✅ Generar ubicaciones en lote a partir de rangos de pisos
+ * 🏗️ Generar ubicaciones en lote a partir de rangos de pisos
  */
 export const generarUbicaciones = async (req, res) => {
   try {
@@ -140,7 +145,7 @@ export const generarUbicaciones = async (req, res) => {
             piso: `P${piso}`,
             ubicacion: `U${i}`,
             obra: obraId,
-            user: req.user.id,
+            user: req.user.id
           });
         }
       }
@@ -150,11 +155,13 @@ export const generarUbicaciones = async (req, res) => {
 
     res.status(201).json({ message: "Ubicaciones generadas", total: ubicacionesAGuardar.length });
   } catch (error) {
-    res.status(500).json({ message: "Error al generar ubicaciones", error: error.message });
+    handleMongooseError(res, error);
   }
 };
 
-// 🔧 Utilidad: convertir "1-3,5,7-9" => [1,2,3,5,7,8,9]
+/**
+ * 🔧 Expande rangos tipo "1-3,5" en [1,2,3,5]
+ */
 function expandirRangos(rangoStr) {
   const partes = rangoStr.split(",");
   const resultado = [];

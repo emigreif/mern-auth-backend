@@ -1,41 +1,44 @@
-// controllers/proveedorController.js
 import Proveedor from "../models/proveedor.js";
 import MovimientoContable from "../models/movimientoContable.js";
+import { handleMongooseError } from "../utils/validationHelpers.js";
 
+/**
+ * 📌 Crear nuevo proveedor
+ */
 export const crearProveedor = async (req, res) => {
   try {
-    const nuevo = new Proveedor({
-      ...req.body,
-      user: req.user.id
-    });
+    const nuevo = new Proveedor({ ...req.body, user: req.user.id });
     const guardado = await nuevo.save();
     res.status(201).json(guardado);
   } catch (error) {
     console.error("Error al crear proveedor:", error);
-    res.status(500).json({ message: "Error al crear proveedor", error: error.message });
+    handleMongooseError(res, error);
   }
 };
 
+/**
+ * 📌 Listar proveedores con cálculo de saldo
+ */
 export const listarProveedores = async (req, res) => {
   try {
     const proveedores = await Proveedor.find({ user: req.user.id });
-    const proveedoresConSaldo = [];
-
-    for (let prov of proveedores) {
-      const saldo = await calcularSaldoProveedor(req.user.id, prov._id);
-      proveedoresConSaldo.push({
-        ...prov.toObject(),
-        saldo
-      });
-    }
+    const proveedoresConSaldo = await Promise.all(
+      proveedores.map(async (prov) => {
+        const saldo = await calcularSaldoProveedor(req.user.id, prov._id);
+        return { ...prov.toObject(), saldo };
+      })
+    );
 
     res.json(proveedoresConSaldo);
   } catch (error) {
     console.error("Error al listar proveedores:", error);
-    res.status(500).json({ message: "Error al listar proveedores", error: error.message });
+    handleMongooseError(res, error);
   }
 };
 
+/**
+ * 📌 Obtener proveedor por ID
+ */
 export const obtenerProveedor = async (req, res) => {
   try {
     const { id } = req.params;
@@ -46,47 +49,54 @@ export const obtenerProveedor = async (req, res) => {
     res.json(proveedor);
   } catch (error) {
     console.error("Error al obtener proveedor:", error);
-    res.status(500).json({ message: "Error al obtener proveedor" });
-  }
-};
-
-export const actualizarProveedor = async (req, res) => {
-  try {
-    const { id } = req.params;
-    const proveedorActualizado = await Proveedor.findOneAndUpdate(
-      { _id: id, user: req.user.id },
-      req.body,
-      { new: true }
-    );
-    if (!proveedorActualizado) {
-      return res.status(404).json({ message: "Proveedor no encontrado" });
-    }
-    res.json(proveedorActualizado);
-  } catch (error) {
-    console.error("Error al actualizar proveedor:", error);
-    res.status(500).json({ message: "Error al actualizar proveedor" });
-  }
-};
-
-export const eliminarProveedor = async (req, res) => {
-  try {
-    const { id } = req.params;
-    const proveedorEliminado = await Proveedor.findOneAndDelete({
-      _id: id,
-      user: req.user.id
-    });
-    if (!proveedorEliminado) {
-      return res.status(404).json({ message: "Proveedor no encontrado" });
-    }
-    res.json({ message: "Proveedor eliminado correctamente" });
-  } catch (error) {
-    console.error("Error al eliminar proveedor:", error);
-    res.status(500).json({ message: "Error al eliminar proveedor" });
+    handleMongooseError(res, error);
   }
 };
 
 /**
- * Calcula saldo del proveedor sumando FACTURA_RECIBIDA y restando PAGO_EMITIDO, etc.
+ * 📌 Actualizar proveedor
+ */
+export const actualizarProveedor = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const actualizado = await Proveedor.findOneAndUpdate(
+      { _id: id, user: req.user.id },
+      req.body,
+      { new: true }
+    );
+
+    if (!actualizado) {
+      return res.status(404).json({ message: "Proveedor no encontrado" });
+    }
+
+    res.json(actualizado);
+  } catch (error) {
+    console.error("Error al actualizar proveedor:", error);
+    handleMongooseError(res, error);
+  }
+};
+
+/**
+ * 📌 Eliminar proveedor
+ */
+export const eliminarProveedor = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const eliminado = await Proveedor.findOneAndDelete({ _id: id, user: req.user.id });
+
+    if (!eliminado) {
+      return res.status(404).json({ message: "Proveedor no encontrado" });
+    }
+
+    res.json({ message: "Proveedor eliminado correctamente" });
+  } catch (error) {
+    console.error("Error al eliminar proveedor:", error);
+    handleMongooseError(res, error);
+  }
+};
+
+/**
+ * 🔢 Calcular saldo del proveedor (facturas menos pagos)
  */
 async function calcularSaldoProveedor(userId, proveedorId) {
   const movimientos = await MovimientoContable.find({
@@ -94,18 +104,14 @@ async function calcularSaldoProveedor(userId, proveedorId) {
     idProveedor: proveedorId
   });
 
-  let saldo = 0;
-  for (const mov of movimientos) {
+  return movimientos.reduce((saldo, mov) => {
     if (mov.tipo === "FACTURA_RECIBIDA") {
-      saldo += mov.monto;
+      return saldo + mov.monto;
     } else if (
-      mov.tipo === "PAGO_EMITIDO" ||
-      mov.tipo === "CHEQUE_EMITIDO" ||
-      mov.tipo === "EFECTIVO_EMITIDO" ||
-      mov.tipo === "TRANSFERENCIA_EMITIDA"
+      ["PAGO_EMITIDO", "CHEQUE_EMITIDO", "EFECTIVO_EMITIDO", "TRANSFERENCIA_EMITIDA"].includes(mov.tipo)
     ) {
-      saldo -= mov.monto;
+      return saldo - mov.monto;
     }
-  }
-  return saldo;
+    return saldo;
+  }, 0);
 }

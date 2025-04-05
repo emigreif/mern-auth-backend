@@ -1,9 +1,10 @@
-// controllers/userController.js
 import User from "../models/user.js";
 import bcrypt from "bcryptjs";
 import Perfil from "../models/perfil.js";
+import { handleMongooseError } from "../utils/validationHelpers.js";
+
 /**
- * Obtiene el perfil de usuario
+ * ✅ Obtener perfil de usuario autenticado (sin contraseña)
  */
 export const getUserProfile = async (req, res) => {
   try {
@@ -13,12 +14,12 @@ export const getUserProfile = async (req, res) => {
     }
     res.json(user);
   } catch (error) {
-    res.status(500).json({ message: "Server error", error: error.message });
+    handleMongooseError(res, error);
   }
 };
 
 /**
- * Actualiza datos del perfil y permite cambiar contraseña
+ * 🔄 Actualizar perfil de usuario (incluye cambio de contraseña)
  */
 export const updateUserProfile = async (req, res) => {
   try {
@@ -28,7 +29,7 @@ export const updateUserProfile = async (req, res) => {
       return res.status(404).json({ message: "Usuario no encontrado" });
     }
 
-    // Cambiar contraseña si se envían password y newPassword
+    // Si quiere cambiar la contraseña
     if (password && newPassword) {
       const isMatch = await bcrypt.compare(password, user.password);
       if (!isMatch) {
@@ -38,24 +39,26 @@ export const updateUserProfile = async (req, res) => {
       user.password = await bcrypt.hash(newPassword, salt);
     }
 
-    // Actualizar otros campos
+    // Actualizar otros campos (solo si están presentes)
     if (firstName) user.firstName = firstName;
     if (lastName) user.lastName = lastName;
-    if (email) user.email = email; // Ojo con validación de email único
+    if (email) user.email = email; // ⚠️ podría validar que sea único
 
     await user.save();
+
     const updatedUser = await User.findById(user._id).select("-password");
+
     res.status(200).json({
       message: "Perfil actualizado correctamente",
       user: updatedUser
     });
   } catch (error) {
-    res.status(500).json({ message: "Error del servidor", error: error.message });
+    handleMongooseError(res, error);
   }
 };
 
 /**
- * Seleccionar perfil activo
+ * ✅ Establecer perfil activo para el usuario
  */
 export const seleccionarPerfil = async (req, res) => {
   try {
@@ -71,15 +74,15 @@ export const seleccionarPerfil = async (req, res) => {
       return res.status(403).json({ message: "No tienes acceso a este perfil" });
     }
 
-    // Si luego querés guardar el perfil activo en el user (opcional):
+    // (Opcional) Guardar como perfil activo en la colección User
     // user.perfilActivo = perfilId;
     // await user.save();
 
     res.status(200).json({
       message: "Perfil seleccionado correctamente",
-      perfil: perfil,
+      perfil
     });
   } catch (error) {
-    res.status(500).json({ message: "Error al seleccionar perfil", error: error.message });
+    handleMongooseError(res, error);
   }
 };
