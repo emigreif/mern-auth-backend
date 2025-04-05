@@ -2,6 +2,7 @@ import User from "../models/user.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import nodemailer from "nodemailer";
+import bcrypt from "bcryptjs";
 import Perfil from "../models/perfil.js";
 /* import mercadopago from "../config/mercadoPago.js"; */
 import crypto from "crypto";
@@ -62,24 +63,33 @@ export const register = async (req, res) => {
     });
 
     await newUser.save();
+    
+
+    // ... dentro de la función register
+    const hashedPass = await bcrypt.hash("1234", 10);
+    
     const perfilAdmin = new Perfil({
       nombre: "admin",
-      password: "1234",
+      password: hashedPass,
       userId: newUser._id,
       permisos: {
-        dashboard: true,
         obras: true,
-        clientes: true,
         presupuestos: true,
+        mediciones: true,
+        compras: true,
+        panol: true,
+        nomina: true,
+        clientes: true,
         proveedores: true,
+        configuracion: true,
         contabilidad: true,
         reportes: true,
-        nomina: true,
-        admin: true
+        planner: true,
+        calendario: true
       }
     });
-    await perfilAdmin.save(); 
-
+    await perfilAdmin.save();
+    
     return res.status(201).json({ message: "Usuario registrado con éxito" });
   } catch (error) {
     return res.status(500).json({

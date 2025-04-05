@@ -1,5 +1,6 @@
 import Perfil from "../models/perfil.js";
 import User from "../models/user.js";
+import bcrypt from "bcryptjs";
 
 // Listar Perfiles => si no hay, crea "admin"/"1234"
 export const listarPerfiles = async (req, res) => {
@@ -9,24 +10,33 @@ export const listarPerfiles = async (req, res) => {
 
     if (perfiles.length === 0) {
       // Crear perfil por defecto si el usuario no tiene ninguno
-      const adminPerfil = new Perfil({
+     
+
+      const hashedPass = await bcrypt.hash("1234", 10);
+      
+      const perfilAdmin = new Perfil({
         nombre: "admin",
-        password: "1234",
+        password: hashedPass,
         userId,
         permisos: {
-          dashboard: true,
           obras: true,
-          clientes: true,
           presupuestos: true,
+          mediciones: true,
+          compras: true,
+          panol: true,
+          nomina: true,
+          clientes: true,
           proveedores: true,
+          configuracion: true,
           contabilidad: true,
           reportes: true,
-          nomina: true,
-          admin: true
+          planner: true,
+          calendario: true
         }
       });
-      await adminPerfil.save();
-      perfiles = [adminPerfil];
+      await perfilAdmin.save();
+      
+      perfiles = [perfilAdmin];
     }
 
     res.json(perfiles);
@@ -76,9 +86,10 @@ export const loginPerfil = async (req, res) => {
     if (!perfil) {
       return res.status(404).json({ message: "Perfil no encontrado" });
     }
-    if (perfil.password !== perfilPass) {
-      return res.status(401).json({ message: "Contraseña de perfil inválida" });
-    }
+    const isMatch = await bcrypt.compare(perfilPass, perfil.password);
+if (!isMatch) {
+  return res.status(401).json({ message: "Contraseña de perfil inválida" });
+}
     res.json({ message: "Perfil validado", perfil });
   } catch (error) {
     console.error("Error en loginPerfil:", error);
