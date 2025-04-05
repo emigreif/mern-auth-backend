@@ -476,3 +476,35 @@ export const asignarVidriosDesdeExcel = async (req, res) => {
     handleMongooseError(res, error);
   }
 };
+export const asignarHerramienta = async (req, res) => {
+  try {
+    const { herramienta, obra, responsable, cantidad } = req.body;
+    const userId = req.user.id;
+
+    const panol = await Panol.findOne({ user: userId });
+    if (!panol) return res.status(404).json({ message: "Pañol no encontrado" });
+
+    const herramientaObj = panol.herramientas.id(herramienta);
+    if (!herramientaObj) return res.status(404).json({ message: "Herramienta no encontrada" });
+
+    // Actualizar estado y datos
+    herramientaObj.estado = "en obra";
+    herramientaObj.obra = obra;
+    herramientaObj.responsable = responsable;
+
+    // Agregar al historial
+    herramientaObj.historial.push({
+      fecha: new Date(),
+      estadoAnterior: herramientaObj.estado,
+      estadoNuevo: "en obra",
+      obra,
+      responsable
+    });
+
+    await panol.save();
+    res.status(200).json({ message: "Herramienta asignada correctamente", herramienta: herramientaObj });
+  } catch (err) {
+    console.error("Error al asignar herramienta:", err);
+    res.status(500).json({ message: "Error interno", error: err.message });
+  }
+};

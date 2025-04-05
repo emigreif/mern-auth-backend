@@ -18,7 +18,7 @@ import {
   modificarAccesorio,
   asignarVidriosDesdeExcel,
   asignarAccesoriosManual,importMateriales,
-  asignarAccesoriosDesdeExcel,
+  asignarAccesoriosDesdeExcel,asignarHerramienta,
   eliminarAccesorio
 } from "../controllers/panolController.js";
 import { protect } from "../middleware/authMiddleware.js";
@@ -32,7 +32,10 @@ router.get("/", protect, obtenerPanol);
 router.post("/herramientas", protect, agregarHerramienta); // Crear
 router.put("/herramientas/:id", protect, modificarHerramienta); // Modificar
 router.delete("/herramientas/:id", protect, eliminarHerramienta); // Eliminar
-router.post("/herramientas/:id/movimiento", protect, registrarMovimientoHerramienta); // Registrar movimiento
+router.post("/herramientas/:id/movimiento", protect, registrarMovimientoHerramienta); 
+
+router.post("/asignar-herramienta", protect, asignarHerramienta);
+// Registrar movimiento
 
 // 📌 Perfiles
 router.post("/perfiles", protect, agregarPerfil); // Crear
