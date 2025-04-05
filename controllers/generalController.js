@@ -5,6 +5,10 @@ import AccesorioGeneral from "../models/accesorioGeneral.js";
 import ProveedorGeneral from "../models/proveedorGeneral.js";
 import xlsx from "xlsx";
 
+import {
+  assertValidId,
+  handleMongooseError
+} from "../utils/validationHelpers.js";
 const importarDesdeExcel = (Model, mapRow) => {
   return async (req, res) => {
     try {
@@ -22,7 +26,6 @@ const importarDesdeExcel = (Model, mapRow) => {
 
       for (const row of data) {
         const { query, doc } = mapRow(row);
-        console.log("🧾 DOC A IMPORTAR", doc); 
 
         try {
           const existente = await Model.findOne(query);
@@ -39,15 +42,9 @@ const importarDesdeExcel = (Model, mapRow) => {
         }
       }
 
-      res.json({
-        message: "Importación completada",
-        nuevos,
-        actualizados,
-        errores,
-      });
+      res.json({ message: "Importación completada", nuevos, actualizados, errores });
     } catch (error) {
-      console.error(error);
-      res.status(500).json({ message: "Error al importar archivo" });
+      handleMongooseError(res, error);
     }
   };
 };
@@ -137,13 +134,12 @@ export const importarProveedores = importarDesdeExcel(ProveedorGeneral, (row) =>
     doc,
   };
 });
-
 export const obtenerProveedores = async (req, res) => {
   try {
     const proveedores = await ProveedorGeneral.find();
     res.json(proveedores);
   } catch (error) {
-    res.status(500).json({ message: "Error al obtener proveedores", error: error.message });
+    handleMongooseError(res, error);
   }
 };
 
@@ -159,25 +155,29 @@ export const agregarProveedor = async (req, res) => {
     await proveedor.save();
     res.status(201).json(proveedor);
   } catch (error) {
-    res.status(400).json({ message: "Error al agregar proveedor", error: error.message });
+    handleMongooseError(res, error);
   }
 };
 
 export const actualizarProveedor = async (req, res) => {
   try {
+    assertValidId(req.params.id, "Proveedor");
+
     const proveedor = await ProveedorGeneral.findByIdAndUpdate(req.params.id, req.body, { new: true });
     res.json(proveedor);
   } catch (error) {
-    res.status(400).json({ message: "Error al actualizar proveedor", error: error.message });
+    handleMongooseError(res, error);
   }
 };
 
 export const eliminarProveedor = async (req, res) => {
   try {
+    assertValidId(req.params.id, "Proveedor");
+
     await ProveedorGeneral.findByIdAndDelete(req.params.id);
     res.json({ message: "Proveedor eliminado" });
   } catch (error) {
-    res.status(400).json({ message: "Error al eliminar proveedor", error: error.message });
+    handleMongooseError(res, error);
   }
 };
 
@@ -186,7 +186,7 @@ export const obtenerCamaras = async (req, res) => {
     const camaras = await CamaraGeneral.find();
     res.json(camaras);
   } catch (error) {
-    res.status(500).json({ message: "Error al obtener cámaras", error: error.message });
+    handleMongooseError(res, error);
   }
 };
 
@@ -197,35 +197,38 @@ export const agregarCamara = async (req, res) => {
     await nuevaCamara.save();
     res.status(201).json(nuevaCamara);
   } catch (error) {
-    res.status(400).json({ message: "Error al agregar cámara", error: error.message });
+    handleMongooseError(res, error);
   }
 };
 
 export const actualizarCamara = async (req, res) => {
   try {
+    assertValidId(req.params.id, "Cámara");
+
     const camara = await CamaraGeneral.findByIdAndUpdate(req.params.id, req.body, { new: true });
     res.json(camara);
   } catch (error) {
-    res.status(400).json({ message: "Error al actualizar cámara", error: error.message });
+    handleMongooseError(res, error);
   }
 };
 
 export const eliminarCamara = async (req, res) => {
   try {
+    assertValidId(req.params.id, "Cámara");
+
     await CamaraGeneral.findByIdAndDelete(req.params.id);
     res.json({ message: "Cámara eliminada" });
   } catch (error) {
-    res.status(400).json({ message: "Error al eliminar cámara", error: error.message });
+    handleMongooseError(res, error);
   }
 };
-
 
 export const obtenerAccesorios = async (req, res) => {
   try {
     const accesorios = await AccesorioGeneral.find();
     res.json(accesorios);
   } catch (error) {
-    res.status(500).json({ message: "Error al obtener accesorios", error: error.message });
+    handleMongooseError(res, error);
   }
 };
 
@@ -235,35 +238,38 @@ export const agregarAccesorio = async (req, res) => {
     await nuevo.save();
     res.status(201).json(nuevo);
   } catch (error) {
-    res.status(400).json({ message: "Error al agregar accesorio", error: error.message });
+    handleMongooseError(res, error);
   }
 };
 
 export const actualizarAccesorio = async (req, res) => {
   try {
+    assertValidId(req.params.id, "Accesorio");
+
     const accesorio = await AccesorioGeneral.findByIdAndUpdate(req.params.id, req.body, { new: true });
     res.json(accesorio);
   } catch (error) {
-    res.status(400).json({ message: "Error al actualizar accesorio", error: error.message });
+    handleMongooseError(res, error);
   }
 };
 
 export const eliminarAccesorio = async (req, res) => {
   try {
+    assertValidId(req.params.id, "Accesorio");
+
     await AccesorioGeneral.findByIdAndDelete(req.params.id);
     res.json({ message: "Accesorio eliminado" });
   } catch (error) {
-    res.status(400).json({ message: "Error al eliminar accesorio", error: error.message });
+    handleMongooseError(res, error);
   }
 };
 
-// Perfiles
 export const obtenerPerfiles = async (req, res) => {
   try {
     const perfiles = await PerfilGeneral.find();
     res.json(perfiles);
   } catch (error) {
-    res.status(500).json({ message: "Error al obtener perfiles", error: error.message });
+    handleMongooseError(res, error);
   }
 };
 
@@ -281,42 +287,44 @@ export const agregarPerfil = async (req, res) => {
         ? linea.split(",").map((l) => l.trim())
         : [],
       largo: largo ? parseFloat(largo.toString().replace(",", ".")) : 0,
-      peso: peso ? parseFloat(peso.toString().replace(",", ".")) : 0,
+      peso: peso ? parseFloat(peso.toString().replace(",", ".")) : 0
     });
 
     const perfilGuardado = await perfil.save();
     res.status(201).json(perfilGuardado);
   } catch (error) {
-    console.error("❌ Error al agregar perfil:", error);
-    res.status(500).json({ message: "Error al agregar el perfil" });
+    handleMongooseError(res, error);
   }
 };
 
 export const actualizarPerfil = async (req, res) => {
   try {
+    assertValidId(req.params.id, "Perfil");
+
     const perfil = await PerfilGeneral.findByIdAndUpdate(req.params.id, req.body, { new: true });
     res.json(perfil);
   } catch (error) {
-    res.status(400).json({ message: "Error al actualizar perfil", error: error.message });
+    handleMongooseError(res, error);
   }
 };
 
 export const eliminarPerfil = async (req, res) => {
   try {
+    assertValidId(req.params.id, "Perfil");
+
     await PerfilGeneral.findByIdAndDelete(req.params.id);
     res.json({ message: "Perfil eliminado" });
   } catch (error) {
-    res.status(400).json({ message: "Error al eliminar perfil", error: error.message });
+    handleMongooseError(res, error);
   }
 };
 
-// Vidrios
 export const obtenerVidrios = async (req, res) => {
   try {
     const vidrios = await VidrioGeneral.find();
     res.json(vidrios);
   } catch (error) {
-    res.status(500).json({ message: "Error al obtener vidrios", error: error.message });
+    handleMongooseError(res, error);
   }
 };
 
@@ -327,25 +335,28 @@ export const agregarVidrio = async (req, res) => {
     await nuevoVidrio.save();
     res.status(201).json(nuevoVidrio);
   } catch (error) {
-    res.status(400).json({ message: "Error al agregar vidrio", error: error.message });
+    handleMongooseError(res, error);
   }
 };
 
 export const actualizarVidrio = async (req, res) => {
   try {
+    assertValidId(req.params.id, "Vidrio");
+
     const vidrio = await VidrioGeneral.findByIdAndUpdate(req.params.id, req.body, { new: true });
     res.json(vidrio);
   } catch (error) {
-    res.status(400).json({ message: "Error al actualizar vidrio", error: error.message });
+    handleMongooseError(res, error);
   }
 };
 
 export const eliminarVidrio = async (req, res) => {
   try {
+    assertValidId(req.params.id, "Vidrio");
+
     await VidrioGeneral.findByIdAndDelete(req.params.id);
     res.json({ message: "Vidrio eliminado" });
   } catch (error) {
-    res.status(400).json({ message: "Error al eliminar vidrio", error: error.message });
+    handleMongooseError(res, error);
   }
 };
-

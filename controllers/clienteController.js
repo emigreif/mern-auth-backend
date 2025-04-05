@@ -1,11 +1,9 @@
-// backend/controllers/clienteController.js
 import Cliente from "../models/cliente.js";
-import { getAll, getById, create, update, remove } from "./baseController.js";
-
-/**
- * Controladores basados en BaseController (getAll, getById, create, update, remove).
- * Pero podemos agregar validaciones extras en create y update.
- */
+import { getAll, getById, remove } from "./baseController.js";
+import {
+  assertValidId,
+  handleMongooseError
+} from "../utils/validationHelpers.js";
 
 // Listar todos
 export const listarClientes = getAll(Cliente);
@@ -13,56 +11,57 @@ export const listarClientes = getAll(Cliente);
 // Obtener uno
 export const obtenerCliente = getById(Cliente);
 
-// Crear
+// Crear cliente (personalizado)
 export const crearCliente = async (req, res) => {
   try {
-    // Agregamos user: req.user.id
     const newItem = new Cliente({ ...req.body, user: req.user.id });
-    const savedItem = await newItem.save(); // validación pre('save')
+    const savedItem = await newItem.save();
     res.status(201).json(savedItem);
   } catch (error) {
-    // Captura error de validación si no pasa el pre('save')
-    res.status(400).json({ message: error.message || "Error al crear cliente" });
+    handleMongooseError(res, error);
   }
 };
 
-// Actualizar
+// Actualizar cliente (personalizado)
 export const actualizarCliente = async (req, res) => {
   try {
     const { id } = req.params;
-    // Buscamos y actualizamos
+    assertValidId(id, "Cliente");
+
     let cliente = await Cliente.findOne({ _id: id, user: req.user.id });
     if (!cliente) {
       return res.status(404).json({ message: "Cliente no encontrado" });
     }
-    // Actualizamos campos
+
+    // Actualización segura y condicional
     cliente.nombre = req.body.nombre ?? cliente.nombre;
     cliente.apellido = req.body.apellido ?? cliente.apellido;
     cliente.email = req.body.email ?? cliente.email;
     cliente.telefono = req.body.telefono ?? cliente.telefono;
-    // direccion
+
     if (req.body.direccion) {
       cliente.direccion.calle = req.body.direccion.calle ?? cliente.direccion.calle;
       cliente.direccion.ciudad = req.body.direccion.ciudad ?? cliente.direccion.ciudad;
     }
-    // condicionFiscal
+
     if (req.body.condicionFiscal) {
       cliente.condicionFiscal = req.body.condicionFiscal;
     }
-    // razonSocial, cuit
+
     if (req.body.razonSocial !== undefined) {
       cliente.razonSocial = req.body.razonSocial;
     }
+
     if (req.body.cuit !== undefined) {
       cliente.cuit = req.body.cuit;
     }
 
-    await cliente.save(); // validación pre('save')
+    await cliente.save();
     res.json(cliente);
   } catch (error) {
-    res.status(400).json({ message: error.message || "Error al actualizar cliente" });
+    handleMongooseError(res, error);
   }
 };
 
-// Eliminar
+// Eliminar cliente
 export const eliminarCliente = remove(Cliente);

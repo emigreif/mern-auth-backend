@@ -2,10 +2,12 @@ import Medicion from "../models/medicion.js";
 import Obra from "../models/obra.js";
 import Tipologia from "../models/tipologia.js";
 import Ubicacion from "../models/ubicacion.js";
+import {
+  assertValidId,
+  handleMongooseError
+} from "../utils/validationHelpers.js";
 
-/**
- * Obtener todas las mediciones
- */
+// Obtener todas las mediciones
 export const obtenerMediciones = async (req, res) => {
   try {
     const mediciones = await Medicion.find()
@@ -16,16 +18,16 @@ export const obtenerMediciones = async (req, res) => {
 
     res.json(mediciones);
   } catch (error) {
-    res.status(500).json({ message: "Error al obtener las mediciones", error: error.message });
+    handleMongooseError(res, error);
   }
 };
 
-/**
- * Obtener una medición por ID
- */
+// Obtener una medición por ID
 export const obtenerMedicionPorId = async (req, res) => {
   try {
     const { id } = req.params;
+    assertValidId(id, "Medición");
+
     const medicion = await Medicion.findById(id)
       .populate("usuario", "nombre email")
       .populate("obra", "nombre codigoObra")
@@ -38,13 +40,11 @@ export const obtenerMedicionPorId = async (req, res) => {
 
     res.json(medicion);
   } catch (error) {
-    res.status(500).json({ message: "Error al obtener la medición", error: error.message });
+    handleMongooseError(res, error);
   }
 };
 
-/**
- * Crear una nueva medición
- */
+// Crear nueva medición
 export const crearMedicion = async (req, res) => {
   try {
     const { obra, ubicacion, tipologia, ancho, alto, cantidad, observaciones } = req.body;
@@ -67,18 +67,17 @@ export const crearMedicion = async (req, res) => {
     await nuevaMedicion.save();
     res.status(201).json(nuevaMedicion);
   } catch (error) {
-    res.status(500).json({ message: "Error al crear la medición", error: error.message });
+    handleMongooseError(res, error);
   }
 };
 
-/**
- * Actualizar una medición por ID
- */
+// Actualizar una medición por ID
 export const actualizarMedicion = async (req, res) => {
   try {
     const { id } = req.params;
-    const medicion = await Medicion.findById(id);
+    assertValidId(id, "Medición");
 
+    const medicion = await Medicion.findById(id);
     if (!medicion) {
       return res.status(404).json({ message: "Medición no encontrada" });
     }
@@ -88,31 +87,28 @@ export const actualizarMedicion = async (req, res) => {
 
     res.json(medicion);
   } catch (error) {
-    res.status(500).json({ message: "Error al actualizar la medición", error: error.message });
+    handleMongooseError(res, error);
   }
 };
 
-/**
- * Eliminar una medición por ID
- */
+// Eliminar una medición por ID
 export const eliminarMedicion = async (req, res) => {
   try {
     const { id } = req.params;
-    const medicion = await Medicion.findByIdAndDelete(id);
+    assertValidId(id, "Medición");
 
+    const medicion = await Medicion.findByIdAndDelete(id);
     if (!medicion) {
       return res.status(404).json({ message: "Medición no encontrada" });
     }
 
     res.json({ message: "Medición eliminada correctamente" });
   } catch (error) {
-    res.status(500).json({ message: "Error al eliminar la medición", error: error.message });
+    handleMongooseError(res, error);
   }
 };
 
-/**
- * Generar reporte de mediciones (restar cantidades por tipología y ubicación)
- */
+// Generar reporte de mediciones
 export const generarReporteMediciones = async (req, res) => {
   try {
     const reporte = await Medicion.aggregate([
@@ -138,12 +134,8 @@ export const generarReporteMediciones = async (req, res) => {
           as: "ubicacion"
         }
       },
-      {
-        $unwind: "$tipologia"
-      },
-      {
-        $unwind: "$ubicacion"
-      },
+      { $unwind: "$tipologia" },
+      { $unwind: "$ubicacion" },
       {
         $project: {
           _id: 0,
@@ -156,6 +148,6 @@ export const generarReporteMediciones = async (req, res) => {
 
     res.json(reporte);
   } catch (error) {
-    res.status(500).json({ message: "Error al generar el reporte de mediciones", error: error.message });
+    handleMongooseError(res, error);
   }
 };

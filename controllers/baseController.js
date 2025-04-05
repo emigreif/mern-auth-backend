@@ -1,20 +1,28 @@
-// controllers/baseController.js
+import {
+  assertValidId,
+  handleMongooseError
+} from "../utils/validationHelpers.js";
+
 export const getAll = (Model) => async (req, res) => {
   try {
     const data = await Model.find({ user: req.user.id });
     res.json(data);
   } catch (error) {
-    res.status(500).json({ message: "Error al obtener datos", error: error.message });
+    handleMongooseError(res, error);
   }
 };
 
 export const getById = (Model) => async (req, res) => {
   try {
-    const data = await Model.findOne({ _id: req.params.id, user: req.user.id });
+    const { id } = req.params;
+    assertValidId(id);
+
+    const data = await Model.findOne({ _id: id, user: req.user.id });
     if (!data) return res.status(404).json({ message: "No encontrado" });
+
     res.json(data);
   } catch (error) {
-    res.status(500).json({ message: "Error al obtener dato", error: error.message });
+    handleMongooseError(res, error);
   }
 };
 
@@ -24,33 +32,43 @@ export const create = (Model) => async (req, res) => {
     const savedItem = await newItem.save();
     res.status(201).json(savedItem);
   } catch (error) {
-    res.status(400).json({ message: "Error al crear", error: error.message });
+    handleMongooseError(res, error);
   }
 };
 
 export const update = (Model) => async (req, res) => {
   try {
+    const { id } = req.params;
+    assertValidId(id);
+
     const updatedItem = await Model.findOneAndUpdate(
-      { _id: req.params.id, user: req.user.id },
+      { _id: id, user: req.user.id },
       req.body,
       { new: true }
     );
+
     if (!updatedItem) return res.status(404).json({ message: "No encontrado" });
+
     res.json(updatedItem);
   } catch (error) {
-    res.status(400).json({ message: "Error al actualizar", error: error.message });
+    handleMongooseError(res, error);
   }
 };
 
 export const remove = (Model) => async (req, res) => {
   try {
+    const { id } = req.params;
+    assertValidId(id);
+
     const deletedItem = await Model.findOneAndDelete({
-      _id: req.params.id,
+      _id: id,
       user: req.user.id
     });
+
     if (!deletedItem) return res.status(404).json({ message: "No encontrado" });
+
     res.json({ message: "Eliminado correctamente" });
   } catch (error) {
-    res.status(500).json({ message: "Error al eliminar", error: error.message });
+    handleMongooseError(res, error);
   }
 };

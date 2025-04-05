@@ -1,16 +1,17 @@
-// controllers/calendarioController.js
 import Obra from "../models/obra.js";
+import {
+  assertValidId,
+  handleMongooseError
+} from "../utils/validationHelpers.js";
 
-/**
- * Obtener todos los eventos del calendario con opción de filtrar por obra o actividad
- */
+// Obtener todos los eventos del calendario con opción de filtrar por obra o actividad
 export const listarCalendarios = async (req, res) => {
   try {
     const { obraId, actividad } = req.query;
     let query = { user: req.user.id };
 
-    // Filtrar por obra específica si obraId está presente
     if (obraId) {
+      assertValidId(obraId, "Obra");
       query._id = obraId;
     }
 
@@ -23,8 +24,6 @@ export const listarCalendarios = async (req, res) => {
 
     let eventos = [];
     obras.forEach((obra) => {
-      // Si no tiene fechas definidas, se ignora
-      // (o ajusta la lógica según necesites)
       const actividadesDisponibles = {
         medicion: {
           title: "Medición",
@@ -98,7 +97,6 @@ export const listarCalendarios = async (req, res) => {
           });
         }
       } else {
-        // Agregar todas las actividades
         Object.values(actividadesDisponibles).forEach(({ title, date, color }) => {
           if (date) {
             eventos.push({
@@ -113,18 +111,16 @@ export const listarCalendarios = async (req, res) => {
 
     res.json(eventos);
   } catch (error) {
-    res
-      .status(500)
-      .json({ message: "Error al listar los calendarios", error: error.message });
+    handleMongooseError(res, error);
   }
 };
 
-/**
- * Generar automáticamente las fechas del calendario en base a la obra
- */
+// Generar automáticamente las fechas del calendario en base a la obra
 export const generarCalendarioDesdeObra = async (req, res) => {
   try {
     const { obraId } = req.body;
+    assertValidId(obraId, "Obra");
+
     const obra = await Obra.findOne({ _id: obraId, user: req.user.id });
 
     if (!obra) {
@@ -154,18 +150,16 @@ export const generarCalendarioDesdeObra = async (req, res) => {
     await obra.save();
     res.json({ message: "Calendario generado correctamente", obra });
   } catch (error) {
-    res
-      .status(500)
-      .json({ message: "Error al generar el calendario", error: error.message });
+    handleMongooseError(res, error);
   }
 };
 
-/**
- * Obtener un calendario específico de una obra
- */
+// Obtener un calendario específico de una obra
 export const obtenerCalendario = async (req, res) => {
   try {
     const { obraId } = req.params;
+    assertValidId(obraId, "Obra");
+
     const obra = await Obra.findOne({ _id: obraId, user: req.user.id });
 
     if (!obra) {
@@ -174,18 +168,16 @@ export const obtenerCalendario = async (req, res) => {
 
     res.json(obra);
   } catch (error) {
-    res
-      .status(500)
-      .json({ message: "Error al obtener el calendario", error: error.message });
+    handleMongooseError(res, error);
   }
 };
 
-/**
- * Actualizar manualmente un calendario (fechas de la obra)
- */
+// Actualizar manualmente un calendario (fechas de la obra)
 export const actualizarCalendario = async (req, res) => {
   try {
     const { obraId } = req.params;
+    assertValidId(obraId, "Obra");
+
     const obraActualizada = await Obra.findOneAndUpdate(
       { _id: obraId, user: req.user.id },
       req.body,
@@ -198,18 +190,16 @@ export const actualizarCalendario = async (req, res) => {
 
     res.json({ message: "Calendario actualizado correctamente", obra: obraActualizada });
   } catch (error) {
-    res
-      .status(500)
-      .json({ message: "Error al actualizar el calendario", error: error.message });
+    handleMongooseError(res, error);
   }
 };
 
-/**
- * Eliminar un calendario (borrar fechas de una obra)
- */
+// Eliminar un calendario (borrar fechas de una obra)
 export const eliminarCalendario = async (req, res) => {
   try {
     const { obraId } = req.params;
+    assertValidId(obraId, "Obra");
+
     const obra = await Obra.findOne({ _id: obraId, user: req.user.id });
 
     if (!obra) {
@@ -232,8 +222,6 @@ export const eliminarCalendario = async (req, res) => {
 
     res.json({ message: "Calendario eliminado correctamente", obra });
   } catch (error) {
-    res
-      .status(500)
-      .json({ message: "Error al eliminar el calendario", error: error.message });
+    handleMongooseError(res, error);
   }
 };
