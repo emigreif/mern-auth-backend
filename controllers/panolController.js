@@ -481,7 +481,8 @@ export const asignarHerramienta = async (req, res) => {
     const { herramienta, obra, responsable, cantidad } = req.body;
     const userId = req.user.id;
 
-    const panol = await Panol.findOne({ user: userId });
+    const panol = await obtenerPanolUsuario(req.user.id);
+
     if (!panol) return res.status(404).json({ message: "Pañol no encontrado" });
 
     const herramientaObj = panol.herramientas.id(herramienta);
