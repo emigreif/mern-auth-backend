@@ -8,8 +8,12 @@ import {
 // 🔁 Reutilizable para evitar código repetido
 const obtenerPanolUsuario = async (userId, populate = false) => {
   const query = Panol.findOne({ user: userId });
+
   const panol = populate
-    ? await query.populate("herramientas.obra herramientas.responsable")
+    ? await query.populate([
+        { path: "herramientas.obra" },
+        { path: "herramientas.responsable" }
+      ])
     : await query;
 
   if (!panol) {
@@ -17,8 +21,10 @@ const obtenerPanolUsuario = async (userId, populate = false) => {
     await nuevo.save();
     return nuevo;
   }
+
   return panol;
 };
+
 
 /** 📌 Obtener el estado del pañol */
 export const obtenerPanol = async (req, res) => {
