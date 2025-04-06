@@ -1,11 +1,7 @@
 // backend/models/Cliente.js
 import mongoose from "mongoose";
 
-/**
- * Modelo Cliente con campos básicos
- * + condicionFiscal: "responsableInscripto" o "consumidorFinal"
- * + razonSocial y cuit requeridos solo si responsable inscripto
- */
+
 
 const clienteSchema = new mongoose.Schema({
   nombre: { type: String, required: true, trim: true },
@@ -23,21 +19,12 @@ const clienteSchema = new mongoose.Schema({
     enum: ["responsableInscripto", "consumidorFinal"],
     default: "consumidorFinal"
   },
-  // Solo se usan si es responsableInscripto
   razonSocial: { type: String, trim: true },
   cuit: { type: String, trim: true },
-
-  // Relación con el usuario (dueño de este cliente)
   user: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true }
-}, 
-{ timestamps: true }
+},
+  { timestamps: true }
 );
-
-/**
- * Validación custom:
- * - Si condicionFiscal = "responsableInscripto", 
- *   entonces razonSocial y cuit deben existir.
- */
 clienteSchema.pre("save", function (next) {
   if (this.condicionFiscal === "responsableInscripto") {
     if (!this.razonSocial || !this.razonSocial.trim()) {

@@ -1,4 +1,3 @@
-
 import mongoose from "mongoose";
 
 const herramientaSchema = new mongoose.Schema({
@@ -11,11 +10,11 @@ const herramientaSchema = new mongoose.Schema({
     enum: ["en taller", "en obra", "en reparación"],
     default: "en taller"
   },
-  obra: { type: mongoose.Schema.Types.ObjectId, ref: "Obra", default: null }, // Si está en obra, referencia a la obra
-  responsable: { type: mongoose.Schema.Types.ObjectId, ref: "Nomina", default: null } // Quién la retiró
+  obra: { type: mongoose.Schema.Types.ObjectId, ref: "Obra", default: null },
+  responsable: { type: mongoose.Schema.Types.ObjectId, ref: "Nomina", default: null }
 });
 
-const perfilSchema = new mongoose.Schema({
+const perfilPanolSchema = new mongoose.Schema({
   codigo: { type: String, required: true },
   cantidad: { type: Number, required: true },
   descripcion: { type: String, required: true },
@@ -49,11 +48,10 @@ const vidrioSchema = new mongoose.Schema({
   }
 });
 
-
 const panolSchema = new mongoose.Schema({
   user: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
   herramientas: [herramientaSchema],
-  perfiles: [perfilSchema],
+  perfiles: [perfilPanolSchema],
   accesorios: [accesorioSchema],
   vidrios: [vidrioSchema]
 });
