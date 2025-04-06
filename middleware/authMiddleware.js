@@ -1,13 +1,7 @@
 // middleware/authMiddleware.js
 import jwt from "jsonwebtoken";
-import User from "../models/user.js"; // Ajusta la ruta si difiere en tu estructura
+import User from "../models/user.js";
 
-/**
- * Middleware protect:
- *  - Verifica el token JWT en Authorization: Bearer <token>
- *  - Decodifica y asigna req.user con el user de la DB
- *  - Si falla, retorna 401
- */
 export const protect = async (req, res, next) => {
   let token = req.headers.authorization;
 

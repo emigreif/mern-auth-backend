@@ -23,6 +23,7 @@ const obtenerPanolUsuario = async (userId, populate = false) => {
 /** 📌 Obtener el estado del pañol */
 export const obtenerPanol = async (req, res) => {
   try {
+    console.log("📥 req.user:", req.user);
     const panol = await obtenerPanolUsuario(req.user.id, true);
     res.json(panol);
   } catch (error) {
