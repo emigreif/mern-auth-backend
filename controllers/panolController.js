@@ -1,39 +1,24 @@
+import HerramientaPanol from "../models/PanolHerramienta.js";
+import PerfilPanol from "../models/PanolPerfil.js";
+import VidrioPanol from "../models/PanolVidrio.js";
 import AccesorioPanol from "../models/PanolAccesorio.js";
-import HerramientaPanol from "../models/PanolHerramienta.js"
-import PerfilPanol from "../models/PanolPerfil.js"
-import VidrioPanol from "../models/PanolVidrio.js"
+
 import {
   assertValidId,
   handleMongooseError
 } from "../utils/validationHelpers.js";
 
-// 🔁 Reutilizable para evitar código repetido
-const obtenerPanolUsuario = async (userId, populate = false) => {
-  const query = Panol.findOne({ user: userId });
-
-  const panol = populate
-    ? await query.populate([
-        { path: "herramientas.obra" },
-        { path: "herramientas.responsable" }
-      ])
-    : await query;
-
-  if (!panol) {
-    const nuevo = new Panol({ user: userId });
-    await nuevo.save();
-    return nuevo;
-  }
-
-  return panol;
-};
-
-
-/** 📌 Obtener el estado del pañol */
+/** ======================== 📌 OBTENER TODO ======================== */
 export const obtenerPanol = async (req, res) => {
   try {
-    console.log("📥 req.user:", req.user);
-    const panol = await obtenerPanolUsuario(req.user.id, true);
-    res.json(panol);
+    const [herramientas, perfiles, accesorios, vidrios] = await Promise.all([
+      HerramientaPanol.find({ user: req.user.id }).populate("obra responsable"),
+      PerfilPanol.find({ user: req.user.id }),
+      AccesorioPanol.find({ user: req.user.id }),
+      VidrioPanol.find({ user: req.user.id })
+    ]);
+
+    res.json({ herramientas, perfiles, accesorios, vidrios });
   } catch (error) {
     handleMongooseError(res, error);
   }
@@ -42,19 +27,34 @@ export const obtenerPanol = async (req, res) => {
 /** ======================== HERRAMIENTAS ======================== */
 export const agregarHerramienta = async (req, res) => {
   try {
-    const { marca, modelo, descripcion, numeroSerie, estado, obra, responsable } = req.body;
-    if (!marca || !modelo || !descripcion || !numeroSerie?.trim()) {
-      return res.status(400).json({ message: "Todos los campos son requeridos." });
-    }
+    const herramienta = new HerramientaPanol({ ...req.body, user: req.user.id });
+    await herramienta.save();
+    res.status(201).json(herramienta);
+  } catch (error) {
+    handleMongooseError(res, error);
+  }
+};
 
-    const panol = await obtenerPanolUsuario(req.user.id);
-    const nuevaHerramienta = {
-      marca, modelo, descripcion, numeroSerie, estado, obra, responsable,
-      historial: [{ fecha: new Date(), estadoNuevo: estado, obra, responsable }]
-    };
-    panol.herramientas.push(nuevaHerramienta);
-    await panol.save();
-    res.status(201).json(nuevaHerramienta);
+export const modificarHerramienta = async (req, res) => {
+  try {
+    assertValidId(req.params.id, "Herramienta");
+    const herramienta = await HerramientaPanol.findOneAndUpdate(
+      { _id: req.params.id, user: req.user.id },
+      req.body,
+      { new: true }
+    );
+    if (!herramienta) return res.status(404).json({ message: "Herramienta no encontrada" });
+    res.json(herramienta);
+  } catch (error) {
+    handleMongooseError(res, error);
+  }
+};
+
+export const eliminarHerramienta = async (req, res) => {
+  try {
+    assertValidId(req.params.id, "Herramienta");
+    await HerramientaPanol.deleteOne({ _id: req.params.id, user: req.user.id });
+    res.json({ message: "Herramienta eliminada" });
   } catch (error) {
     handleMongooseError(res, error);
   }
@@ -64,10 +64,11 @@ export const registrarMovimientoHerramienta = async (req, res) => {
   try {
     assertValidId(req.params.id, "Herramienta");
     const { estado, obra, responsable } = req.body;
-    const panol = await obtenerPanolUsuario(req.user.id);
-    const herramienta = panol.herramientas.id(req.params.id);
+
+    const herramienta = await HerramientaPanol.findOne({ _id: req.params.id, user: req.user.id });
     if (!herramienta) return res.status(404).json({ message: "Herramienta no encontrada" });
 
+    herramienta.historial = herramienta.historial || [];
     herramienta.historial.push({
       fecha: new Date(),
       estadoAnterior: herramienta.estado,
@@ -80,39 +81,8 @@ export const registrarMovimientoHerramienta = async (req, res) => {
     herramienta.obra = estado === "en obra" ? obra : null;
     herramienta.responsable = estado === "en obra" ? responsable : null;
 
-    await panol.save();
+    await herramienta.save();
     res.json({ message: "Movimiento registrado correctamente", herramienta });
-  } catch (error) {
-    handleMongooseError(res, error);
-  }
-};
-
-export const modificarHerramienta = async (req, res) => {
-  try {
-    assertValidId(req.params.id, "Herramienta");
-    const { estado, obra, responsable } = req.body;
-    const panol = await obtenerPanolUsuario(req.user.id);
-    const herramienta = panol.herramientas.id(req.params.id);
-    if (!herramienta) return res.status(404).json({ message: "Herramienta no encontrada" });
-
-    herramienta.estado = estado;
-    herramienta.obra = estado === "en obra" ? obra : null;
-    herramienta.responsable = estado === "en obra" ? responsable : null;
-
-    await panol.save();
-    res.json(herramienta);
-  } catch (error) {
-    handleMongooseError(res, error);
-  }
-};
-
-export const eliminarHerramienta = async (req, res) => {
-  try {
-    assertValidId(req.params.id, "Herramienta");
-    const panol = await obtenerPanolUsuario(req.user.id);
-    panol.herramientas = panol.herramientas.filter(h => h._id.toString() !== req.params.id);
-    await panol.save();
-    res.json({ message: "Herramienta eliminada" });
   } catch (error) {
     handleMongooseError(res, error);
   }
@@ -121,10 +91,9 @@ export const eliminarHerramienta = async (req, res) => {
 /** ======================== PERFILES ======================== */
 export const agregarPerfil = async (req, res) => {
   try {
-    const panol = await obtenerPanolUsuario(req.user.id);
-    panol.perfiles.push(req.body);
-    await panol.save();
-    res.status(201).json(req.body);
+    const perfil = new PerfilPanol({ ...req.body, user: req.user.id });
+    await perfil.save();
+    res.status(201).json(perfil);
   } catch (error) {
     handleMongooseError(res, error);
   }
@@ -133,12 +102,12 @@ export const agregarPerfil = async (req, res) => {
 export const modificarPerfil = async (req, res) => {
   try {
     assertValidId(req.params.id, "Perfil");
-    const panol = await obtenerPanolUsuario(req.user.id);
-    const perfil = panol.perfiles.id(req.params.id);
+    const perfil = await PerfilPanol.findOneAndUpdate(
+      { _id: req.params.id, user: req.user.id },
+      req.body,
+      { new: true }
+    );
     if (!perfil) return res.status(404).json({ message: "Perfil no encontrado" });
-
-    Object.assign(perfil, req.body);
-    await panol.save();
     res.json(perfil);
   } catch (error) {
     handleMongooseError(res, error);
@@ -148,9 +117,7 @@ export const modificarPerfil = async (req, res) => {
 export const eliminarPerfil = async (req, res) => {
   try {
     assertValidId(req.params.id, "Perfil");
-    const panol = await obtenerPanolUsuario(req.user.id);
-    panol.perfiles = panol.perfiles.filter(p => p._id.toString() !== req.params.id);
-    await panol.save();
+    await PerfilPanol.deleteOne({ _id: req.params.id, user: req.user.id });
     res.json({ message: "Perfil eliminado" });
   } catch (error) {
     handleMongooseError(res, error);
@@ -160,10 +127,9 @@ export const eliminarPerfil = async (req, res) => {
 /** ======================== ACCESORIOS ======================== */
 export const agregarAccesorio = async (req, res) => {
   try {
-    const panol = await obtenerPanolUsuario(req.user.id);
-    panol.accesorios.push(req.body);
-    await panol.save();
-    res.status(201).json(req.body);
+    const accesorio = new AccesorioPanol({ ...req.body, user: req.user.id });
+    await accesorio.save();
+    res.status(201).json(accesorio);
   } catch (error) {
     handleMongooseError(res, error);
   }
@@ -172,12 +138,12 @@ export const agregarAccesorio = async (req, res) => {
 export const modificarAccesorio = async (req, res) => {
   try {
     assertValidId(req.params.id, "Accesorio");
-    const panol = await obtenerPanolUsuario(req.user.id);
-    const accesorio = panol.accesorios.id(req.params.id);
+    const accesorio = await AccesorioPanol.findOneAndUpdate(
+      { _id: req.params.id, user: req.user.id },
+      req.body,
+      { new: true }
+    );
     if (!accesorio) return res.status(404).json({ message: "Accesorio no encontrado" });
-
-    Object.assign(accesorio, req.body);
-    await panol.save();
     res.json(accesorio);
   } catch (error) {
     handleMongooseError(res, error);
@@ -187,9 +153,7 @@ export const modificarAccesorio = async (req, res) => {
 export const eliminarAccesorio = async (req, res) => {
   try {
     assertValidId(req.params.id, "Accesorio");
-    const panol = await obtenerPanolUsuario(req.user.id);
-    panol.accesorios = panol.accesorios.filter(a => a._id.toString() !== req.params.id);
-    await panol.save();
+    await AccesorioPanol.deleteOne({ _id: req.params.id, user: req.user.id });
     res.json({ message: "Accesorio eliminado" });
   } catch (error) {
     handleMongooseError(res, error);
@@ -199,15 +163,9 @@ export const eliminarAccesorio = async (req, res) => {
 /** ======================== VIDRIOS ======================== */
 export const agregarVidrio = async (req, res) => {
   try {
-    const { descripcion, cantidad, ancho, alto } = req.body;
-    if (!descripcion || cantidad == null || !ancho || !alto) {
-      return res.status(400).json({ message: "Todos los campos son requeridos." });
-    }
-
-    const panol = await obtenerPanolUsuario(req.user.id);
-    panol.vidrios.push(req.body);
-    await panol.save();
-    res.status(201).json(req.body);
+    const vidrio = new VidrioPanol({ ...req.body, user: req.user.id });
+    await vidrio.save();
+    res.status(201).json(vidrio);
   } catch (error) {
     handleMongooseError(res, error);
   }
@@ -216,12 +174,12 @@ export const agregarVidrio = async (req, res) => {
 export const modificarVidrio = async (req, res) => {
   try {
     assertValidId(req.params.id, "Vidrio");
-    const panol = await obtenerPanolUsuario(req.user.id);
-    const vidrio = panol.vidrios.id(req.params.id);
+    const vidrio = await VidrioPanol.findOneAndUpdate(
+      { _id: req.params.id, user: req.user.id },
+      req.body,
+      { new: true }
+    );
     if (!vidrio) return res.status(404).json({ message: "Vidrio no encontrado" });
-
-    Object.assign(vidrio, req.body);
-    await panol.save();
     res.json(vidrio);
   } catch (error) {
     handleMongooseError(res, error);
@@ -231,37 +189,39 @@ export const modificarVidrio = async (req, res) => {
 export const eliminarVidrio = async (req, res) => {
   try {
     assertValidId(req.params.id, "Vidrio");
-    const panol = await obtenerPanolUsuario(req.user.id);
-    panol.vidrios = panol.vidrios.filter(v => v._id.toString() !== req.params.id);
-    await panol.save();
+    await VidrioPanol.deleteOne({ _id: req.params.id, user: req.user.id });
     res.json({ message: "Vidrio eliminado" });
   } catch (error) {
     handleMongooseError(res, error);
   }
 };
-
-/** ======================== IMPORTACIONES Y ASIGNACIONES ======================== */
 export const importMateriales = async (req, res) => {
   try {
     const { tipo } = req.params;
     const data = req.body;
+
     if (!Array.isArray(data) || data.length === 0) {
       return res.status(400).json({ message: "No hay datos para importar" });
     }
 
-    const panol = await obtenerPanolUsuario(req.user.id);
-    if (["perfiles", "vidrios", "accesorios", "herramientas"].includes(tipo)) {
-      panol[tipo].push(...data);
-      await panol.save();
-      return res.json({ message: "Materiales importados correctamente" });
-    }
+    const ModelMap = {
+      perfiles: PerfilPanol,
+      accesorios: AccesorioPanol,
+      vidrios: VidrioPanol,
+      herramientas: HerramientaPanol
+    };
 
-    res.status(400).json({ message: "Tipo no válido" });
+    const Model = ModelMap[tipo];
+    if (!Model) return res.status(400).json({ message: "Tipo no válido" });
+
+    const withUser = data.map(d => ({ ...d, user: req.user.id }));
+    await Model.insertMany(withUser);
+
+    res.json({ message: "Materiales importados correctamente", cantidad: withUser.length });
   } catch (error) {
     handleMongooseError(res, error);
   }
 };
-
 export const asignarPerfilesManual = async (req, res) => {
   try {
     const { obra, items } = req.body;
@@ -269,34 +229,27 @@ export const asignarPerfilesManual = async (req, res) => {
       return res.status(400).json({ message: "Datos inválidos" });
     }
 
-    const panol = await obtenerPanolUsuario(req.user.id);
+    const perfiles = await PerfilPanol.find({ user: req.user.id });
     const asignados = [];
     const faltantes = [];
 
     for (const item of items) {
-      const perfil = panol.perfiles.find(
-        (p) => p.codigo === item.codigo && p.color === item.color
-      );
-
+      const perfil = perfiles.find(p => p.codigo === item.codigo && p.color === item.color);
       if (!perfil || perfil.cantidad < item.cantidad) {
-        faltantes.push({
-          ...item,
-          stock: perfil?.cantidad || 0
-        });
+        faltantes.push({ ...item, stock: perfil?.cantidad || 0 });
         continue;
       }
 
       perfil.cantidad -= item.cantidad;
+      await perfil.save();
       asignados.push(item);
     }
 
-    await panol.save();
     res.json({ asignados, faltantes });
   } catch (error) {
     handleMongooseError(res, error);
   }
 };
-
 export const asignarPerfilesDesdeExcel = async (req, res) => {
   try {
     const { obra, items } = req.body;
@@ -304,7 +257,7 @@ export const asignarPerfilesDesdeExcel = async (req, res) => {
       return res.status(400).json({ message: "Datos inválidos" });
     }
 
-    const panol = await obtenerPanolUsuario(req.user.id);
+    const perfiles = await PerfilPanol.find({ user: req.user.id });
     const asignados = [];
     const faltantes = [];
 
@@ -318,26 +271,22 @@ export const asignarPerfilesDesdeExcel = async (req, res) => {
         continue;
       }
 
-      const perfil = panol.perfiles.find(
-        (p) => p.codigo === codigo && p.color === color
-      );
-
+      const perfil = perfiles.find(p => p.codigo === codigo && p.color === color);
       if (!perfil || perfil.cantidad < cantidad) {
         faltantes.push({ codigo, color, cantidad, stock: perfil?.cantidad || 0 });
         continue;
       }
 
       perfil.cantidad -= cantidad;
+      await perfil.save();
       asignados.push({ codigo, color, cantidad });
     }
 
-    await panol.save();
     res.json({ asignados, faltantes });
   } catch (error) {
     handleMongooseError(res, error);
   }
 };
-
 export const asignarAccesoriosManual = async (req, res) => {
   try {
     const { obra, items } = req.body;
@@ -345,31 +294,27 @@ export const asignarAccesoriosManual = async (req, res) => {
       return res.status(400).json({ message: "Datos inválidos" });
     }
 
-    const panol = await obtenerPanolUsuario(req.user.id);
+    const accesorios = await AccesorioPanol.find({ user: req.user.id });
     const asignados = [];
     const faltantes = [];
 
     for (const item of items) {
-      const acc = panol.accesorios.find(
-        (a) => a.codigo === item.codigo && a.color === item.color
-      );
-
+      const acc = accesorios.find(a => a.codigo === item.codigo && a.color === item.color);
       if (!acc || acc.cantidad < item.cantidad) {
         faltantes.push({ ...item, stock: acc?.cantidad || 0 });
         continue;
       }
 
       acc.cantidad -= item.cantidad;
+      await acc.save();
       asignados.push(item);
     }
 
-    await panol.save();
     res.json({ asignados, faltantes });
   } catch (error) {
     handleMongooseError(res, error);
   }
 };
-
 export const asignarAccesoriosDesdeExcel = async (req, res) => {
   try {
     const { obra, items } = req.body;
@@ -377,7 +322,7 @@ export const asignarAccesoriosDesdeExcel = async (req, res) => {
       return res.status(400).json({ message: "Datos inválidos" });
     }
 
-    const panol = await obtenerPanolUsuario(req.user.id);
+    const accesorios = await AccesorioPanol.find({ user: req.user.id });
     const asignados = [];
     const faltantes = [];
 
@@ -391,26 +336,22 @@ export const asignarAccesoriosDesdeExcel = async (req, res) => {
         continue;
       }
 
-      const acc = panol.accesorios.find(
-        (a) => a.codigo === codigo && a.color === color
-      );
-
+      const acc = accesorios.find(a => a.codigo === codigo && a.color === color);
       if (!acc || acc.cantidad < cantidad) {
         faltantes.push({ codigo, color, cantidad, stock: acc?.cantidad || 0 });
         continue;
       }
 
       acc.cantidad -= cantidad;
+      await acc.save();
       asignados.push({ codigo, color, cantidad });
     }
 
-    await panol.save();
     res.json({ asignados, faltantes });
   } catch (error) {
     handleMongooseError(res, error);
   }
 };
-
 export const asignarVidriosManual = async (req, res) => {
   try {
     const { obra, items } = req.body;
@@ -418,33 +359,31 @@ export const asignarVidriosManual = async (req, res) => {
       return res.status(400).json({ message: "Datos inválidos" });
     }
 
-    const panol = await obtenerPanolUsuario(req.user.id);
+    const vidrios = await VidrioPanol.find({ user: req.user.id });
     const asignados = [];
     const faltantes = [];
 
     for (const pedido of items) {
-      const candidatos = panol.vidrios
+      const candidatos = vidrios
         .filter(v => v.ancho >= pedido.ancho && v.alto >= pedido.alto && v.cantidad > 0)
-        .sort((a, b) => (a.ancho * a.alto - pedido.ancho * pedido.alto) - (b.ancho * b.alto - pedido.ancho * pedido.alto));
+        .sort((a, b) => (a.ancho * a.alto) - (b.ancho * b.alto));
 
       const sugerido = candidatos[0];
-
       if (!sugerido) {
         faltantes.push({ ...pedido, motivo: "No hay vidrio con medidas suficientes" });
         continue;
       }
 
       sugerido.cantidad -= 1;
+      await sugerido.save();
       asignados.push({ ...pedido, asignado: { ancho: sugerido.ancho, alto: sugerido.alto } });
     }
 
-    await panol.save();
     res.json({ asignados, faltantes });
   } catch (error) {
     handleMongooseError(res, error);
   }
 };
-
 export const asignarVidriosDesdeExcel = async (req, res) => {
   try {
     const { obra, items } = req.body;
@@ -452,7 +391,7 @@ export const asignarVidriosDesdeExcel = async (req, res) => {
       return res.status(400).json({ message: "Datos inválidos" });
     }
 
-    const panol = await obtenerPanolUsuario(req.user.id);
+    const vidrios = await VidrioPanol.find({ user: req.user.id });
     const asignados = [];
     const faltantes = [];
 
@@ -465,22 +404,21 @@ export const asignarVidriosDesdeExcel = async (req, res) => {
         continue;
       }
 
-      const candidatos = panol.vidrios
+      const candidatos = vidrios
         .filter(v => v.ancho >= ancho && v.alto >= alto && v.cantidad > 0)
-        .sort((a, b) => (a.ancho * a.alto - ancho * alto) - (b.ancho * b.alto - ancho * alto));
+        .sort((a, b) => (a.ancho * a.alto) - (b.ancho * b.alto));
 
       const sugerido = candidatos[0];
-
       if (!sugerido) {
         faltantes.push({ ancho, alto, motivo: "Sin vidrio adecuado" });
         continue;
       }
 
       sugerido.cantidad -= 1;
+      await sugerido.save();
       asignados.push({ ancho, alto, asignado: { ancho: sugerido.ancho, alto: sugerido.alto } });
     }
 
-    await panol.save();
     res.json({ asignados, faltantes });
   } catch (error) {
     handleMongooseError(res, error);
@@ -488,22 +426,17 @@ export const asignarVidriosDesdeExcel = async (req, res) => {
 };
 export const asignarHerramienta = async (req, res) => {
   try {
-    const { herramienta, obra, responsable, cantidad } = req.body;
-    const userId = req.user.id;
+    const { herramienta, obra, responsable } = req.body;
+    assertValidId(herramienta, "Herramienta");
 
-    const panol = await obtenerPanolUsuario(req.user.id);
-
-    if (!panol) return res.status(404).json({ message: "Pañol no encontrado" });
-
-    const herramientaObj = panol.herramientas.id(herramienta);
+    const herramientaObj = await HerramientaPanol.findOne({ _id: herramienta, user: req.user.id });
     if (!herramientaObj) return res.status(404).json({ message: "Herramienta no encontrada" });
 
-    // Actualizar estado y datos
     herramientaObj.estado = "en obra";
     herramientaObj.obra = obra;
     herramientaObj.responsable = responsable;
 
-    // Agregar al historial
+    herramientaObj.historial = herramientaObj.historial || [];
     herramientaObj.historial.push({
       fecha: new Date(),
       estadoAnterior: herramientaObj.estado,
@@ -512,7 +445,7 @@ export const asignarHerramienta = async (req, res) => {
       responsable
     });
 
-    await panol.save();
+    await herramientaObj.save();
     res.status(200).json({ message: "Herramienta asignada correctamente", herramienta: herramientaObj });
   } catch (err) {
     console.error("Error al asignar herramienta:", err);

@@ -1,49 +1,14 @@
 import mongoose from "mongoose";
+import perfilOV from "./ObraPerfil.js";
+import vidrioOV from "./ObraVidrio.js";
+import accesorioOV from "./ObraAccesorio.js";
+import tipologiaOV from "./ObraTipologia.js";
 
-// Subschemas para OV
-const perfilOVSchema = new mongoose.Schema({
-  codigo: String,
-  descripcion: String,
-  cantidad: { type: Number, min: 0 },
-  largo: { type: Number, min: 0 },
-  pesoxmetro: { type: Number, min: 0 },
-  color: String
-}, { _id: false });
-
-const vidrioOVSchema = new mongoose.Schema({
-  descripcion: String,
-  cantidad: { type: Number, min: 0 },
-  ancho: { type: Number, min: 0 },
-  alto: { type: Number, min: 0 },
-  tipologias: [String] // opcional
-}, { _id: false });
-
-const accesorioOVSchema = new mongoose.Schema({
-  codigo: String,
-  descripcion: String,
-  color: String,
-  cantidad: { type: Number, min: 0 },
-  unidad: { type: String, default: "u" },
-  tipo: {
-    type: String,
-    enum: ["accesorios", "herrajes", "tornillos", "bulones", "felpas", "selladores / espuma", "otro"],
-    default: "accesorios"
-  }
-}, { _id: false });
-
-const tipologiaOVSchema = new mongoose.Schema({
-  tipo: String,
-  descripcion: String,
-  base: { type: Number, min: 0 },
-  altura: { type: Number, min: 0 },
-  cantidad: { type: Number, min: 0 }
-}, { _id: false });
-
-const ObraSchema = new mongoose.Schema({
+const Obra = new  mongoose.Schema({
   codigoObra: { type: Number },
   nombre: { type: String, required: true, trim: true },
   cliente: {
-    type: mongoose.Schema.Types.ObjectId,
+    type: mongoose.Types.ObjectId,
     ref: "Cliente",
     required: true
   },
@@ -57,10 +22,10 @@ const ObraSchema = new mongoose.Schema({
   indiceActualizacionSaldo: { type: Number, default: 0 },
 
   // ➕ Nuevos arrays OV (orden de venta)
-  perfilesOV: [perfilOVSchema],
-  vidriosOV: [vidrioOVSchema],
-  accesoriosOV: [accesorioOVSchema],
-  tipologiasOV: [tipologiaOVSchema],
+  perfilesOV: [perfilOV],
+  vidriosOV: [vidrioOV],
+  accesoriosOV: [accesorioOV],
+  tipologiasOV: [tipologiaOV],
 
   // Fechas calculadas
   fechaInicioCortePerfiles: { type: Date },
@@ -116,11 +81,11 @@ const ObraSchema = new mongoose.Schema({
   },
   observaciones: { type: String, trim: true },
 
-  user: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true }
+  user: { type: mongoose.Types.ObjectId, ref: "User", required: true }
 }, { timestamps: true });
 
 // Auto-cálculo de fechas basadas en fechaEntrega
-ObraSchema.pre("save", async function (next) {
+Obra.pre("save", async function (next) {
   if (!this.codigoObra) {
     const ultimaObra = await this.constructor
       .findOne({ user: this.user })
@@ -148,6 +113,6 @@ ObraSchema.pre("save", async function (next) {
   next();
 });
 
-ObraSchema.index({ user: 1 });
+Obra.index({ user: 1 });
 
-export default mongoose.model("Obra", ObraSchema);
+export default mongoose.model("Obra", Obra);
