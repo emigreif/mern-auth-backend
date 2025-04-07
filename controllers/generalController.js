@@ -1,8 +1,8 @@
-import PerfilGeneral from "../models/PerfilGeneral.js";
-import CamaraGeneral from "../models/camaraGeneral.js";
-import VidrioGeneral from "../models/VidrioGeneral.js";
-import AccesorioGeneral from "../models/accesorioGeneral.js";
-import ProveedorGeneral from "../models/proveedorGeneral.js";
+import PerfilGeneral from "../models/GeneralPerfil.js";
+import CamaraGeneral from "../models/GeneralCamara.js";
+import VidrioGeneral from "../models/GeneralVidrio.js";
+import AccesorioGeneral from "../models/GeneralAccesorio.js";
+import ProveedorGeneral from "../models/GeneralProveedor.js";
 import xlsx from "xlsx";
 
 import {

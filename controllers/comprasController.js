@@ -1,9 +1,8 @@
-import {
-  CompraBase,
-  CompraAluminio,
-  CompraVidrios,
-  CompraAccesorios
-} from "../models/compra.js";
+import CompraBase from "../models/CompraBase.js";
+import CompraAluminio from "../models/CompraAluminio.js";
+import CompraVidrios from "../models/CompraVidrios.js";
+import CompraAccesorios from "../models/CompraAccesorios.js";
+
 import { generarOrdenCompraPDF } from "../utils/pdfService.js";
 import { sendEmailWithAttachment } from "../utils/emailService.js";
 import {

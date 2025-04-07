@@ -1,5 +1,7 @@
-import Panol from "../models/panol.js";
-
+import AccesorioPanol from "../models/PanolAccesorio.js";
+import HerramientaPanol from "../models/PanolHerramienta.js"
+import PerfilPanol from "../models/PanolPerfil.js"
+import VidrioPanol from "../models/PanolVidrio.js"
 import {
   assertValidId,
   handleMongooseError
