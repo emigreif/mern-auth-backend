@@ -4,11 +4,12 @@ import { handleMongooseError } from "../utils/validationHelpers.js";
 // ✅ Obtener todas las herramientas del usuario
 export const obtenerHerramientas = async (req, res) => {
   try {
-    const herramientas = await Herramienta.find({ user: req.user.id })
-      .populate("obra responsable");
+    console.log("✅ obtenerHerramientas called by", req.user.id);
+    const herramientas = await Herramienta.find({ user: req.user.id });
     res.json(herramientas);
-  } catch (error) {
-    handleMongooseError(res, error);
+  } catch (err) {
+    console.error("❌ Error en obtenerHerramientas:", err);
+    res.status(500).json({ message: "Error al obtener herramientas" });
   }
 };
 
