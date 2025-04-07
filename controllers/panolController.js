@@ -250,43 +250,6 @@ export const asignarPerfilesManual = async (req, res) => {
     handleMongooseError(res, error);
   }
 };
-export const asignarPerfilesDesdeExcel = async (req, res) => {
-  try {
-    const { obra, items } = req.body;
-    if (!obra || !Array.isArray(items)) {
-      return res.status(400).json({ message: "Datos inválidos" });
-    }
-
-    const perfiles = await PerfilPanol.find({ user: req.user.id });
-    const asignados = [];
-    const faltantes = [];
-
-    for (const raw of items) {
-      const codigo = raw.codigo?.trim();
-      const color = raw.color?.trim();
-      const cantidad = parseFloat(raw.cantidad || 0);
-
-      if (!codigo || !color || cantidad <= 0) {
-        faltantes.push({ ...raw, motivo: "Datos inválidos" });
-        continue;
-      }
-
-      const perfil = perfiles.find(p => p.codigo === codigo && p.color === color);
-      if (!perfil || perfil.cantidad < cantidad) {
-        faltantes.push({ codigo, color, cantidad, stock: perfil?.cantidad || 0 });
-        continue;
-      }
-
-      perfil.cantidad -= cantidad;
-      await perfil.save();
-      asignados.push({ codigo, color, cantidad });
-    }
-
-    res.json({ asignados, faltantes });
-  } catch (error) {
-    handleMongooseError(res, error);
-  }
-};
 export const asignarAccesoriosManual = async (req, res) => {
   try {
     const { obra, items } = req.body;
@@ -308,43 +271,6 @@ export const asignarAccesoriosManual = async (req, res) => {
       acc.cantidad -= item.cantidad;
       await acc.save();
       asignados.push(item);
-    }
-
-    res.json({ asignados, faltantes });
-  } catch (error) {
-    handleMongooseError(res, error);
-  }
-};
-export const asignarAccesoriosDesdeExcel = async (req, res) => {
-  try {
-    const { obra, items } = req.body;
-    if (!obra || !Array.isArray(items)) {
-      return res.status(400).json({ message: "Datos inválidos" });
-    }
-
-    const accesorios = await AccesorioPanol.find({ user: req.user.id });
-    const asignados = [];
-    const faltantes = [];
-
-    for (const raw of items) {
-      const codigo = raw.codigo?.trim();
-      const color = raw.color?.trim();
-      const cantidad = parseFloat(raw.cantidad || 0);
-
-      if (!codigo || !color || cantidad <= 0) {
-        faltantes.push({ ...raw, motivo: "Datos inválidos" });
-        continue;
-      }
-
-      const acc = accesorios.find(a => a.codigo === codigo && a.color === color);
-      if (!acc || acc.cantidad < cantidad) {
-        faltantes.push({ codigo, color, cantidad, stock: acc?.cantidad || 0 });
-        continue;
-      }
-
-      acc.cantidad -= cantidad;
-      await acc.save();
-      asignados.push({ codigo, color, cantidad });
     }
 
     res.json({ asignados, faltantes });
@@ -377,46 +303,6 @@ export const asignarVidriosManual = async (req, res) => {
       sugerido.cantidad -= 1;
       await sugerido.save();
       asignados.push({ ...pedido, asignado: { ancho: sugerido.ancho, alto: sugerido.alto } });
-    }
-
-    res.json({ asignados, faltantes });
-  } catch (error) {
-    handleMongooseError(res, error);
-  }
-};
-export const asignarVidriosDesdeExcel = async (req, res) => {
-  try {
-    const { obra, items } = req.body;
-    if (!obra || !Array.isArray(items)) {
-      return res.status(400).json({ message: "Datos inválidos" });
-    }
-
-    const vidrios = await VidrioPanol.find({ user: req.user.id });
-    const asignados = [];
-    const faltantes = [];
-
-    for (const raw of items) {
-      const ancho = parseFloat(raw.ancho || 0);
-      const alto = parseFloat(raw.alto || 0);
-
-      if (!ancho || !alto || ancho <= 0 || alto <= 0) {
-        faltantes.push({ ...raw, motivo: "Medidas inválidas" });
-        continue;
-      }
-
-      const candidatos = vidrios
-        .filter(v => v.ancho >= ancho && v.alto >= alto && v.cantidad > 0)
-        .sort((a, b) => (a.ancho * a.alto) - (b.ancho * b.alto));
-
-      const sugerido = candidatos[0];
-      if (!sugerido) {
-        faltantes.push({ ancho, alto, motivo: "Sin vidrio adecuado" });
-        continue;
-      }
-
-      sugerido.cantidad -= 1;
-      await sugerido.save();
-      asignados.push({ ancho, alto, asignado: { ancho: sugerido.ancho, alto: sugerido.alto } });
     }
 
     res.json({ asignados, faltantes });

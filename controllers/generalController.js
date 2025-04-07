@@ -49,7 +49,6 @@ const importarDesdeExcel = (Model, mapRow) => {
   };
 };
 
-// Importaciones
 export const importarPerfiles = importarDesdeExcel(PerfilGeneral, (row) => ({
   query: { codigo: row["Codigo"]?.toString().trim() },
   doc: {
@@ -134,6 +133,8 @@ export const importarProveedores = importarDesdeExcel(ProveedorGeneral, (row) =>
     doc,
   };
 });
+
+
 export const obtenerProveedores = async (req, res) => {
   try {
     const proveedores = await ProveedorGeneral.find();
