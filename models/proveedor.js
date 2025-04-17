@@ -4,7 +4,11 @@ import mongoose from "mongoose";
 const proveedorSchema = new mongoose.Schema(
   {
     nombre: { type: String, required: true, trim: true },
-    direccion: { type: String, required: true, trim: true },
+    direccion: {
+      direccionFormateada: { type: String, required: true },
+      lat: { type: Number, required: true },
+      lng: { type: Number, required: true }
+    },
     emails: [{ type: String, trim: true, lowercase: true }],
     telefono: { type: String, trim: true },
     whatsapp: { type: String, trim: true },

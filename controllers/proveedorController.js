@@ -7,6 +7,19 @@ import { handleMongooseError } from "../utils/validationHelpers.js";
  */
 export const crearProveedor = async (req, res) => {
   try {
+    const { direccion } = req.body;
+
+    if (
+      !direccion ||
+      !direccion.direccionFormateada ||
+      typeof direccion.lat !== "number" ||
+      typeof direccion.lng !== "number"
+    ) {
+      return res.status(400).json({
+        message: "La dirección debe incluir: direccionFormateada, lat y lng.",
+      });
+    }
+
     const nuevo = new Proveedor({ ...req.body, user: req.user.id });
     const guardado = await nuevo.save();
     res.status(201).json(guardado);
@@ -15,6 +28,7 @@ export const crearProveedor = async (req, res) => {
     handleMongooseError(res, error);
   }
 };
+
 
 /**
  * 📌 Listar proveedores con cálculo de saldo
@@ -59,6 +73,20 @@ export const obtenerProveedor = async (req, res) => {
 export const actualizarProveedor = async (req, res) => {
   try {
     const { id } = req.params;
+    const { direccion } = req.body;
+
+    if (direccion) {
+      if (
+        !direccion.direccionFormateada ||
+        typeof direccion.lat !== "number" ||
+        typeof direccion.lng !== "number"
+      ) {
+        return res.status(400).json({
+          message: "La dirección debe incluir: direccionFormateada, lat y lng.",
+        });
+      }
+    }
+
     const actualizado = await Proveedor.findOneAndUpdate(
       { _id: id, user: req.user.id },
       req.body,
@@ -75,6 +103,7 @@ export const actualizarProveedor = async (req, res) => {
     handleMongooseError(res, error);
   }
 };
+
 
 /**
  * 📌 Eliminar proveedor

@@ -4,7 +4,7 @@ import vidrioOV from "./ObraVidrio.js";
 import accesorioOV from "./ObraAccesorio.js";
 import tipologiaOV from "./ObraTipologia.js";
 
-const Obra = new  mongoose.Schema({
+const Obra = new mongoose.Schema({
   codigoObra: { type: Number },
   nombre: { type: String, required: true, trim: true },
   cliente: {
@@ -12,29 +12,30 @@ const Obra = new  mongoose.Schema({
     ref: "Cliente",
     required: true
   },
-  direccion: { type: String, required: true, trim: true },
+  direccion: { type: String, required: true, trim: true }, // Google Place description
+  ubicacion: {
+    lat: { type: Number, required: true }, // Coordenadas para el mapa
+    lng: { type: Number, required: true }
+  },
   contacto: { type: String, required: true, trim: true },
-  mapa: { type: String, trim: true },
+  
   fechaEntrega: { type: Date },
   importeConFactura: { type: Number, default: 0 },
   importeSinFactura: { type: Number, default: 0 },
   importeTotal: { type: Number, default: 0 },
   indiceActualizacionSaldo: { type: Number, default: 0 },
 
-  // ➕ Nuevos arrays OV (orden de venta)
   perfilesOV: [perfilOV],
   vidriosOV: [vidrioOV],
   accesoriosOV: [accesorioOV],
   tipologiasOV: [tipologiaOV],
 
-  // Fechas calculadas
   fechaInicioCortePerfiles: { type: Date },
   fechaInicioArmado: { type: Date },
   fechaEnvidriado: { type: Date },
   fechaInicioMontaje: { type: Date },
   fechaMedicion: { type: Date },
 
-  // Estados
   ordenProduccionAprobada: { type: Boolean, default: false },
   finalObra: { type: Boolean, default: false },
   estadoGeneral: {
@@ -43,36 +44,12 @@ const Obra = new  mongoose.Schema({
     default: "Presupuestada"
   },
   estado: {
-    perfiles: {
-      type: String,
-      enum: ["pendiente", "proximo", "cumplido"],
-      default: "pendiente"
-    },
-    vidrios: {
-      type: String,
-      enum: ["pendiente", "proximo", "cumplido"],
-      default: "pendiente"
-    },
-    accesorios: {
-      type: String,
-      enum: ["pendiente", "proximo", "cumplido"],
-      default: "pendiente"
-    },
-    produccion: {
-      type: String,
-      enum: ["pendiente", "proximo", "cumplido"],
-      default: "pendiente"
-    },
-    medicion: {
-      type: String,
-      enum: ["pendiente", "proximo", "cumplido"],
-      default: "pendiente"
-    },
-    aprobada: {
-      type: String,
-      enum: ["pendiente", "proximo", "cumplido"],
-      default: "pendiente"
-    }
+    perfiles: { type: String, enum: ["pendiente", "proximo", "cumplido"], default: "pendiente" },
+    vidrios: { type: String, enum: ["pendiente", "proximo", "cumplido"], default: "pendiente" },
+    accesorios: { type: String, enum: ["pendiente", "proximo", "cumplido"], default: "pendiente" },
+    produccion: { type: String, enum: ["pendiente", "proximo", "cumplido"], default: "pendiente" },
+    medicion: { type: String, enum: ["pendiente", "proximo", "cumplido"], default: "pendiente" },
+    aprobada: { type: String, enum: ["pendiente", "proximo", "cumplido"], default: "pendiente" }
   },
   saldo: {
     type: String,
@@ -84,7 +61,7 @@ const Obra = new  mongoose.Schema({
   user: { type: mongoose.Types.ObjectId, ref: "User", required: true }
 }, { timestamps: true });
 
-// Auto-cálculo de fechas basadas en fechaEntrega
+// Auto-cálculo de fechas
 Obra.pre("save", async function (next) {
   if (!this.codigoObra) {
     const ultimaObra = await this.constructor
@@ -104,7 +81,8 @@ Obra.pre("save", async function (next) {
     this.fechaEnvidriado = new Date(entrega);
     this.fechaEnvidriado.setDate(entrega.getDate() - 7);
 
-    this.fechaInicioMontaje = new Date(entrega); // mismo día
+    this.fechaInicioMontaje = new Date(entrega);
+    this.fechaInicioMontaje.setDate(entrega.getDate());
 
     this.fechaMedicion = new Date(entrega);
     this.fechaMedicion.setDate(entrega.getDate() - 60);
