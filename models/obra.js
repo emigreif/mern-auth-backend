@@ -12,11 +12,12 @@ const Obra = new mongoose.Schema({
     ref: "Cliente",
     required: true
   },
-  direccion: { type: String, required: true, trim: true }, // Google Place description
-  ubicacion: {
-    lat: { type: Number, required: true }, // Coordenadas para el mapa
-    lng: { type: Number, required: true }
-  },
+direccion: {
+  direccionFormateada: { type: String, required: true },
+  lat: { type: Number, required: true },
+  lng: { type: Number, required: true }
+},
+
   contacto: { type: String, required: true, trim: true },
   
   fechaEntrega: { type: Date },
