@@ -96,45 +96,45 @@ export const importarCamaras = importarDesdeExcel(CamaraGeneral, (row) => ({
 
 export const importarProveedores = importarDesdeExcel(ProveedorGeneral, (row) => {
   const nombre = row["Nombre"]?.toString().trim();
-  const direccionFormateada = row["Direccion"]?.toString().trim() || "";
+  const direccionTexto = row["Direccion"]?.toString().trim();
+
+  const direccion = direccionTexto
+    ? { direccionFormateada: direccionTexto, lat: null, lng: null }
+    : undefined;
 
   const doc = {
     nombre,
-    direccion: {
-      direccionFormateada,
-      lat: null, // ❗️ No se puede inferir desde Excel, se puede completar luego con geocoding
-      lng: null,
-    },
-    sitioWeb: row["Sitio Web"]?.toString().trim() || "", // 🌐 Nuevo campo
+    ...(direccion && { direccion }),
+    sitioWeb: row["Sitio Web"]?.toString().trim() || "",
 
     emails: (row["Emails"] || row["Email"] || "")
       .toString()
       .split(",")
-      .map(e => e.trim())
+      .map((e) => e.trim())
       .filter(Boolean),
 
     telefono: (row["Telefono"] || row["Teléfonos"] || "")
       .toString()
       .split(",")
-      .map(t => t.trim())
+      .map((t) => t.trim())
       .filter(Boolean),
 
     whatsapp: (row["Whatsapp"] || "")
       .toString()
       .split(",")
-      .map(w => w.trim())
+      .map((w) => w.trim())
       .filter(Boolean),
 
     marcas: (row["Marcas"] || "")
       .toString()
       .split(",")
-      .map(m => m.trim())
+      .map((m) => m.trim())
       .filter(Boolean),
 
     rubro: (row["Rubro"] || row["Rubros"] || "")
       .toString()
       .split(",")
-      .map(r => r.trim())
+      .map((r) => r.trim())
       .filter(Boolean),
   };
 
@@ -143,6 +143,7 @@ export const importarProveedores = importarDesdeExcel(ProveedorGeneral, (row) =>
     doc,
   };
 });
+
 
 
 
