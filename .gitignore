@@ -1,8 +1,7 @@
 node_modules/
 
 # Archivos de entorno sensibles
-.env
-.env.*
+
 
 # Logs
 *.log
