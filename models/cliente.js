@@ -8,10 +8,11 @@ const clienteSchema = new mongoose.Schema({
   apellido: { type: String, required: true, trim: true },
   email: { type: String, trim: true, lowercase: true },
   telefono: { type: String, trim: true },
-  direccion: {
-    calle: { type: String, trim: true },
-    ciudad: { type: String, trim: true }
-  },
+ direccion: {
+  direccionFormateada: { type: String, required: true },
+  lat: { type: Number, required: true },
+  lng: { type: Number, required: true }
+},
 
   // Nuevo campo: condicionFiscal
   condicionFiscal: {

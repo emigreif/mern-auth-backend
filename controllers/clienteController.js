@@ -14,6 +14,18 @@ export const obtenerCliente = getById(Cliente);
 // Crear cliente (personalizado)
 export const crearCliente = async (req, res) => {
   try {
+    const { direccion } = req.body;
+
+    if (
+      !direccion ||
+      !direccion.direccionFormateada ||
+      typeof direccion.lat !== "number" ||
+      typeof direccion.lng !== "number"
+    ) {
+      return res.status(400).json({
+        message: "La dirección debe incluir: direccionFormateada, lat y lng.",
+      });
+    }
     const newItem = new Cliente({ ...req.body, user: req.user.id });
     const savedItem = await newItem.save();
     res.status(201).json(savedItem);
